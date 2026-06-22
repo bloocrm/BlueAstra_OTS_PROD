@@ -1,0 +1,232 @@
+/* =====================================================
+   AUTHENTICATION STYLES
+   ===================================================== */
+
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+    padding: 1rem;
+}
+
+.auth-container.hidden {
+    display: none;
+}
+
+.auth-form {
+    display: none;
+    background: var(--white);
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s ease;
+    border-top: 6px solid #EF0000;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-header h1 {
+    font-size: 2.5rem;
+    color: #EF0000;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.auth-header h1 i {
+    font-size: 2rem;
+}
+
+.auth-header p {
+    color: var(--text-light);
+    font-size: 1.1rem;
+}
+
+.auth-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.auth-form .form-group input,
+.auth-form .form-group select {
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--medium-gray);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: var(--light-gray);
+}
+
+.auth-form .form-group input:focus,
+.auth-form .form-group select:focus {
+    outline: none;
+    border-color: #EF0000;
+    box-shadow: 0 0 0 3px rgba(239, 0, 0, 0.1);
+    background-color: var(--white);
+}
+
+.auth-form .btn-primary {
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.5rem;
+    width: 100%;
+}
+
+.auth-toggle {
+    text-align: center;
+    color: var(--text-light);
+    margin-top: 1rem;
+}
+
+.auth-toggle a {
+    color: #EF0000;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.auth-toggle a:hover {
+    color: #cc0000;
+    text-decoration: underline;
+}
+
+.auth-error {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid var(--danger);
+    color: var(--danger);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    display: none;
+}
+
+.auth-error.active {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+.auth-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-left: 4px solid var(--success);
+    color: var(--success);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    display: none;
+}
+
+.auth-success.active {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+/* Additional Auth Links */
+.auth-links {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+}
+
+.auth-links a {
+    color: #EF0000;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.auth-links a:hover {
+    color: #cc0000;
+    text-decoration: underline;
+}
+
+/* Security Features Box */
+.security-box {
+    margin-top: 30px;
+    background: var(--light-aqua);
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.security-box h3 {
+    color: #EF0000;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.security-box ul {
+    padding-left: 18px;
+    font-size: 0.9rem;
+}
+
+.security-box li {
+    margin-bottom: 8px;
+    color: var(--text-dark);
+}
+
+/* Auth Options */
+.auth-options {
+    margin-top: 25px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.auth-card {
+    padding: 18px;
+    text-align: center;
+    border-radius: 12px;
+    background: #fafafa;
+    border: 1px solid #eee;
+}
+
+.auth-card h4 {
+    color: #EF0000;
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.auth-card p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+/* =====================================================
+   RESPONSIVE AUTH
+   ===================================================== */
+
+@media (max-width: 600px) {
+    .auth-form {
+        padding: 2rem 1.5rem;
+    }
+
+    .auth-header h1 {
+        font-size: 2rem;
+    }
+
+    .auth-header p {
+        font-size: 1rem;
+    }
+
+    .auth-options {
+        grid-template-columns: 1fr;
+    }
+}

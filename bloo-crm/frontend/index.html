@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloo CRM - Customer Relationship Management</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Auth Container -->
+    <div id="authContainer" class="auth-container">
+        <!-- Login Form -->
+        <div id="loginForm" class="auth-form active">
+            <div class="auth-header">
+                <h1><i class="fas fa-chart-line bloo-text"></i> Bloo CRM</h1>
+                <p>Welcome Back!</p>
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginEmail">User ID / Registered Email</label>
+                    <input type="email" id="loginEmail" required placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary">Authenticate & Login</button>
+                <p class="auth-toggle">Don't have an account? <a href="#" onclick="toggleAuthForms()">Sign Up</a></p>
+
+                <div class="auth-links">
+                    <a href="UserID_Password_Reset.html">Forgot Password?</a>
+                    <a href="UserID_Password_Reset.html">Forgot User ID / Registered Email?</a>
+                    <a href="UserID_Password_Reset.html">Unlock Account</a>
+                    <a href="#">Request New Authentication Token</a>
+                </div>
+
+                <div class="auth-options">
+                    <div class="auth-card">
+                        <h4>OTP Authentication</h4>
+                        <p>Login using mobile OTP verification.</p>
+                    </div>
+                    <div class="auth-card">
+                        <h4>Multi-Factor Authentication</h4>
+                        <p>Enhanced security for advisors and HNI clients.</p>
+                    </div>
+                </div>
+
+                <div class="security-box">
+                    <h3>Security Features</h3>
+                    <ul>
+                        <li>Bank-grade encryption</li>
+                        <li>Multi-factor authentication</li>
+                        <li>Advisor workflow approvals</li>
+                        <li>Role-based access control</li>
+                        <li>Audit trail monitoring</li>
+                        <li>Secure document vault access</li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="registerForm" class="auth-form">
+            <div class="auth-header">
+                <h1><i class="fas fa-chart-line bloo-text"></i> Bloo CRM</h1>
+                <p>Create Your Account</p>
+            </div>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="regName">Full Name</label>
+                    <input type="text" id="regName" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email Address</label>
+                    <input type="email" id="regEmail" required placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="regPhone">Contact Number</label>
+                    <input type="tel" id="regPhone" required placeholder="Your phone number">
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" required placeholder="••••••••" minlength="8">
+                </div>
+                <div class="form-group">
+                    <label for="regConfirmPassword">Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" required placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label for="regCompany">Company Name</label>
+                    <input type="text" id="regCompany" required placeholder="Your Company">
+                </div>
+                <div class="form-group">
+                    <label for="regPlan">Plan</label>
+                    <select id="regPlan" required>
+                        <option value="">Select a plan</option>
+                        <option value="basic">Basic CRM - $10/month</option>
+                        <option value="premium">Premium CRM - $20/month per user</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Account</button>
+                <p class="auth-toggle">Already have an account? <a href="#" onclick="toggleAuthForms()">Login</a></p>
+
+                <div class="security-box">
+                    <h3>Security Features</h3>
+                    <ul>
+                        <li>Bank-grade encryption</li>
+                        <li>Multi-factor authentication</li>
+                        <li>Role-based access control</li>
+                        <li>Audit trail monitoring</li>
+                        <li>Secure data storage</li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Container -->
+    <div id="dashboardContainer" class="dashboard-container" style="display: none;">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-chart-line"></i> Bloo CRM</h2>
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" onclick="switchView('dashboard')" class="nav-item active" data-view="dashboard">
+                    <i class="fas fa-home"></i> <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="switchView('uploadSourceData')" class="nav-item" data-view="uploadSourceData">
+                    <i class="fas fa-upload"></i> <span>Upload Source Data</span>
+                </a>
+                <a href="#" onclick="switchView('clients')" class="nav-item" data-view="clients">
+                    <i class="fas fa-users"></i> <span>Client List</span>
+                </a>
+                <a href="#" onclick="switchView('clientDashboard')" class="nav-item" data-view="clientDashboard">
+                    <i class="fas fa-chart-bar"></i> <span>Client Dashboard</span>
+                </a>
+                <a href="#" onclick="switchView('email')" class="nav-item" data-view="email">
+                    <i class="fas fa-envelope"></i> <span>Email</span>
+                </a>
+                <a href="#" onclick="switchView('calendar')" class="nav-item" data-view="calendar">
+                    <i class="fas fa-calendar-alt"></i> <span>Calendar</span>
+                </a>
+                <a href="#" onclick="switchView('compliance')" class="nav-item" data-view="compliance">
+                    <i class="fas fa-clipboard-check"></i> <span>Compliance Tracking</span>
+                </a>
+                <a href="#" onclick="switchView('leads')" class="nav-item" data-view="leads">
+                    <i class="fas fa-bullseye"></i> <span>Leads</span>
+                </a>
+                <a href="#" onclick="switchView('communications')" class="nav-item" data-view="communications">
+                    <i class="fas fa-comments"></i> <span>Communications</span>
+                </a>
+                <a href="#" onclick="switchView('grievance')" class="nav-item" data-view="grievance">
+                    <i class="fas fa-flag"></i> <span>Grievance</span>
+                </a>
+                <a href="#" onclick="switchView('pricing')" class="nav-item" data-view="pricing">
+                    <i class="fas fa-dollar-sign"></i> <span>Pricing & Payments</span>
+                </a>
+                <a href="#" onclick="switchView('workflow')" class="nav-item" data-view="workflow">
+                    <i class="fas fa-stream"></i> <span>Workflow</span>
+                </a>
+                <a href="#" onclick="switchView('meetingRoom')" class="nav-item" data-view="meetingRoom">
+                    <i class="fas fa-video"></i> <span>Meeting Room</span>
+                </a>
+                <a href="#" onclick="switchView('ai-insights')" class="nav-item" data-view="ai-insights">
+                    <i class="fas fa-brain"></i> <span>AI Insights</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button onclick="handleLogout()" class="btn btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span id="userName">User</span>
+                        <img src="https://via.placeholder.com/40" alt="Profile" class="profile-avatar">
+                    </div>
+                </div>
+            </header>
+
+            <!-- Views Container -->
+            <div class="views-container">
+                <!-- Dashboard View -->
+                <div id="dashboard" class="view active">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue-bg">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalClients">0</h3>
+                                <p>Total Clients</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon aqua-bg">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="activeLeads">0</h3>
+                                <p>Active Leads</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange-bg">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="conversions">0</h3>
+                                <p>This Month</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon blue-bg">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalRevenue">$0</h3>
+                                <p>Total Revenue</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-charts">
+                        <div class="chart-container">
+                            <h3>Recent Activities</h3>
+                            <div id="recentActivities" class="activity-list">
+                                <p class="empty-state">No activities yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Source Data View -->
+                <div id="uploadSourceData" class="view">
+                    <div class="upload-container">
+                        <div class="upload-section">
+                            <h2><i class="fas fa-cloud-upload-alt"></i> Upload Source Data</h2>
+                            <p class="section-subtitle">Import client and lead data in bulk using CSV or Excel files</p>
+
+                            <!-- Instructions -->
+                            <div class="instructions-container">
+                                <div class="instruction-card">
+                                    <h3><i class="fas fa-info-circle"></i> Upload Instructions</h3>
+                                    <div class="instruction-content">
+                                        <p><strong>Supported Formats:</strong> CSV (.csv) or Excel (.xlsx, .xls)</p>
+                                        <p><strong>File Size Limit:</strong> Maximum 5MB per file</p>
+                                        <p><strong>Important:</strong></p>
+                                        <ul>
+                                            <li>First row must contain column headers</li>
+                                            <li>Use exact column names as specified in the templates below</li>
+                                            <li>All required fields must be populated</li>
+                                            <li>Duplicate entries will be skipped</li>
+                                            <li>Data will be validated before import</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="comparison-cards">
+                                    <div class="info-card client-info">
+                                        <h3><i class="fas fa-user-tie"></i> Client Data</h3>
+                                        <p><strong>Use this to:</strong> Upload existing client information that you want to convert to this CRM.</p>
+                                        <p><strong>Best for:</strong> Migrating from another system or adding multiple clients at once.</p>
+                                        <p><strong>Required Fields:</strong> Name, Email, Phone, Business Type, Industry</p>
+                                    </div>
+
+                                    <div class="info-card lead-info">
+                                        <h3><i class="fas fa-bullseye"></i> Lead Data</h3>
+                                        <p><strong>Use this to:</strong> Upload prospect information for leads that are not yet clients.</p>
+                                        <p><strong>Best for:</strong> Adding bulk leads from marketing campaigns or databases.</p>
+                                        <p><strong>Required Fields:</strong> Name, Email, Phone, Lead Status</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Client Data Upload -->
+                        <div class="upload-section upload-box">
+                            <div class="upload-header">
+                                <h3><i class="fas fa-user-tie"></i> Upload Client Data</h3>
+                                <button class="btn btn-small btn-secondary" onclick="toggleTemplate('clientTemplate')">
+                                    <i class="fas fa-file-download"></i> Download Template
+                                </button>
+                            </div>
+
+                            <div id="clientTemplate" class="template-preview" style="display: none;">
+                                <p><strong>CSV Template - Copy and fill this format:</strong></p>
+                                <pre>name,email,phone,altPhone,address,officialAddress,businessType,industry,lob,ssn,spouseName,childrenNames,beneficiaries,insuranceDetails,investmentAccount1,investmentAccount2,officeAddress1,officeAddress2,accountant1Name,accountant1Contact,accountant2Name,accountant2Contact,attorney1Name,attorney1Contact,attorney2Name,attorney2Contact,details
+John Doe,john@example.com,555-1234,555-5678,123 Main St,456 Business Ave,B2B,Technology,Software,123-45-6789,Jane Doe,Alice; Bob,Alice Doe; Bob Smith,Policy #12345; Coverage $500k,Acc #123456,Acc #789012,789 Office Blvd,012 Secondary St,John CPA,555-1111,Jane CPA,555-2222,Mike Attorney,555-3333,Sarah Attorney,555-4444,Additional notes here</pre>
+                            </div>
+
+                            <form onsubmit="handleClientDataUpload(event)" class="upload-form">
+                                <div class="form-group">
+                                    <label for="clientFileInput">Select Client Data File (CSV or Excel)</label>
+                                    <div class="file-input-wrapper">
+                                        <input type="file" id="clientFileInput" accept=".csv,.xlsx,.xls" required>
+                                        <span class="file-name">Choose file...</span>
+                                    </div>
+                                </div>
+                                <div class="upload-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-upload"></i> Import Client Data
+                                    </button>
+                                </div>
+                            </form>
+                            <div id="clientUploadStatus" class="upload-status"></div>
+                        </div>
+
+                        <!-- Lead Data Upload -->
+                        <div class="upload-section upload-box">
+                            <div class="upload-header">
+                                <h3><i class="fas fa-bullseye"></i> Upload Lead Data</h3>
+                                <button class="btn btn-small btn-secondary" onclick="toggleTemplate('leadTemplate')">
+                                    <i class="fas fa-file-download"></i> Download Template
+                                </button>
+                            </div>
+
+                            <div id="leadTemplate" class="template-preview" style="display: none;">
+                                <p><strong>CSV Template - Copy and fill this format:</strong></p>
+                                <pre>name,email,phone,company,leadStatus,leadSource,notes
+Jane Smith,jane@example.com,555-9999,Tech Corp,Interested,Website,Great prospect from blog post
+Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred by John Doe</pre>
+                            </div>
+
+                            <form onsubmit="handleLeadDataUpload(event)" class="upload-form">
+                                <div class="form-group">
+                                    <label for="leadFileInput">Select Lead Data File (CSV or Excel)</label>
+                                    <div class="file-input-wrapper">
+                                        <input type="file" id="leadFileInput" accept=".csv,.xlsx,.xls" required>
+                                        <span class="file-name">Choose file...</span>
+                                    </div>
+                                </div>
+                                <div class="upload-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-upload"></i> Import Lead Data
+                                    </button>
+                                </div>
+                            </form>
+                            <div id="leadUploadStatus" class="upload-status"></div>
+                        </div>
+
+                        <!-- Data Mapping Info -->
+                        <div class="upload-section info-section">
+                            <h3><i class="fas fa-database"></i> Field Mapping Reference</h3>
+
+                            <div class="mapping-table">
+                                <h4>Client Data Fields</h4>
+                                <table class="field-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Column Name</th>
+                                            <th>Description</th>
+                                            <th>Type</th>
+                                            <th>Required</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>name</td>
+                                            <td>Client full name</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-check" style="color: var(--success);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>email</td>
+                                            <td>Email address</td>
+                                            <td>Email</td>
+                                            <td><i class="fas fa-check" style="color: var(--success);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>phone</td>
+                                            <td>Primary phone number</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-check" style="color: var(--success);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>businessType</td>
+                                            <td>B2B, B2C, Startup, Enterprise</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-check" style="color: var(--success);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>industry</td>
+                                            <td>Technology, Finance, Healthcare, Retail, Manufacturing, Other</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-check" style="color: var(--success);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>altPhone</td>
+                                            <td>Alternative phone number</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-times" style="color: var(--danger);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>address</td>
+                                            <td>Residential/primary address</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-times" style="color: var(--danger);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>spouseName, childrenNames, beneficiaries</td>
+                                            <td>Family information (use semicolon to separate multiple)</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-times" style="color: var(--danger);"></i></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="mapping-table">
+                                <h4>Lead Data Fields</h4>
+                                <table class="field-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Column Name</th>
+                                            <th>Description</th>
+                                            <th>Type</th>
+                                            <th>Required</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>name</td>
+                                            <td>Lead name</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-check" style="color: var(--success);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>email</td>
+                                            <td>Email address</td>
+                                            <td>Email</td>
+                                            <td><i class="fas fa-check" style="color: var(--success);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>phone</td>
+                                            <td>Phone number</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-check" style="color: var(--success);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>leadStatus</td>
+                                            <td>New, Qualified, Interested, Negotiating, Converted, Lost</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-check" style="color: var(--success);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>company</td>
+                                            <td>Company name</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-times" style="color: var(--danger);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>leadSource</td>
+                                            <td>Where lead came from (Website, Referral, etc.)</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-times" style="color: var(--danger);"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>notes</td>
+                                            <td>Additional information about the lead</td>
+                                            <td>Text</td>
+                                            <td><i class="fas fa-times" style="color: var(--danger);"></i></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload AI Upgrade Section -->
+                    <div id="uploadUpgradeContainer"></div>
+                </div>
+
+                <!-- Clients View -->
+                <div id="clients" class="view">
+                    <div class="view-header">
+                        <button onclick="showModal('addClientModal')" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add New Client
+                        </button>
+                        <div class="search-box">
+                            <input type="text" id="clientSearch" placeholder="Search clients..." onkeyup="filterClients()">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                    <div id="clientsList" class="clients-list">
+                        <p class="empty-state">No clients yet. Start by adding a new client!</p>
+                    </div>
+                </div>
+
+                <!-- Client Dashboard View -->
+                <div id="clientDashboard" class="view">
+                    <div class="view-header">
+                        <h2>Client Dashboard</h2>
+                        <div class="search-box">
+                            <input type="text" id="dashboardSearch" placeholder="Search clients..." onkeyup="filterClientDashboard()">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                    <div id="dashboardClientsList" class="clients-grid">
+                        <p class="empty-state">No clients yet. Add clients from Client List tab.</p>
+                    </div>
+                </div>
+
+                <!-- Email View -->
+                <div id="email" class="view">
+                    <div class="view-header">
+                        <h2><i class="fas fa-envelope"></i> Email Management</h2>
+                        <button onclick="showModal('emailSyncModal')" class="btn btn-primary">
+                            <i class="fas fa-sync"></i> Sync Email
+                        </button>
+                    </div>
+
+                    <div class="sync-info-box">
+                        <div id="emailSyncStatus" class="sync-status-card">
+                            <i class="fas fa-circle" style="color: var(--text-light);"></i>
+                            <span>No email provider connected</span>
+                        </div>
+                    </div>
+
+                    <div id="emailContainer" class="email-list">
+                        <p class="empty-state">No synced emails yet. Click "Sync Email" to connect your email provider.</p>
+                    </div>
+
+                    <!-- Email Upgrade Section -->
+                    <div id="emailUpgradeContainer"></div>
+                </div>
+
+                <!-- Calendar View -->
+                <div id="calendar" class="view">
+                    <div class="view-header">
+                        <h2><i class="fas fa-calendar-alt"></i> Calendar & Scheduling</h2>
+                        <button onclick="showModal('calendarSyncModal')" class="btn btn-primary">
+                            <i class="fas fa-sync"></i> Sync Calendar
+                        </button>
+                    </div>
+
+                    <div class="sync-info-box">
+                        <div id="calendarSyncStatus" class="sync-status-card">
+                            <i class="fas fa-circle" style="color: var(--text-light);"></i>
+                            <span>No calendar provider connected</span>
+                        </div>
+                    </div>
+
+                    <div id="calendarContainer" class="calendar-list">
+                        <p class="empty-state">No synced events yet. Click "Sync Calendar" to connect your calendar provider.</p>
+                    </div>
+
+                    <!-- Calendar Upgrade Section -->
+                    <div id="calendarUpgradeContainer"></div>
+                </div>
+
+                <!-- Compliance Tracking View -->
+                <div id="compliance" class="view">
+                    <div class="view-header">
+                        <h2><i class="fas fa-clipboard-check"></i> Compliance Tracking</h2>
+                        <button onclick="showModal('complianceSettingsModal')" class="btn btn-primary">
+                            <i class="fas fa-cog"></i> Configure Firm
+                        </button>
+                    </div>
+
+                    <!-- Firm Configuration Summary -->
+                    <div id="firmConfigSummary" class="firm-config-box">
+                        <div class="config-item">
+                            <span class="config-label">Firm Location:</span>
+                            <span id="firmCountry" class="config-value">Not configured</span>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">Region:</span>
+                            <span id="firmRegion" class="config-value">-</span>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">Offshore Operations:</span>
+                            <span id="firmOffshore" class="config-value">None</span>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">Total Standards:</span>
+                            <span id="firmStandardsCount" class="config-value">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Compliance Filter Tabs -->
+                    <div class="compliance-tabs">
+                        <button class="compliance-tab-btn active" onclick="filterCompliance('all')">
+                            All Standards
+                        </button>
+                        <button class="compliance-tab-btn" onclick="filterCompliance('primary')">
+                            Primary Region
+                        </button>
+                        <button class="compliance-tab-btn" onclick="filterCompliance('global')">
+                            Global Standards
+                        </button>
+                        <button class="compliance-tab-btn" onclick="filterCompliance('offshore')">
+                            Offshore Standards
+                        </button>
+                    </div>
+
+                    <!-- Compliance Standards Display -->
+                    <div id="complianceContainer" class="compliance-container">
+                        <p class="empty-state">Configure your firm location to view applicable compliance standards. Click "Configure Firm" to get started.</p>
+                    </div>
+
+                    <!-- Third-Party Integrations Section -->
+                    <div class="third-party-integrations-section">
+                        <h3 style="margin-bottom: 1.5rem;"><i class="fas fa-plug"></i> Third-Party Integrations</h3>
+                        <div id="thirdPartyIntegrationsContainer">
+                            <p class="empty-state">Loading integrations...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leads View -->
+                <div id="leads" class="view">
+                    <div class="view-header">
+                        <button onclick="showModal('addLeadModal')" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add New Lead
+                        </button>
+                        <div class="search-box">
+                            <input type="text" id="leadSearch" placeholder="Search leads..." onkeyup="filterLeads()">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                    <div id="leadsList" class="leads-list">
+                        <p class="empty-state">No leads yet.</p>
+                    </div>
+                </div>
+
+                <!-- Communications View -->
+                <div id="communications" class="view">
+                    <div class="view-header">
+                        <button onclick="showModal('addCommunicationModal')" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Log Communication
+                        </button>
+                    </div>
+                    <div id="communicationsList" class="communications-list">
+                        <p class="empty-state">No communications logged yet.</p>
+                    </div>
+                </div>
+
+                <!-- Pricing & Payments View -->
+                <div id="pricing" class="view">
+                    <div class="pricing-hero">
+                        <h2>Simple, Transparent Pricing</h2>
+                        <p>All plans include secure login, MFA, and comprehensive data protection</p>
+
+                        <div class="billing-toggle">
+                            <button class="toggle-btn active" onclick="switchBillingCycle('monthly')">
+                                <i class="fas fa-calendar-days"></i> Monthly
+                            </button>
+                            <button class="toggle-btn" onclick="switchBillingCycle('yearly')">
+                                <i class="fas fa-calendar-alt"></i> Yearly (10 Months Charged)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pricing-comparison" id="pricingComparison">
+                        <!-- Pricing cards will be populated by loadPricingPlans() -->
+                    </div>
+
+                    <div class="feature-comparison-table" id="featureComparison">
+                        <!-- Feature comparison will be populated by loadFeatureComparison() -->
+                    </div>
+
+                    <div class="payments-section">
+                        <h3><i class="fas fa-credit-card"></i> Payment History</h3>
+                        <div id="paymentHistory" class="payments-table">
+                            <p class="empty-state">No payments yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workflow View -->
+                <div id="workflow" class="view">
+                    <div class="workflow-header">
+                        <h3>Contact Workflow & Audit Log</h3>
+                        <div class="workflow-filter">
+                            <select id="workflowFilter" onchange="filterWorkflow()">
+                                <option value="">All Activities</option>
+                                <option value="contact">Contact Activities</option>
+                                <option value="update">Updates</option>
+                                <option value="conversion">Conversions</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="workflowList" class="workflow-timeline">
+                        <p class="empty-state">No workflow activities yet.</p>
+                    </div>
+
+                    <!-- AI-Powered Workflow Features Section -->
+                    <div id="aiWorkflowSection" class="ai-workflow-features-section">
+                        <!-- Content will be populated by loadAIWorkflowFeatures() -->
+                    </div>
+                </div>
+
+                <!-- Meeting Room View -->
+                <div id="meetingRoom" class="view">
+                    <div class="view-header">
+                        <h2><i class="fas fa-video"></i> Meeting Room</h2>
+                        <button onclick="showModal('startMeetingModal')" class="btn btn-primary">
+                            <i class="fas fa-play"></i> Start Meeting
+                        </button>
+                    </div>
+
+                    <div class="meeting-room-container">
+                        <!-- Video Provider Selection Section -->
+                        <div id="videoProvidersSection" class="video-providers-section">
+                            <!-- Content will be populated by loadVideoProviders() -->
+                        </div>
+
+                        <!-- Meeting Room AI Features Section -->
+                        <div id="meetingRoomFeaturesSection">
+                            <!-- Content will be populated by loadMeetingRoomFeatures() -->
+                        </div>
+
+                        <!-- Active Meeting Sessions -->
+                        <div id="activeMeetingsSection" class="active-meetings-section">
+                            <h3><i class="fas fa-users-circle"></i> Recent Meetings</h3>
+                            <div id="meetingSessionsList" class="meetings-list">
+                                <p class="empty-state">No recent meetings. Start your first meeting now!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Insights View -->
+                <div id="ai-insights" class="view">
+                    <div class="ai-header">
+                        <h3>AI-Powered Sales Insights</h3>
+                        <button onclick="generateAIInsights()" class="btn btn-primary">
+                            <i class="fas fa-magic"></i> Generate Insights
+                        </button>
+                    </div>
+                    <div id="aiInsightsContainer" class="ai-insights">
+                        <div class="ai-card">
+                            <div class="ai-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h4>AI Analysis Ready</h4>
+                            <p>Click "Generate Insights" to get AI-powered analysis for your sales opportunities and customer interactions.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="grievance" class="view">
+                    <div class="view-header">
+                        <h3>Grievance & Support</h3>
+                        <button type="button" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> New Grievance
+                        </button>
+                    </div>
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon orange-bg">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>4</h3>
+                                <p>Open Grievances</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon blue-bg">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>11</h3>
+                                <p>Resolved Cases</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon aqua-bg">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>18</h3>
+                                <p>Conversations Logged</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange-bg">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>2</h3>
+                                <p>Escalations</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon aqua-bg"><i class="fas fa-envelope-open-text"></i></div>
+                            <div class="activity-content">
+                                <div class="activity-title">#GRV-2026-0012</div>
+                                <div class="activity-time">Product delivery complaint · Open</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon blue-bg"><i class="fas fa-check"></i></div>
+                            <div class="activity-content">
+                                <div class="activity-title">#GRV-2026-0009</div>
+                                <div class="activity-time">Billing dispute · Resolved</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon orange-bg"><i class="fas fa-comments"></i></div>
+                            <div class="activity-content">
+                                <div class="activity-title">#GRV-2026-0015</div>
+                                <div class="activity-time">Service delay escalation · In progress</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Client Modal -->
+    <div id="addClientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Client</h2>
+                <button class="close-btn" onclick="closeModal('addClientModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAddClient(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client Name *</label>
+                        <input type="text" id="clientName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" id="clientEmail" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Contact Number *</label>
+                        <input type="tel" id="clientPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Alternative Contact</label>
+                        <input type="tel" id="clientAltPhone">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Address *</label>
+                        <input type="text" id="clientAddress" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Official Address (if different)</label>
+                        <input type="text" id="clientOfficialAddress">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Business Type *</label>
+                        <select id="clientBusinessType" required>
+                            <option value="">Select...</option>
+                            <option value="b2b">B2B</option>
+                            <option value="b2c">B2C</option>
+                            <option value="startup">Startup</option>
+                            <option value="enterprise">Enterprise</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Industry Type *</label>
+                        <select id="clientIndustry" required>
+                            <option value="">Select...</option>
+                            <option value="technology">Technology</option>
+                            <option value="finance">Finance</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="retail">Retail</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Line of Business (LOB)</label>
+                        <input type="text" id="clientLOB" placeholder="Primary business focus">
+                    </div>
+                    <div class="form-group">
+                        <label>Social Security Number (if applicable)</label>
+                        <input type="password" id="clientSSN" placeholder="Protected field">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Spouse Name</label>
+                        <input type="text" id="clientSpouseName" placeholder="Enter spouse name">
+                    </div>
+                    <div class="form-group">
+                        <label>Children Names</label>
+                        <input type="text" id="clientChildrenNames" placeholder="Enter children names (comma separated)">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Beneficiaries</label>
+                        <textarea id="clientBeneficiaries" placeholder="List beneficiaries and their details"></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Insurance Details</label>
+                        <textarea id="clientInsuranceDetails" placeholder="Insurance policy numbers, coverage details, etc."></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Upload Document</label>
+                        <input type="file" id="clientDocument" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.jpg,.jpeg,.png,.gif">
+                        <small>Accepted formats: PDF, Word, Text, Excel, Image (JPG, PNG, GIF)</small>
+                    </div>
+                </div>
+                <div class="form-divider"><h4>Investment & Office Information</h4></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Investment Account 1</label>
+                        <input type="text" id="clientInvestmentAccount1" placeholder="Account name/number">
+                    </div>
+                    <div class="form-group">
+                        <label>Investment Account 2</label>
+                        <input type="text" id="clientInvestmentAccount2" placeholder="Account name/number">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Office Address 1</label>
+                        <textarea id="clientOfficeAddress1" placeholder="Enter office address 1"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Office Address 2</label>
+                        <textarea id="clientOfficeAddress2" placeholder="Enter office address 2"></textarea>
+                    </div>
+                </div>
+                <div class="form-divider"><h4>Professional Contacts</h4></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Accountant 1 Name</label>
+                        <input type="text" id="clientAccountant1Name" placeholder="Accountant name">
+                    </div>
+                    <div class="form-group">
+                        <label>Accountant 1 Contact</label>
+                        <input type="text" id="clientAccountant1Contact" placeholder="Phone/Email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Accountant 2 Name</label>
+                        <input type="text" id="clientAccountant2Name" placeholder="Accountant name">
+                    </div>
+                    <div class="form-group">
+                        <label>Accountant 2 Contact</label>
+                        <input type="text" id="clientAccountant2Contact" placeholder="Phone/Email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Attorney 1 Name</label>
+                        <input type="text" id="clientAttorney1Name" placeholder="Attorney name">
+                    </div>
+                    <div class="form-group">
+                        <label>Attorney 1 Contact</label>
+                        <input type="text" id="clientAttorney1Contact" placeholder="Phone/Email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Attorney 2 Name</label>
+                        <input type="text" id="clientAttorney2Name" placeholder="Attorney name">
+                    </div>
+                    <div class="form-group">
+                        <label>Attorney 2 Contact</label>
+                        <input type="text" id="clientAttorney2Contact" placeholder="Phone/Email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Personal Details</label>
+                        <textarea id="clientDetails" placeholder="Additional information"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addClientModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Lead Modal -->
+    <div id="addLeadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Lead</h2>
+                <button class="close-btn" onclick="closeModal('addLeadModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAddLead(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Lead Name *</label>
+                        <input type="text" id="leadName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="leadEmail" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Phone *</label>
+                        <input type="tel" id="leadPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Company</label>
+                        <input type="text" id="leadCompany">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Lead Status *</label>
+                        <select id="leadStatus" required>
+                            <option value="">Select status</option>
+                            <option value="new">New</option>
+                            <option value="qualified">Qualified</option>
+                            <option value="interested">Interested</option>
+                            <option value="negotiating">Negotiating</option>
+                            <option value="converted">Converted to Client</option>
+                            <option value="lost">Lost</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Lead Source</label>
+                        <input type="text" id="leadSource" placeholder="Website, Referral, etc.">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="leadNotes" placeholder="Additional notes"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addLeadModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Communication Modal -->
+    <div id="addCommunicationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Log Communication</h2>
+                <button class="close-btn" onclick="closeModal('addCommunicationModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAddCommunication(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client/Lead *</label>
+                        <select id="commContact" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Communication Type *</label>
+                        <select id="commType" required>
+                            <option value="">Select type</option>
+                            <option value="email">Email</option>
+                            <option value="call">Phone Call</option>
+                            <option value="meeting">Meeting</option>
+                            <option value="message">Message</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date & Time *</label>
+                        <input type="datetime-local" id="commDateTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Duration (minutes)</label>
+                        <input type="number" id="commDuration" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Communicated With *</label>
+                        <input type="text" id="commWith" placeholder="Name of person communicated with" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Notes *</label>
+                        <textarea id="commNotes" required placeholder="Communication summary"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addCommunicationModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Log Communication</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Client Detail View Modal -->
+    <div id="clientDetailModal" class="modal">
+        <div class="modal-content client-detail-content">
+            <div class="modal-header">
+                <div>
+                    <h2 id="detailClientName">Client Name</h2>
+                    <p id="detailClientID" style="color: var(--text-light); margin: 0;">ID: </p>
+                </div>
+                <button class="close-btn" onclick="closeModal('clientDetailModal')">&times;</button>
+            </div>
+            <div class="client-detail-container">
+                <div class="detail-tabs">
+                    <button class="tab-btn active" onclick="switchDetailTab('overview')">Overview</button>
+                    <button class="tab-btn" onclick="switchDetailTab('planning')">Financial Planning</button>
+                    <button class="tab-btn" onclick="switchDetailTab('assets')">Net Worth</button>
+                    <button class="tab-btn" onclick="switchDetailTab('payments')">Payments</button>
+                    <button class="tab-btn" onclick="switchDetailTab('documents')">Documents</button>
+                    <button class="tab-btn" onclick="switchDetailTab('edit')">Edit</button>
+                </div>
+
+                <!-- Overview Tab -->
+                <div id="overview-tab" class="detail-tab-content active">
+                    <div class="detail-section">
+                        <h3>Personal Information</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Email</label>
+                                <p id="d-email"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Phone</label>
+                                <p id="d-phone"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Spouse Name</label>
+                                <p id="d-spouse"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Children</label>
+                                <p id="d-children"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Business Information</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Business Type</label>
+                                <p id="d-businessType"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Industry</label>
+                                <p id="d-industry"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Line of Business</label>
+                                <p id="d-lob"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Address</label>
+                                <p id="d-address"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Professional Contacts</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Accountant 1</label>
+                                <p id="d-accountant1"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Attorney 1</label>
+                                <p id="d-attorney1"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Accountant 2</label>
+                                <p id="d-accountant2"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Attorney 2</label>
+                                <p id="d-attorney2"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Planning Tab -->
+                <div id="planning-tab" class="detail-tab-content">
+                    <div class="detail-section">
+                        <h3>Retirement Goals</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field full-width">
+                                <p id="d-retirementGoals"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>College Funding</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field full-width">
+                                <p id="d-collegeFunding"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Estate Planning</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field full-width">
+                                <p id="d-estatePlanning"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Wealth Accumulation</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field full-width">
+                                <p id="d-wealthAccumulation"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Major Life Events</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field full-width">
+                                <p id="d-majorLifeEvents"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Net Worth Tab -->
+                <div id="assets-tab" class="detail-tab-content">
+                    <div class="detail-section">
+                        <h3>Asset Overview</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Total Assets Under Management</label>
+                                <p id="d-totalAUM" class="amount"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Cash Holdings</label>
+                                <p id="d-cashHoldings" class="amount"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Account Balances</label>
+                                <p id="d-accountBalances" class="amount"></p>
+                            </div>
+                            <div class="detail-field">
+                                <label>Investment Accounts</label>
+                                <p id="d-investmentAccounts" class="amount"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Liabilities & Net Worth</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Total Liabilities</label>
+                                <p id="d-totalLiabilities" class="amount"></p>
+                            </div>
+                            <div class="detail-field highlight">
+                                <label>Net Worth</label>
+                                <p id="d-netWorth" class="amount net-worth"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments Tab -->
+                <div id="payments-tab" class="detail-tab-content">
+                    <div class="detail-section">
+                        <h3><i class="fas fa-clock"></i> Pending Payments</h3>
+                        <div id="d-pendingPayments" class="payment-container">
+                            <p>No pending payments</p>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3><i class="fas fa-history"></i> Payment History</h3>
+                        <div id="d-paymentHistory" class="payment-container">
+                            <p>No payment history</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents Tab -->
+                <div id="documents-tab" class="detail-tab-content">
+                    <div class="detail-section">
+                        <h3><i class="fas fa-file-upload"></i> Uploaded Documents</h3>
+                        <div id="d-documents" class="documents-container">
+                            <p style="color: var(--text-light);">No documents uploaded</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Tab -->
+                <div id="edit-tab" class="detail-tab-content">
+                    <div class="detail-section">
+                        <h3>Financial Planning Details</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Retirement Goals</label>
+                                <textarea id="edit-retirementGoals" placeholder="Enter retirement goals"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>College Funding</label>
+                                <textarea id="edit-collegeFunding" placeholder="Enter college funding details"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Estate Planning</label>
+                                <textarea id="edit-estatePlanning" placeholder="Enter estate planning details"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Wealth Accumulation</label>
+                                <textarea id="edit-wealthAccumulation" placeholder="Enter wealth accumulation strategy"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Major Life Events</label>
+                                <textarea id="edit-majorLifeEvents" placeholder="Enter major life events (date time format)"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Net Worth Details</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Total Assets Under Management ($)</label>
+                                <input type="number" id="edit-totalAUM" placeholder="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Account Balances ($)</label>
+                                <input type="number" id="edit-accountBalances" placeholder="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Cash Holdings ($)</label>
+                                <input type="number" id="edit-cashHoldings" placeholder="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Investment Accounts ($)</label>
+                                <input type="number" id="edit-investmentAccounts" placeholder="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Total Liabilities ($)</label>
+                                <input type="number" id="edit-totalLiabilities" placeholder="0" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('clientDetailModal')">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="saveClientDetails()">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Settings Modal -->
+    <div id="complianceSettingsModal" class="modal">
+        <div class="modal-content sync-modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> Compliance Configuration</h2>
+                <button class="close-btn" onclick="closeModal('complianceSettingsModal')">&times;</button>
+            </div>
+            <form onsubmit="handleComplianceConfiguration(event)">
+                <div class="sync-instructions">
+                    <h3>Configure Your Advisory Firm</h3>
+                    <p>Select your firm's primary location and any offshore operations to identify all applicable regulatory standards.</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Primary Firm Location (Country) *</label>
+                        <select id="complianceCountry" required onchange="updateRegionFromCountry()">
+                            <option value="">Select your firm's primary location...</option>
+                            <optgroup label="AMERICAS">
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="MX">Mexico</option>
+                                <option value="BR">Brazil</option>
+                                <option value="CL">Chile</option>
+                                <option value="CO">Colombia</option>
+                                <option value="AR">Argentina</option>
+                                <option value="PE">Peru</option>
+                            </optgroup>
+                            <optgroup label="EMEA">
+                                <option value="UK">United Kingdom</option>
+                                <option value="DE">Germany</option>
+                                <option value="FR">France</option>
+                                <option value="IT">Italy</option>
+                                <option value="ES">Spain</option>
+                                <option value="NL">Netherlands</option>
+                                <option value="CH">Switzerland</option>
+                                <option value="SE">Sweden</option>
+                                <option value="IE">Ireland</option>
+                                <option value="LU">Luxembourg</option>
+                                <option value="UAE">United Arab Emirates</option>
+                                <option value="SA">Saudi Arabia</option>
+                                <option value="KW">Kuwait</option>
+                                <option value="ZA">South Africa</option>
+                            </optgroup>
+                            <optgroup label="APAC">
+                                <option value="HK">Hong Kong</option>
+                                <option value="SG">Singapore</option>
+                                <option value="JP">Japan</option>
+                                <option value="KR">South Korea</option>
+                                <option value="IN">India</option>
+                                <option value="MY">Malaysia</option>
+                                <option value="ID">Indonesia</option>
+                                <option value="TH">Thailand</option>
+                                <option value="PH">Philippines</option>
+                                <option value="VN">Vietnam</option>
+                                <option value="TW">Taiwan</option>
+                            </optgroup>
+                            <optgroup label="AUSTRALIA/NEW ZEALAND">
+                                <option value="AU">Australia</option>
+                                <option value="NZ">New Zealand</option>
+                                <option value="FJ">Fiji</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Offshore Operations</label>
+                        <p style="font-size: 0.9rem; color: var(--text-light); margin: 0.5rem 0 1rem 0;">
+                            Select any other jurisdictions where your firm operates
+                        </p>
+                        <div id="offshoreOptions" class="offshore-checkboxes">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="complianceAUM" checked>
+                            Subject to Assets Under Management (AUM) Regulation
+                        </label>
+                        <label>
+                            <input type="checkbox" id="complianceRIA" checked>
+                            Registered Investment Advisor (RIA)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="complianceBroker">
+                            Broker-Dealer Status
+                        </label>
+                        <label>
+                            <input type="checkbox" id="complianceCrossBoard">
+                            Cross-Border Advisory Services
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('complianceSettingsModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Configuration
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Third-Party Integrations Modal -->
+    <div id="addIntegrationModal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh;">
+            <div class="modal-header">
+                <h2><i class="fas fa-plug"></i> Available Integrations</h2>
+                <button class="close-btn" onclick="closeModal('addIntegrationModal')">&times;</button>
+            </div>
+            <div id="integrationModal">
+                <p style="text-align: center; padding: 2rem; color: var(--text-light);">Loading available integrations...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Sync Modal -->
+    <div id="emailSyncModal" class="modal">
+        <div class="modal-content sync-modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-envelope"></i> Email Sync Settings</h2>
+                <button class="close-btn" onclick="closeModal('emailSyncModal')">&times;</button>
+            </div>
+            <form onsubmit="handleEmailSync(event)">
+                <div class="sync-instructions">
+                    <h3>Connect Your Email Provider</h3>
+                    <p>Synchronize your emails from popular email platforms to manage all communications in one place.</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email Provider *</label>
+                        <select id="emailProvider" required onchange="updateEmailProviderInfo()">
+                            <option value="">Select an email provider...</option>
+                            <option value="mailchimp">MailChimp</option>
+                            <option value="gmail">Gmail</option>
+                            <option value="outlook">Outlook</option>
+                            <option value="yahoo">Yahoo Mail</option>
+                            <option value="thunderbird">Thunderbird</option>
+                            <option value="other">Other (SMTP)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="emailProviderInfo" class="provider-info">
+                    <!-- Info will be displayed based on selected provider -->
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" id="emailAddress" required placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password/API Key *</label>
+                        <input type="password" id="emailPassword" required placeholder="Enter password or API key">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="emailSync6months" checked>
+                            Sync emails from last 6 months
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('emailSyncModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sync"></i> Sync Email
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Calendar Sync Modal -->
+    <div id="calendarSyncModal" class="modal">
+        <div class="modal-content sync-modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-calendar-alt"></i> Calendar Sync Settings</h2>
+                <button class="close-btn" onclick="closeModal('calendarSyncModal')">&times;</button>
+            </div>
+            <form onsubmit="handleCalendarSync(event)">
+                <div class="sync-instructions">
+                    <h3>Connect Your Calendar Provider</h3>
+                    <p>Synchronize your scheduled meetings and events from popular scheduling platforms.</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Calendar Provider *</label>
+                        <select id="calendarProvider" required onchange="updateCalendarProviderInfo()">
+                            <option value="">Select a calendar provider...</option>
+                            <option value="calendly">Calendly</option>
+                            <option value="google">Google Calendar</option>
+                            <option value="outlook">Outlook Calendar</option>
+                            <option value="apple">Apple Calendar</option>
+                            <option value="zoom">Zoom</option>
+                            <option value="other">Other (iCal)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="calendarProviderInfo" class="provider-info">
+                    <!-- Info will be displayed based on selected provider -->
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Account Email *</label>
+                        <input type="email" id="calendarEmail" required placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password/API Key *</label>
+                        <input type="password" id="calendarPassword" required placeholder="Enter password or API key">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="calendarSync3months" checked>
+                            Sync events from last 3 months
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="calendarSyncFuture" checked>
+                            Include future events
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('calendarSyncModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sync"></i> Sync Calendar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Start Meeting Modal -->
+    <div id="startMeetingModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-video"></i> Start Meeting</h2>
+                <button class="close-btn" onclick="closeModal('startMeetingModal')">&times;</button>
+            </div>
+            <form onsubmit="handleStartMeeting(event)">
+                <div class="form-group">
+                    <label>Meeting Title *</label>
+                    <input type="text" id="meetingTitle" required placeholder="e.g., Q4 Financial Review with John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label>Video Provider *</label>
+                    <select id="meetingProvider" required>
+                        <option value="">Select video provider...</option>
+                        <option value="zoom">Zoom</option>
+                        <option value="google-meet">Google Meet</option>
+                        <option value="microsoft-teams">Microsoft Teams</option>
+                        <option value="webex">Cisco Webex</option>
+                        <option value="jitsi">Jitsi Meet</option>
+                        <option value="whereby">Whereby</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client Name *</label>
+                        <input type="text" id="clientName" required placeholder="Client name">
+                    </div>
+                    <div class="form-group">
+                        <label>Client Email</label>
+                        <input type="email" id="clientEmail" placeholder="client@example.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Meeting Agenda</label>
+                    <textarea id="meetingAgenda" placeholder="Briefly describe meeting topics..." rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="recordMeeting" checked>
+                        <span>Record meeting (ROCKET AI+ for auto-minutes and analysis)</span>
+                    </label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('startMeetingModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start Meeting
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Document Viewer Modal -->
+    <div id="docViewerModal" class="doc-viewer-modal">
+        <div class="doc-viewer-content">
+            <div class="doc-viewer-header">
+                <h3 id="docViewerTitle">Document Viewer</h3>
+                <button class="doc-viewer-close" onclick="closeDocViewer()">&times;</button>
+            </div>
+            <div class="doc-viewer-body" id="docViewerBody">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+            <div class="doc-viewer-actions">
+                <button class="btn btn-primary" id="docDownloadBtn" onclick="downloadCurrentDoc()">
+                    <i class="fas fa-download"></i> Download
+                </button>
+                <button class="btn btn-secondary" onclick="closeDocViewer()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/clients.js"></script>
+    <script src="js/leads.js"></script>
+    <script src="js/communications.js"></script>
+    <script src="js/workflow.js"></script>
+    <script src="js/ai-insights.js"></script>
+    <script src="js/upload.js"></script>
+    <script src="js/sync.js"></script>
+    <script src="js/compliance.js"></script>
+    <script src="js/meeting-room.js"></script>
+    <script src="js/utils.js"></script>
+</body>
+</html>

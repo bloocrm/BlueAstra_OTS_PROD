@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedCRM - Renew or Upgrade Subscription</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root{
+    --primary:#ff1e1e;
+    --primary-dark:#d90000;
+    --light:#fff5f5;
+    --dark:#222;
+    --white:#ffffff;
+    --text:#555;
+}
+
+body{
+    background:var(--light);
+    color:var(--dark);
+}
+
+/* Header */
+
+header{
+    background:var(--white);
+    padding:20px 8%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.logo{
+    font-size:32px;
+    font-weight:700;
+    color:var(--primary);
+}
+
+nav ul{
+    display:flex;
+    list-style:none;
+    gap:30px;
+}
+
+nav a{
+    text-decoration:none;
+    color:var(--dark);
+    font-weight:600;
+}
+
+.btn{
+    background:var(--primary);
+    color:white;
+    padding:12px 28px;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:600;
+    transition:.3s;
+    border:none;
+    cursor:pointer;
+    display:inline-block;
+}
+
+.btn:hover{
+    background:var(--primary-dark);
+}
+
+/* Hero */
+
+.hero{
+    text-align:center;
+    padding:60px 8%;
+    background:white;
+}
+
+.hero h1{
+    font-size:52px;
+    margin-bottom:15px;
+}
+
+.hero p{
+    color:#666;
+    font-size:18px;
+}
+
+/* Subscription Summary */
+
+.summary{
+    max-width:1000px;
+    margin:40px auto;
+    background:white;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+}
+
+.info-box{
+    background:#fff5f5;
+    padding:20px;
+    border-radius:12px;
+}
+
+.info-box h3{
+    color:var(--primary);
+    margin-bottom:10px;
+}
+
+/* Plans */
+
+.container{
+    width:90%;
+    max-width:1200px;
+    margin:40px auto;
+}
+
+.section-title{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.section-title h2{
+    color:var(--primary);
+    font-size:40px;
+}
+
+.plan-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:25px;
+}
+
+.plan{
+    background:white;
+    border-radius:15px;
+    padding:30px;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    border:3px solid transparent;
+    transition:.3s;
+}
+
+.plan:hover{
+    border-color:var(--primary);
+    transform:translateY(-5px);
+}
+
+.plan h3{
+    color:var(--primary);
+    font-size:30px;
+}
+
+.price{
+    font-size:42px;
+    font-weight:bold;
+    margin:20px 0;
+}
+
+.plan ul{
+    list-style:none;
+    margin:20px 0;
+}
+
+.plan li{
+    padding:8px 0;
+}
+
+/* Renewal Form */
+
+.renew-box{
+    background:white;
+    max-width:900px;
+    margin:50px auto;
+    padding:35px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.renew-box h2{
+    color:var(--primary);
+    margin-bottom:25px;
+}
+
+.form-group{
+    margin-bottom:18px;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:600;
+}
+
+input, select{
+    width:100%;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:8px;
+}
+
+.action-buttons{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-top:20px;
+}
+
+footer{
+    margin-top:50px;
+    background:#111;
+    color:white;
+    text-align:center;
+    padding:25px;
+}
+
+@media(max-width:900px){
+
+nav{
+    display:none;
+}
+
+.hero h1{
+    font-size:38px;
+}
+
+.action-buttons{
+    flex-direction:column;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+    <div class="logo">RedCRM</div>
+    <nav>
+        <ul>
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="Features.html">Features</a></li>
+            <li><a href="Enroll.html">Enroll</a></li>
+            <li><a href="CusomerSupport.html">Customer Support</a></li>
+        </ul>
+    </nav>
+      <div style="display:flex; gap:12px; align-items:center;">
+    <a href="login.html" class="btn btn-login">Login</a>
+      <a href="Renew.html" class="btn btn-login">Renew/ Upgrade</a> 
+    <a href="Features.html" class="btn">Start Free</a> </div>
+</header>
+
+<section class="hero">
+
+
+<h1>Renew or Upgrade Your CRM Subscription</h1>
+
+<p>
+    Continue growing your business with uninterrupted
+    access to RedCRM's powerful sales and customer tools.
+</p>
+
+
+</section>
+
+<div class="summary">
+
+
+<div class="summary-grid">
+
+    <div class="info-box">
+        <h3>Current Plan</h3>
+        <p>SWIFT</p>
+    </div>
+
+    <div class="info-box">
+        <h3>Expiration Date</h3>
+        <p>31 December 2026</p>
+    </div>
+
+    <div class="info-box">
+        <h3>Users</h3>
+        <p>25 Active Users</p>
+    </div>
+
+    <div class="info-box">
+        <h3>Status</h3>
+        <p>Active</p>
+    </div>
+
+</div>
+
+
+</div>
+
+<div class="container">
+
+
+<div class="section-title">
+    <h2>Available Plans</h2>
+</div>
+
+<div class="plan-grid">
+
+    <div class="plan">
+
+        <h3>BASIC</h3>
+
+        <div class="price">$199</div>
+
+        <p>Per Year</p>
+
+        <ul>
+            <li>✓ Contact Management</li>
+            <li>✓ Lead Tracking</li>
+            <li>✓ Email Support</li>
+            <li>✓ 5 Users</li>
+        </ul>
+
+    </div>
+
+    <div class="plan">
+
+        <h3>SWIFT</h3>
+
+        <div class="price">$499</div>
+
+        <p>Per Year</p>
+
+        <ul>
+            <li>✓ Sales Automation</li>
+            <li>✓ Reporting</li>
+            <li>✓ Workflows</li>
+            <li>✓ 25 Users</li>
+        </ul>
+
+    </div>
+
+    <div class="plan">
+
+        <h3>ROCKET</h3>
+
+        <div class="price">$999</div>
+
+        <p>Per Year</p>
+
+        <ul>
+            <li>✓ AI Insights</li>
+            <li>✓ Unlimited Users</li>
+            <li>✓ Premium Support</li>
+            <li>✓ Enterprise Features</li>
+        </ul>
+
+    </div>
+
+</div>
+
+
+</div>
+
+<div class="renew-box">
+
+
+<h2>Renewal / Upgrade Request</h2>
+
+<form>
+
+    <div class="form-group">
+
+        <label>Customer Name</label>
+
+        <input type="text"
+               placeholder="Enter your name">
+
+    </div>
+
+    <div class="form-group">
+
+        <label>Registered Email</label>
+
+        <input type="email"
+               placeholder="Enter your email">
+
+    </div>
+
+    <div class="form-group">
+
+        <label>Select Action</label>
+
+        <select>
+
+            <option>Renew Current Plan</option>
+            <option>Upgrade Plan</option>
+
+        </select>
+
+    </div>
+
+    <div class="form-group">
+
+        <label>Select Plan</label>
+
+        <select>
+
+            <option>BASIC</option>
+            <option>SWIFT</option>
+            <option>ROCKET</option>
+
+        </select>
+
+    </div>
+
+    <div class="form-group">
+
+        <label>Subscription Term</label>
+
+        <select>
+
+            <option>1 Year</option>
+            <option>2 Years</option>
+            <option>3 Years</option>
+
+        </select>
+
+    </div>
+
+    <div class="action-buttons">
+
+        <button type="button"
+                class="btn"
+                onclick="goToPayment()">
+
+            Proceed To Payment
+
+        </button>
+
+        <button type="reset"
+                class="btn">
+
+            Reset Form
+
+        </button>
+
+    </div>
+
+</form>
+
+
+</div>
+
+<footer>
+    © 2026 RedCRM Renewal Center
+</footer>
+
+<script>
+
+function goToPayment(){
+
+    window.location.href = "Payment.html";
+
+}
+
+</script>
+
+</body>
+</html>

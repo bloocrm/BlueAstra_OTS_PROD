@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedCRM Features</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root{
+    --primary:#ff1e1e;
+    --primary-dark:#d90000;
+    --light:#fff5f5;
+    --dark:#222;
+    --white:#ffffff;
+    --text:#555;
+}
+
+body{
+    background:var(--light);
+    color:var(--dark);
+}
+
+/* Header */
+
+header{
+    background:var(--white);
+    padding:20px 8%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.logo{
+    font-size:32px;
+    font-weight:700;
+    color:var(--primary);
+}
+
+nav ul{
+    display:flex;
+    list-style:none;
+    gap:30px;
+}
+
+nav a{
+    text-decoration:none;
+    color:var(--dark);
+    font-weight:600;
+}
+
+.btn{
+    background:var(--primary);
+    color:white;
+    padding:12px 28px;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:600;
+    transition:.3s;
+    border:none;
+    cursor:pointer;
+    display:inline-block;
+}
+
+.btn:hover{
+    background:var(--primary-dark);
+}
+
+.hero{
+    text-align:center;
+    background:white;
+    padding:70px 8%;
+}
+
+.hero h1{
+    font-size:56px;
+    margin-bottom:15px;
+}
+
+.hero p{
+    color:#666;
+    max-width:800px;
+    margin:auto;
+    font-size:18px;
+    line-height:1.8;
+}
+
+.container{
+    width:90%;
+    max-width:1400px;
+    margin:60px auto;
+}
+
+.section-title{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+.section-title h2{
+    color:var(--primary);
+    font-size:42px;
+}
+
+/* Feature Cards */
+
+.feature-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+    gap:30px;
+}
+
+.feature-card{
+    background:white;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.feature-card:hover{
+    transform:translateY(-8px);
+}
+
+.card-header{
+    background:var(--primary);
+    color:white;
+    text-align:center;
+    padding:25px;
+}
+
+.card-header h3{
+    font-size:32px;
+}
+
+.card-body{
+    padding:30px;
+}
+
+.card-body ul{
+    list-style:none;
+}
+
+.card-body li{
+    padding:12px 0;
+    border-bottom:1px solid #f1f1f1;
+    line-height:1.5;
+}
+
+.card-body li:last-child{
+    border-bottom:none;
+}
+
+.highlight{
+    color:var(--primary);
+    font-weight:bold;
+}
+
+/* CTA */
+
+.cta{
+    background:white;
+    margin-top:60px;
+    padding:50px;
+    text-align:center;
+    border-radius:18px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.cta h2{
+    color:var(--primary);
+    margin-bottom:15px;
+}
+
+footer{
+    background:#111;
+    color:white;
+    text-align:center;
+    padding:25px;
+    margin-top:50px;
+}
+
+@media(max-width:900px){
+
+nav{
+    display:none;
+}
+
+.hero h1{
+    font-size:40px;
+}
+
+}
+
+</style>
+
+</head>
+<body>
+
+<header>
+    <div class="logo">RedCRM</div>
+    <nav>
+        <ul>
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="Features.html">Features</a></li>
+            <li><a href="Enroll.html">Enroll</a></li>
+            <li><a href="CusomerSupport.html">Customer Support</a></li>
+        </ul>
+    </nav>
+    <div style="display:flex; gap:12px; align-items:center;">
+    <a href="login.html" class="btn btn-login">Login</a>
+      <a href="Renew.html" class="btn btn-login">Renew/ Upgrade</a> 
+    <a href="Features.html" class="btn">Start Free</a> </div>
+</header>
+
+<section class="hero">
+
+
+<h1>CRM Plans Designed For Every Stage Of Growth</h1>
+
+<p>
+    From basic customer relationship management to
+    advanced AI-powered customer retention and lead
+    generation, RedCRM provides the tools your business
+    needs to scale effectively.
+</p>
+
+
+</section>
+
+<div class="container">
+
+
+<div class="section-title">
+    <h2>Compare Plans</h2>
+</div>
+
+<div class="feature-grid">
+
+    <!-- BASIC -->
+
+    <div class="feature-card">
+
+        <div class="card-header">
+            <h3>BASIC CRM</h3>
+        </div>
+
+        <div class="card-body">
+
+            <ul>
+
+                <li>✓ Customer & Client Database</li>
+
+                <li>✓ Contact Information Management</li>
+
+                <li>✓ Customer Profiles & Account History</li>
+
+                <li>✓ Previous Conversations & Notes</li>
+
+                <li>✓ Payment Method Tracking</li>
+
+                <li>✓ Investment & Product Records</li>
+
+                <li>✓ Purchase History Management</li>
+
+                <li>✓ Activity Tracking & Follow-Ups</li>
+
+                <li>✓ Identity & Verification Information Storage</li>
+
+                <li>✓ Customer Document Repository</li>
+
+                <li>✓ Manual Reminder Scheduling</li>
+
+                <li>✓ Reporting Dashboard</li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+    <!-- SWIFT -->
+
+    <div class="feature-card">
+
+        <div class="card-header">
+            <h3>SWIFT AI</h3>
+        </div>
+
+        <div class="card-body">
+
+            <ul>
+
+                <li>✓ Everything in BASIC CRM</li>
+
+                <li>✓ AI Message Generation</li>
+
+                <li>✓ Personalized Email Drafting</li>
+
+                <li>✓ AI-Powered Customer Follow-Up Suggestions</li>
+
+                <li>✓ Automated Workflow Builder</li>
+
+                <li>✓ Payment Reminder Automation</li>
+
+                <li>✓ Renewal Reminder Automation</li>
+
+                <li>✓ Lead Nurturing Workflows</li>
+
+                <li>✓ Automated SMS & Email Triggers</li>
+
+                <li>✓ AI Customer Segmentation</li>
+
+                <li>✓ Smart Task Assignment</li>
+
+                <li>✓ Engagement Analytics</li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+    <!-- ROCKET -->
+
+    <div class="feature-card">
+
+        <div class="card-header">
+            <h3>ROCKET AI+</h3>
+        </div>
+
+        <div class="card-body">
+
+            <ul>
+
+                <li>✓ Everything in SWIFT AI</li>
+
+                <li>✓ Predictive Lead Generation</li>
+
+                <li>✓ AI Prospect Identification</li>
+
+                <li>✓ Customer Retention Intelligence</li>
+
+                <li>✓ Retention Risk Scoring</li>
+
+                <li>✓ Revenue Growth Recommendations</li>
+
+                <li>✓ Occasion-Based Communication Templates</li>
+
+                <li>✓ Birthday & Anniversary Outreach Campaigns</li>
+
+                <li>✓ Strategic Retention Playbooks</li>
+
+                <li>✓ Churn Prediction Analytics</li>
+
+                <li>✓ Relationship Strength Monitoring</li>
+
+                <li>✓ AI Recommendations For Cross-Selling & Upselling</li>
+
+                <li>✓ Advanced Executive Dashboards</li>
+
+                <li>✓ Customer Lifetime Value Analysis</li>
+
+                <li>✓ Enterprise Growth Strategy Insights</li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="cta">
+
+    <h2>Ready To Transform Customer Relationships?</h2>
+
+    <p>
+        Select the plan that best matches your business goals
+        and begin building stronger customer engagement today.
+    </p>
+
+    <a href="Enroll.html" class="btn" style="margin-top:20px;">
+        Start Your Free Trial
+    </a>
+
+</div>
+
+
+</div>
+
+<footer>
+    © 2026 RedCRM Features & Solutions
+</footer>
+
+</body>
+</html>
