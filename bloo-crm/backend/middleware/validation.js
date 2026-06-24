@@ -15,7 +15,7 @@ const validators = {
   // Client validators
   client: {
     create: [
-      body('name').notEmpty().trim().escape().withMessage('Name is required'),
+      body('name').optional().isString().withMessage('Name must be a string').trim().escape(),
       body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
       body('phone').isMobilePhone().withMessage('Valid phone number is required'),
       body('company').optional().trim().escape(),
@@ -32,7 +32,7 @@ const validators = {
       body('attorneys').optional().isArray().withMessage('Attorneys must be an array')
     ],
     update: [
-      body('name').optional().trim().escape().withMessage('Name must be a string'),
+      body('subject').optional().isString().withMessage('Subject must be a string').trim().escape(),
       body('email').optional().isEmail().normalizeEmail().withMessage('Valid email is required'),
       body('phone').optional().isMobilePhone().withMessage('Valid phone number is required'),
       body('company').optional().trim().escape(),
@@ -62,7 +62,7 @@ const validators = {
       body('investmentAmount').optional().isFloat({ min: 0 }).withMessage('Investment amount must be positive')
     ],
     update: [
-      body('name').optional().trim().escape().withMessage('Name must be a string'),
+      body('name').optional().isString().withMessage('Name must be a string').trim().escape(),
       body('email').optional().isEmail().normalizeEmail().withMessage('Valid email is required'),
       body('phone').optional().isMobilePhone().withMessage('Valid phone number is required'),
       body('company').optional().trim().escape(),
@@ -83,8 +83,8 @@ const validators = {
     ],
     update: [
       body('type').optional().isIn(['email', 'phone', 'meeting', 'message']).withMessage('Valid type is required'),
-      body('subject').optional().trim().escape().withMessage('Subject must be a string'),
-      body('content').optional().trim().escape().withMessage('Content must be a string'),
+      body('subject').optional().isString().withMessage('Subject must be a string').trim().escape(),
+      body('content').optional().isString().withMessage('Content must be a string').trim().escape(),
       body('status').optional().isIn(['draft', 'sent', 'scheduled', 'completed']).withMessage('Invalid status')
     ]
   },

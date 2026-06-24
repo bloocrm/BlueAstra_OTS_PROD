@@ -209,8 +209,8 @@ router.post('/initiate', verifyToken, async (req, res) => {
           payment_method: 'paypal'
         },
         redirect_urls: {
-          return_url: `${process.env.FRONTEND_URL || 'http://localhost:5000'}/payment-success?orderId=${orderId}`,
-          cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:5000'}/payment-cancelled?orderId=${orderId}`
+          return_url: `${process.env.FRONTEND_URL || '/api'}/payment-success?orderId=${orderId}`,
+          cancel_url: `${process.env.FRONTEND_URL || '/api'}/payment-cancelled?orderId=${orderId}`
         },
         transactions: [
           {

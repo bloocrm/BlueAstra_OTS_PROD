@@ -67,7 +67,7 @@ npm start
 npm run dev
 ```
 
-Server will start on `http://localhost:5000`
+Server will start on `/api`
 
 ### Step 6: Open Frontend
 
@@ -189,7 +189,7 @@ Edit `frontend/js/config.js` (create if needed):
 
 ```javascript
 const CONFIG = {
-  API_BASE_URL: 'http://localhost:5000/api',
+  const API_BASE_URL = '/api';
   ENABLE_BACKEND: false,
   LOCAL_STORAGE_KEY: 'bloo-crm-data',
   MAX_BACKUP_SIZE: '10MB',
@@ -233,11 +233,11 @@ CORS_ORIGIN=http://localhost:3000
 cd backend
 
 # Test health endpoint
-curl http://localhost:5000/health
+curl /api/health
 
 # Test API endpoints
-curl -X GET http://localhost:5000/api/version
-curl -X POST http://localhost:5000/api/clients \
+curl -X GET /api/version
+curl -X POST /api/clients \
   -H "Content-Type: application/json" \
   -d '{"name":"Test Client","email":"test@example.com"}'
 ```

@@ -1,5 +1,5 @@
 class SecureApiClient {
-  constructor(baseURL = 'http://localhost:5000/api', options = {}) {
+  constructor(baseURL = '/api', options = {}) {
     this.baseURL = baseURL;
     this.token = sessionStorage.getItem('authToken');
     this.refreshToken = sessionStorage.getItem('refreshToken');

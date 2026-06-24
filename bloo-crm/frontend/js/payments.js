@@ -3,7 +3,7 @@
    ===================================================== */
 
 // API Base URL - Update to match your backend server
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
 // Pricing configuration
 const PLANS = {

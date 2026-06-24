@@ -30,11 +30,11 @@ app.use(cors({
     // Allow localhost on any port, and specific production domains
     const allowedOrigins = [
       'http://localhost:3000',
-      'http://localhost:5000',
+      '/api',
       'http://localhost:8000',
       'http://localhost:8080',
       'http://127.0.0.1:3000',
-      'http://127.0.0.1:5000',
+      '/api',
       'http://127.0.0.1:8000',
       'http://127.0.0.1:8080',
       'file://' // Allow file:// protocol for local development
