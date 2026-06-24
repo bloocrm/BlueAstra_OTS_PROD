@@ -1,111 +1,156 @@
 /* =====================================================
-   AUTHENTICATION JAVASCRIPT
+   AUTHENTICATION JAVASCRIPT - SERVER-SIDE CREDENTIALS
    ===================================================== */
+
+// Initialize API client for authentication
+const apiClient = new SecureApiClient('/api');
 
 // Toggle between login and registration forms
 function toggleAuthForms() {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
-    
+
     loginForm.classList.toggle('active');
     registerForm.classList.toggle('active');
 }
 
-// Handle login
-function handleLogin(event) {
+// Handle login - calls backend API
+async function handleLogin(event) {
     event.preventDefault();
-    
+
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
-    
-    // Get stored users
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Find user
-    const user = users.find(u => u.email === email && u.password === password);
-    
-    if (user) {
-        // Store current user session
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        
-        // Show success message and redirect
+
+    try {
+        showNotification('Authenticating...', 'info');
+
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            const errorMessage = data.message || data.error || 'Login failed';
+            showNotification(errorMessage, 'error');
+            return;
+        }
+
+        // Store JWT token using SecureApiClient
+        const token = data.data.token;
+        const refreshToken = data.data.token; // Backend returns single token, use for both
+        const expiresIn = 7 * 24 * 60 * 60; // 7 days in seconds
+
+        apiClient.setToken(token, refreshToken, expiresIn);
+
+        // Store non-sensitive user data
+        const currentUser = {
+            id: data.data.user.id,
+            name: data.data.user.name,
+            email: data.data.user.email,
+            company: data.data.user.company,
+            plan: data.data.user.plan
+        };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
         showNotification('Login successful!', 'success');
         setTimeout(() => {
             showDashboard();
         }, 500);
-    } else {
-        showNotification('Invalid email or password!', 'error');
+    } catch (error) {
+        console.error('Login error:', error);
+        showNotification('Connection error. Please try again.', 'error');
     }
 }
 
-// Handle registration
-function handleRegister(event) {
+// Handle registration - calls backend API
+async function handleRegister(event) {
     event.preventDefault();
-    
+
     const name = document.getElementById('regName').value;
     const email = document.getElementById('regEmail').value;
     const password = document.getElementById('regPassword').value;
     const confirmPassword = document.getElementById('regConfirmPassword').value;
+    const phone = document.getElementById('regPhone').value;
     const company = document.getElementById('regCompany').value;
     const plan = document.getElementById('regPlan').value;
-    
-    // Validate passwords match
+
+    // Client-side validation
     if (password !== confirmPassword) {
         showNotification('Passwords do not match!', 'error');
         return;
     }
-    
-    // Check password length
+
     if (password.length < 8) {
         showNotification('Password must be at least 8 characters!', 'error');
         return;
     }
-    
-    // Get stored users
-    let users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Check if email exists
-    if (users.find(u => u.email === email)) {
-        showNotification('Email already exists!', 'error');
-        return;
+
+    try {
+        showNotification('Creating account...', 'info');
+
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name,
+                email,
+                password,
+                phone,
+                company,
+                plan
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            const errorMessage = data.message || data.error || 'Registration failed';
+            showNotification(errorMessage, 'error');
+            return;
+        }
+
+        // Store JWT token using SecureApiClient
+        const token = data.data.token;
+        const refreshToken = data.data.token; // Backend returns single token, use for both
+        const expiresIn = 7 * 24 * 60 * 60; // 7 days in seconds
+
+        apiClient.setToken(token, refreshToken, expiresIn);
+
+        // Store non-sensitive user data
+        const currentUser = {
+            id: data.data.user.id,
+            name: data.data.user.name,
+            email: data.data.user.email,
+            company: data.data.user.company,
+            plan: data.data.user.plan
+        };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+        showNotification(`Welcome ${name}! Account created successfully!`, 'success');
+        setTimeout(() => {
+            showDashboard();
+        }, 500);
+    } catch (error) {
+        console.error('Registration error:', error);
+        showNotification('Connection error. Please try again.', 'error');
     }
-    
-    // Create new user
-    const newUser = {
-        id: Date.now().toString(),
-        name: name,
-        email: email,
-        password: password, // In production, this should be hashed
-        company: company,
-        plan: plan,
-        createdAt: new Date().toISOString(),
-        clients: [],
-        leads: [],
-        communications: [],
-        payments: []
-    };
-    
-    // Add user and save
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    // Set current user
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
-    
-    showNotification(`Welcome ${name}! Account created successfully!`, 'success');
-    setTimeout(() => {
-        showDashboard();
-    }, 500);
 }
 
 // Show dashboard and hide auth
 function showDashboard() {
     const authContainer = document.getElementById('authContainer');
     const dashboardContainer = document.getElementById('dashboardContainer');
-    
+
     authContainer.style.display = 'none';
     dashboardContainer.style.display = 'flex';
-    
+
     // Load user data
     loadUserData();
 
@@ -116,21 +161,37 @@ function showDashboard() {
     }
 }
 
-// Load user data
+// Load user data from localStorage (non-sensitive data only)
 function loadUserData() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    
+
     if (currentUser.name) {
         document.getElementById('userName').textContent = currentUser.name;
     }
 }
 
 // Handle logout
-function handleLogout() {
-    if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('currentUser');
-        location.reload();
+async function handleLogout() {
+    if (!confirm('Are you sure you want to logout?')) {
+        return;
     }
+
+    try {
+        // Call logout endpoint
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiClient.token}`
+            }
+        });
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+
+    // Clear tokens and user data
+    apiClient.clearAuth();
+    localStorage.removeItem('currentUser');
+    location.reload();
 }
 
 // Show notification
@@ -142,14 +203,14 @@ function showNotification(message, type = 'info') {
         <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
         ${message}
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     // Show notification
     setTimeout(() => {
         notification.classList.add('show');
     }, 10);
-    
+
     // Hide after 4 seconds
     setTimeout(() => {
         notification.classList.remove('show');
@@ -159,15 +220,50 @@ function showNotification(message, type = 'info') {
     }, 4000);
 }
 
-// Check if user is logged in
-window.addEventListener('load', () => {
-    const currentUser = localStorage.getItem('currentUser');
-    
-    if (currentUser) {
-        showDashboard();
-        const initialView = window.location.hash.replace('#', '');
-        if (initialView) {
-            switchView(initialView);
+// Check if user is logged in on page load
+window.addEventListener('load', async () => {
+    // Check if valid JWT token exists
+    const token = sessionStorage.getItem('authToken');
+
+    if (token && !apiClient.isTokenExpired()) {
+        try {
+            // Verify token with server
+            const response = await fetch('/api/auth/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Store user profile data
+                const currentUser = {
+                    id: data.data.id,
+                    name: data.data.name,
+                    email: data.data.email,
+                    company: data.data.company,
+                    plan: data.data.plan
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                // Set up API client with token
+                apiClient.token = token;
+                apiClient.tokenExpiresAt = parseInt(sessionStorage.getItem('tokenExpiresAt')) || 0;
+
+                showDashboard();
+                const initialView = window.location.hash.replace('#', '');
+                if (initialView) {
+                    switchView(initialView);
+                }
+            } else {
+                // Token invalid, clear it
+                apiClient.clearAuth();
+                localStorage.removeItem('currentUser');
+            }
+        } catch (error) {
+            console.error('Token verification error:', error);
+            apiClient.clearAuth();
+            localStorage.removeItem('currentUser');
         }
     }
 });

@@ -364,19 +364,19 @@ function importData(jsonData) {
     try {
         const data = JSON.parse(jsonData);
         const user = getCurrentUser();
-        
-        // Merge data
+
+        // Merge data (exclude sensitive fields like password)
         const mergedUser = {
             ...user,
             ...data,
             id: user.id, // Keep original ID
-            email: user.email,
-            password: user.password
+            email: user.email
+            // NOTE: password is never stored in localStorage - it's handled server-side only
         };
-        
+
         saveCurrentUser(mergedUser);
         showNotification('Data imported successfully!', 'success');
-        
+
         return true;
     } catch (error) {
         showNotification('Error importing data: ' + error.message, 'error');
