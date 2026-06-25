@@ -202,12 +202,7 @@ function handleStartMeeting(event) {
     const record = document.getElementById('recordMeeting').checked;
     const providerInfo = videoProviders[provider];
 
-    if (!title || !provider || !clientName) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
-    }
-
-    showNotification(`Starting meeting with ${providerInfo.name}...`, 'info');
+    showNotification(`Starting meeting with ${providerInfo?.name || provider}...`, 'info');
 
     setTimeout(() => {
         const user = getCurrentUser();
