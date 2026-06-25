@@ -143,6 +143,13 @@ const calendarSyncRoutes = require('./routes/calendar-sync');
 app.use('/api', calendarSyncRoutes);
 
 // =====================================================
+// EMAIL CLIENT API ROUTES
+// =====================================================
+
+const emailClientApiRoutes = require('./routes/email-client-api');
+app.use('/api', emailClientApiRoutes);
+
+// =====================================================
 // ERROR HANDLING
 // =====================================================
 

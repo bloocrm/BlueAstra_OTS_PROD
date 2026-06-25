@@ -1,0 +1,1156 @@
+/* =====================================================
+   EMAIL CLIENT STYLING
+   ===================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #f5f5f5;
+    color: #333;
+}
+
+/* =====================================================
+   EMAIL CLIENT CONTAINER
+   ===================================================== */
+
+.email-client-container {
+    display: flex;
+    height: 100vh;
+    background: white;
+}
+
+/* =====================================================
+   SIDEBAR
+   ===================================================== */
+
+.email-sidebar {
+    width: 280px;
+    background: #2c3e50;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #34495e;
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    padding: 20px 15px;
+    border-bottom: 1px solid #34495e;
+}
+
+.sidebar-header h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.btn-compose {
+    width: 100%;
+    padding: 10px 15px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s;
+}
+
+.btn-compose:hover {
+    background: #2980b9;
+}
+
+/* Account Switcher */
+
+.account-switcher {
+    padding: 15px;
+    border-bottom: 1px solid #34495e;
+    display: flex;
+    gap: 8px;
+}
+
+.account-dropdown {
+    flex: 1;
+    padding: 8px;
+    background: #34495e;
+    color: white;
+    border: 1px solid #7f8c8d;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-add-account {
+    width: 35px;
+    height: 35px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.3s;
+}
+
+.btn-add-account:hover {
+    background: #229954;
+}
+
+/* Folder List */
+
+.folder-list {
+    flex: 1;
+    padding: 10px 0;
+    border-bottom: 1px solid #34495e;
+}
+
+.folder-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.folder-item:hover {
+    background: #34495e;
+}
+
+.folder-item.active {
+    background: #34495e;
+    border-left-color: #3498db;
+}
+
+.folder-icon {
+    font-size: 16px;
+    margin-right: 12px;
+    width: 20px;
+}
+
+.folder-name {
+    flex: 1;
+    font-size: 14px;
+}
+
+.folder-count {
+    background: #e74c3c;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Labels Section */
+
+.labels-section {
+    padding: 15px;
+    border-bottom: 1px solid #34495e;
+}
+
+.labels-section h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    color: #95a5a6;
+}
+
+.labels-list {
+    margin-bottom: 10px;
+}
+
+.label-tag {
+    display: block;
+    padding: 6px 10px;
+    margin-bottom: 5px;
+    background: #34495e;
+    border-left: 3px solid;
+    border-radius: 2px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.label-tag:hover {
+    background: #414f5f;
+}
+
+.btn-new-label {
+    width: 100%;
+    padding: 6px;
+    background: transparent;
+    color: #3498db;
+    border: 1px dashed #3498db;
+    border-radius: 3px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-new-label:hover {
+    background: #3498db;
+    color: white;
+}
+
+/* Sidebar Footer */
+
+.sidebar-footer {
+    padding: 15px;
+    border-top: 1px solid #34495e;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-settings,
+.btn-sync {
+    flex: 1;
+    padding: 8px 12px;
+    background: #34495e;
+    color: white;
+    border: 1px solid #7f8c8d;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+
+.btn-settings:hover,
+.btn-sync:hover {
+    background: #3d5266;
+    border-color: #95a5a6;
+}
+
+/* =====================================================
+   MAIN CONTENT AREA
+   ===================================================== */
+
+.email-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+}
+
+/* Top Bar */
+
+.email-topbar {
+    padding: 12px 20px;
+    background: white;
+    border-bottom: 1px solid #ecf0f1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.search-box {
+    flex: 1;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.search-input:focus {
+    background: white;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.topbar-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    width: 35px;
+    height: 35px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.btn-icon:hover {
+    background: #ecf0f1;
+    border-color: #3498db;
+}
+
+/* =====================================================
+   EMAIL CONTENT AREA
+   ===================================================== */
+
+.email-content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Email List */
+
+.email-list-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #ecf0f1;
+}
+
+.email-list-header {
+    display: grid;
+    grid-template-columns: 40px 150px 1fr 150px;
+    padding: 12px 0;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ecf0f1;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #7f8c8d;
+}
+
+.select-all {
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.header-col {
+    padding: 0 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.email-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.email-item {
+    display: grid;
+    grid-template-columns: 40px 150px 1fr 150px;
+    padding: 12px 0;
+    border-bottom: 1px solid #ecf0f1;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.email-item:hover {
+    background: #f8f9fa;
+}
+
+.email-item.active {
+    background: #e3f2fd;
+}
+
+.email-item.unread {
+    font-weight: 600;
+}
+
+.email-item-checkbox {
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.email-item-from {
+    padding: 0 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.email-item-subject {
+    padding: 0 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.email-item-date {
+    padding: 0 15px;
+    text-align: right;
+    font-size: 13px;
+    color: #7f8c8d;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Email Detail View */
+
+.email-detail-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+}
+
+.detail-header {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ecf0f1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.btn-back {
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-back:hover {
+    background: #ecf0f1;
+}
+
+.detail-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.detail-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.email-headers {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.header-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.header-label {
+    font-weight: 600;
+    color: #7f8c8d;
+}
+
+.header-value {
+    color: #2c3e50;
+    word-break: break-word;
+}
+
+.header-subject-detail {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.email-body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Attachments */
+
+.attachments-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ecf0f1;
+}
+
+.attachments-section h4 {
+    margin-bottom: 15px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.attachments-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.attachment-item {
+    padding: 10px;
+    background: #f8f9fa;
+    border: 1px solid #ecf0f1;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.attachment-item:hover {
+    background: #ecf0f1;
+    border-color: #3498db;
+}
+
+.attachment-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.attachment-name {
+    font-size: 12px;
+    word-break: break-word;
+    margin-bottom: 5px;
+}
+
+.attachment-size {
+    font-size: 11px;
+    color: #7f8c8d;
+}
+
+.attachment-download-btn {
+    padding: 4px 8px;
+    margin-top: 8px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.attachment-download-btn:hover {
+    background: #2980b9;
+}
+
+/* =====================================================
+   MODALS
+   ===================================================== */
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal.active {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease;
+}
+
+.compose-modal {
+    max-width: 700px;
+}
+
+.settings-modal {
+    max-width: 800px;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #ecf0f1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #2c3e50;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #7f8c8d;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.btn-close:hover {
+    color: #2c3e50;
+}
+
+.modal-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #ecf0f1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* =====================================================
+   FORMS
+   ===================================================== */
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.compose-textarea {
+    font-family: monospace;
+    resize: vertical;
+}
+
+/* Recipient Tags */
+
+.recipient-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 8px;
+}
+
+.recipient-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: #ecf0f1;
+    border-radius: 16px;
+    font-size: 13px;
+}
+
+.recipient-tag-remove {
+    cursor: pointer;
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.recipient-tag-remove:hover {
+    color: #c0392b;
+}
+
+/* Editor Toolbar */
+
+.editor-toolbar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.toolbar-btn {
+    padding: 6px 10px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+
+.toolbar-btn:hover {
+    background: #ecf0f1;
+    border-color: #3498db;
+}
+
+.toolbar-btn.active {
+    background: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.toolbar-divider {
+    width: 1px;
+    background: #ddd;
+    margin: 0 5px;
+}
+
+/* File Upload */
+
+.upload-zone {
+    padding: 30px;
+    background: #f8f9fa;
+    border: 2px dashed #3498db;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.upload-zone:hover {
+    background: #ecf0f1;
+}
+
+.upload-zone small {
+    display: block;
+    color: #7f8c8d;
+    margin-top: 5px;
+}
+
+.uploaded-files {
+    margin-top: 15px;
+}
+
+.uploaded-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #ecf0f1;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.uploaded-file-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.uploaded-file-icon {
+    font-size: 16px;
+}
+
+.uploaded-file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.btn-remove-file {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.3s;
+}
+
+.btn-remove-file:hover {
+    color: #c0392b;
+}
+
+/* =====================================================
+   BUTTONS
+   ===================================================== */
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+/* =====================================================
+   SETTINGS TABS
+   ===================================================== */
+
+.settings-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.tab-btn {
+    padding: 10px 15px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    color: #7f8c8d;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    color: #2c3e50;
+}
+
+.tab-btn.active {
+    color: #3498db;
+    border-bottom-color: #3498db;
+}
+
+.tab-content {
+    position: relative;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.setting-item {
+    margin-bottom: 20px;
+}
+
+.setting-item label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.setting-item input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+/* =====================================================
+   PROVIDER LIST
+   ===================================================== */
+
+.provider-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+}
+
+.provider-card {
+    padding: 20px;
+    background: #f8f9fa;
+    border: 2px solid #ecf0f1;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.provider-card:hover {
+    border-color: #3498db;
+    background: #ecf0f1;
+}
+
+.provider-logo {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.provider-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* =====================================================
+   TOAST NOTIFICATIONS
+   ===================================================== */
+
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+}
+
+.toast {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast.success {
+    border-left: 4px solid #27ae60;
+}
+
+.toast.error {
+    border-left: 4px solid #e74c3c;
+}
+
+.toast.info {
+    border-left: 4px solid #3498db;
+}
+
+.toast.warning {
+    border-left: 4px solid #f39c12;
+}
+
+.toast-icon {
+    font-size: 18px;
+}
+
+.toast-message {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #7f8c8d;
+    cursor: pointer;
+}
+
+/* =====================================================
+   SYNC STATUS
+   ===================================================== */
+
+.sync-status-item {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.sync-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.sync-status-bar {
+    width: 100%;
+    height: 20px;
+    background: #ecf0f1;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.sync-status-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db, #2ecc71);
+    transition: width 0.3s ease;
+}
+
+.sync-status-text {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-top: 5px;
+}
+
+/* =====================================================
+   RESPONSIVE DESIGN
+   ===================================================== */
+
+@media (max-width: 1024px) {
+    .email-client-container {
+        flex-direction: column;
+    }
+
+    .email-sidebar {
+        width: 100%;
+        max-height: 150px;
+        flex-direction: row;
+    }
+
+    .email-list-header {
+        grid-template-columns: 40px 1fr 100px;
+    }
+
+    .email-item {
+        grid-template-columns: 40px 1fr 100px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .email-list-header,
+    .email-item {
+        grid-template-columns: 40px 1fr 80px;
+    }
+
+    .header-col,
+    .email-item-date {
+        padding: 0 8px;
+    }
+
+    .sidebar-header h2 {
+        font-size: 16px;
+    }
+
+    .detail-header {
+        flex-wrap: wrap;
+    }
+
+    .detail-actions {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+/* =====================================================
+   UTILITIES
+   ===================================================== */
+
+.hidden {
+    display: none !important;
+}
+
+.loading {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.empty-state-text {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.empty-state-subtext {
+    font-size: 13px;
+    color: #95a5a6;
+}

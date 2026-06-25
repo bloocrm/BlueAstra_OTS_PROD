@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloo Email Client</title>
+    <link rel="stylesheet" href="css/email-client.css">
+</head>
+<body>
+    <div class="email-client-container">
+        <!-- Sidebar -->
+        <div class="email-sidebar">
+            <div class="sidebar-header">
+                <h2>📧 Bloo Mail</h2>
+                <button class="btn-compose" id="btnCompose">✍️ Compose</button>
+            </div>
+
+            <!-- Account Switcher -->
+            <div class="account-switcher">
+                <select id="accountSelect" class="account-dropdown">
+                    <option value="">Select Email Account</option>
+                </select>
+                <button class="btn-add-account" id="btnAddAccount" title="Add Email Account">+</button>
+            </div>
+
+            <!-- Folder List -->
+            <div class="folder-list">
+                <div class="folder-item active" data-folder="inbox">
+                    <span class="folder-icon">📥</span>
+                    <span class="folder-name">Inbox</span>
+                    <span class="folder-count" id="inboxCount">0</span>
+                </div>
+                <div class="folder-item" data-folder="starred">
+                    <span class="folder-icon">⭐</span>
+                    <span class="folder-name">Starred</span>
+                    <span class="folder-count" id="starredCount">0</span>
+                </div>
+                <div class="folder-item" data-folder="sent">
+                    <span class="folder-icon">📤</span>
+                    <span class="folder-name">Sent</span>
+                    <span class="folder-count" id="sentCount">0</span>
+                </div>
+                <div class="folder-item" data-folder="drafts">
+                    <span class="folder-icon">📝</span>
+                    <span class="folder-name">Drafts</span>
+                    <span class="folder-count" id="draftsCount">0</span>
+                </div>
+                <div class="folder-item" data-folder="trash">
+                    <span class="folder-icon">🗑️</span>
+                    <span class="folder-name">Trash</span>
+                    <span class="folder-count" id="trashCount">0</span>
+                </div>
+                <div class="folder-item" data-folder="spam">
+                    <span class="folder-icon">⚠️</span>
+                    <span class="folder-name">Spam</span>
+                    <span class="folder-count" id="spamCount">0</span>
+                </div>
+            </div>
+
+            <!-- Labels Section -->
+            <div class="labels-section">
+                <h4>Labels</h4>
+                <div class="labels-list" id="labelsList"></div>
+                <button class="btn-new-label" id="btnNewLabel">+ New Label</button>
+            </div>
+
+            <!-- Settings -->
+            <div class="sidebar-footer">
+                <button class="btn-settings" id="btnSettings">⚙️ Settings</button>
+                <button class="btn-sync" id="btnSync">🔄 Sync</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="email-main">
+            <!-- Top Bar -->
+            <div class="email-topbar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Search emails..." class="search-input">
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn-icon" id="btnRefresh" title="Refresh">🔄</button>
+                    <button class="btn-icon" id="btnFilter" title="Filter">⚙️</button>
+                    <button class="btn-icon" id="btnSettings2" title="Settings">⚙️</button>
+                </div>
+            </div>
+
+            <!-- Email List View / Email Detail View -->
+            <div class="email-content">
+                <!-- List View -->
+                <div class="email-list-container" id="emailListContainer">
+                    <div class="email-list-header">
+                        <input type="checkbox" id="selectAll" class="select-all">
+                        <div class="header-col header-from">From</div>
+                        <div class="header-col header-subject">Subject</div>
+                        <div class="header-col header-date">Date</div>
+                    </div>
+                    <div class="email-list" id="emailList"></div>
+                </div>
+
+                <!-- Detail View -->
+                <div class="email-detail-container" id="emailDetailContainer" style="display: none;">
+                    <div class="detail-header">
+                        <button class="btn-back" id="btnBack">← Back</button>
+                        <div class="detail-actions">
+                            <button class="btn-icon" id="btnMarkRead" title="Mark as Read">✓</button>
+                            <button class="btn-icon" id="btnStar" title="Star">⭐</button>
+                            <button class="btn-icon" id="btnReply" title="Reply">↩️</button>
+                            <button class="btn-icon" id="btnReplyAll" title="Reply All">↩️↩️</button>
+                            <button class="btn-icon" id="btnForward" title="Forward">↪️</button>
+                            <button class="btn-icon" id="btnDelete" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="detail-content">
+                        <div class="email-headers">
+                            <div class="header-row">
+                                <div class="header-label">From:</div>
+                                <div class="header-value" id="detailFrom"></div>
+                            </div>
+                            <div class="header-row">
+                                <div class="header-label">To:</div>
+                                <div class="header-value" id="detailTo"></div>
+                            </div>
+                            <div class="header-row" id="ccRow" style="display: none;">
+                                <div class="header-label">Cc:</div>
+                                <div class="header-value" id="detailCc"></div>
+                            </div>
+                            <div class="header-row">
+                                <div class="header-label">Date:</div>
+                                <div class="header-value" id="detailDate"></div>
+                            </div>
+                            <div class="header-row">
+                                <div class="header-label">Subject:</div>
+                                <div class="header-value header-subject-detail" id="detailSubject"></div>
+                            </div>
+                        </div>
+                        <div class="email-body" id="emailBody"></div>
+                        <div class="attachments-section" id="attachmentsSection" style="display: none;">
+                            <h4>Attachments</h4>
+                            <div class="attachments-list" id="attachmentsList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compose Modal -->
+    <div class="modal" id="composeModal">
+        <div class="modal-content compose-modal">
+            <div class="modal-header">
+                <h3>Compose Email</h3>
+                <button class="btn-close" id="btnCloseCompose">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="composeForm">
+                    <div class="form-group">
+                        <label>From:</label>
+                        <select id="fromSelect" class="form-control" required>
+                            <option value="">Select sender email</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>To:</label>
+                        <input type="email" id="toInput" class="form-control" placeholder="recipient@example.com" required>
+                        <div class="recipient-tags" id="toTags"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cc:</label>
+                        <input type="text" id="ccInput" class="form-control" placeholder="cc@example.com">
+                        <div class="recipient-tags" id="ccTags"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Bcc:</label>
+                        <input type="text" id="bccInput" class="form-control" placeholder="bcc@example.com">
+                        <div class="recipient-tags" id="bccTags"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Subject:</label>
+                        <input type="text" id="subjectInput" class="form-control" placeholder="Email subject">
+                    </div>
+                    <div class="form-group">
+                        <label>Body:</label>
+                        <div class="editor-toolbar">
+                            <button type="button" class="toolbar-btn" id="btnBold" title="Bold"><b>B</b></button>
+                            <button type="button" class="toolbar-btn" id="btnItalic" title="Italic"><i>I</i></button>
+                            <button type="button" class="toolbar-btn" id="btnUnderline" title="Underline"><u>U</u></button>
+                            <span class="toolbar-divider"></span>
+                            <button type="button" class="toolbar-btn" id="btnLink" title="Add Link">🔗</button>
+                            <button type="button" class="toolbar-btn" id="btnAttach" title="Attach File">📎</button>
+                            <span class="toolbar-divider"></span>
+                            <button type="button" class="toolbar-btn" id="btnSignature" title="Add Signature">✍️</button>
+                        </div>
+                        <textarea id="bodyInput" class="form-control compose-textarea" placeholder="Write your email here..." style="min-height: 300px;"></textarea>
+                    </div>
+                    <div class="attachments-upload" id="attachmentsUpload">
+                        <div class="upload-zone" id="uploadZone">
+                            <input type="file" id="fileInput" multiple style="display: none;">
+                            <p>📎 Click or drag files here to attach</p>
+                            <small>Max 25MB per file</small>
+                        </div>
+                        <div class="uploaded-files" id="uploadedFiles"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnSaveDraft">💾 Save Draft</button>
+                <button class="btn btn-primary" id="btnSendEmail">✉️ Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Account Modal -->
+    <div class="modal" id="addAccountModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Email Account</h3>
+                <button class="btn-close" id="btnCloseAccount">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="provider-list" id="providerList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content settings-modal">
+            <div class="modal-header">
+                <h3>Email Settings</h3>
+                <button class="btn-close" id="btnCloseSettings">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="tab-btn active" data-tab="general">General</button>
+                    <button class="tab-btn" data-tab="accounts">Accounts</button>
+                    <button class="tab-btn" data-tab="folders">Folders</button>
+                    <button class="tab-btn" data-tab="signature">Signature</button>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-pane active" id="generalTab">
+                        <div class="setting-item">
+                            <label>Auto-refresh (minutes)</label>
+                            <input type="number" id="autoRefreshInterval" class="form-control" min="1" max="60">
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="autoDownloadAttachments">
+                                Auto-download attachments
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="previewPane">
+                                Show preview pane
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>Default reply action</label>
+                            <select id="defaultReplyAction" class="form-control">
+                                <option value="reply">Reply</option>
+                                <option value="replyAll">Reply All</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="accountsTab">
+                        <div class="accounts-list" id="accountsList"></div>
+                    </div>
+                    <div class="tab-pane" id="foldersTab">
+                        <button class="btn btn-primary" id="btnCreateFolder">+ New Folder</button>
+                        <div class="custom-folders-list" id="customFoldersList"></div>
+                    </div>
+                    <div class="tab-pane" id="signatureTab">
+                        <label>Email Signature</label>
+                        <textarea id="signatureInput" class="form-control" placeholder="Your email signature" style="min-height: 150px;"></textarea>
+                        <label style="margin-top: 20px;">
+                            <input type="checkbox" id="autoSignature">
+                            Automatically add signature to emails
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reply/Forward Modal -->
+    <div class="modal" id="replyModal">
+        <div class="modal-content compose-modal">
+            <div class="modal-header">
+                <h3 id="replyModalTitle">Reply to Email</h3>
+                <button class="btn-close" id="btnCloseReply">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="original-message">
+                    <p><small>On <span id="originalDate"></span>, <span id="originalFrom"></span> wrote:</small></p>
+                    <div class="original-body" id="originalBody"></div>
+                </div>
+                <form id="replyForm">
+                    <div class="form-group">
+                        <label>To:</label>
+                        <div class="recipient-tags" id="replyToTags"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cc:</label>
+                        <div class="recipient-tags" id="replyCcTags"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Body:</label>
+                        <textarea id="replyBodyInput" class="form-control compose-textarea" style="min-height: 200px;"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnSaveReplyDraft">💾 Save Draft</button>
+                <button class="btn btn-primary" id="btnSendReply">✉️ Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Status Modal -->
+    <div class="modal" id="syncStatusModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Email Sync Status</h3>
+                <button class="btn-close" id="btnCloseSyncStatus">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="sync-status-list" id="syncStatusList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/email-platform-manager.js"></script>
+    <script src="js/calendar-platform-manager.js"></script>
+    <script src="js/email-client.js"></script>
+</body>
+</html>
