@@ -129,6 +129,13 @@ const paymentRoutes = require('./routes/payments');
 app.use('/api/payments', paymentRoutes);
 
 // =====================================================
+// EMAIL SYNC ROUTES
+// =====================================================
+
+const emailSyncRoutes = require('./routes/email-sync');
+app.use('/api', emailSyncRoutes);
+
+// =====================================================
 // ERROR HANDLING
 // =====================================================
 
