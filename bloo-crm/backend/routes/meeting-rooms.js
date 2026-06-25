@@ -415,6 +415,7 @@ router.post('/create-webex', asyncHandler(async (req, res) => {
       {
         success: true,
         sessionId: session.sessionId,
+        meetingTitle: meetingTitle,
         webexMeetingId: webexMeeting.webexMeetingId,
         webexMeetingNumber: webexMeeting.webexMeetingNumber,
         meetingUrl: webexMeeting.meetingUrl,

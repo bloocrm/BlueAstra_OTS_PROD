@@ -542,6 +542,10 @@ let statusPollingInterval = null;
 // Create Webex meeting via API
 async function createWebexMeeting(config) {
     try {
+        if (!apiClient?.token) {
+            throw new Error('Authentication required. Please log in again.');
+        }
+
         const response = await fetch('/api/meeting-rooms/create-webex', {
             method: 'POST',
             headers: {
@@ -554,10 +558,18 @@ async function createWebexMeeting(config) {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.message || 'Failed to create meeting');
+            const errorMsg = data.message || data.error || 'Failed to create meeting';
+            throw new Error(errorMsg);
         }
 
-        return data.data || data;
+        // Handle both wrapped (data.data) and direct response
+        const result = data.data || data;
+
+        if (!result.sessionId) {
+            throw new Error('Invalid response from server: missing session ID');
+        }
+
+        return result;
     } catch (error) {
         console.error('Create Webex meeting error:', error);
         throw error;
@@ -736,31 +748,82 @@ async function handleCreateWebexMeeting(event) {
         event.preventDefault();
     }
 
-    const title = document.getElementById('webexMeetingTitle')?.value;
-    const description = document.getElementById('webexMeetingDescription')?.value;
-    const startTime = document.getElementById('webexStartTime')?.value;
-    const duration = parseInt(document.getElementById('webexDuration')?.value || 60);
-    const participantEmails = getWebexParticipants();
-    const clientEmail = document.getElementById('webexClientEmail')?.value;
+    const form = event?.target || document.querySelector('#createWebexMeetingModal form');
+    const submitBtn = form?.querySelector('button[type="submit"]');
 
-    if (!title || !startTime) {
-        showNotification('Meeting title and start time are required', 'error');
+    // Get and trim all input values
+    const title = document.getElementById('webexMeetingTitle')?.value?.trim();
+    const description = document.getElementById('webexMeetingDescription')?.value?.trim();
+    const startTimeInput = document.getElementById('webexStartTime')?.value?.trim();
+    const durationInput = document.getElementById('webexDuration')?.value?.trim();
+    const participantEmails = getWebexParticipants();
+    const clientEmail = document.getElementById('webexClientEmail')?.value?.trim();
+
+    // Validate all required fields with detailed messages
+    if (!title) {
+        showNotification('Meeting title is required', 'error');
+        document.getElementById('webexMeetingTitle')?.focus();
         return;
     }
 
+    if (!startTimeInput) {
+        showNotification('Start time is required', 'error');
+        document.getElementById('webexStartTime')?.focus();
+        return;
+    }
+
+    if (!durationInput) {
+        showNotification('Meeting duration is required', 'error');
+        document.getElementById('webexDuration')?.focus();
+        return;
+    }
+
+    // Validate duration value
+    const duration = parseInt(durationInput);
+    if (isNaN(duration) || duration < 15 || duration > 480) {
+        showNotification('Duration must be between 15 and 480 minutes', 'error');
+        document.getElementById('webexDuration')?.focus();
+        return;
+    }
+
+    // Convert datetime-local to ISO format for API
+    const startDate = new Date(startTimeInput);
+    if (isNaN(startDate.getTime())) {
+        showNotification('Invalid start time format', 'error');
+        document.getElementById('webexStartTime')?.focus();
+        return;
+    }
+
+    // Validate start time is in the future
+    if (startDate <= new Date()) {
+        showNotification('Start time must be in the future', 'error');
+        document.getElementById('webexStartTime')?.focus();
+        return;
+    }
+
+    const startTime = startDate.toISOString();
+
     try {
+        // Disable submit button during creation
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Creating meeting...';
+        }
+
         showNotification('Creating Webex meeting...', 'info');
 
         const config = {
             meetingTitle: title,
-            meetingDescription: description,
+            meetingDescription: description || `Meeting: ${title}`,
             startTime,
             duration,
             participantEmails,
-            clientEmail
+            clientEmail: clientEmail || ''
         };
 
+        console.log('Creating Webex meeting with config:', config);
         const result = await createWebexMeeting(config);
+        console.log('Meeting created successfully:', result);
 
         // Store session ID
         currentMeetingSessionId = result.sessionId;
@@ -774,13 +837,28 @@ async function handleCreateWebexMeeting(event) {
         // Start status polling
         startStatusPolling(result.sessionId);
 
-        showNotification('Webex meeting created successfully!', 'success');
+        showNotification('✅ Webex meeting created successfully!', 'success');
+
+        // Clear form
+        form?.reset();
+
+        // Close modal after a brief delay
+        setTimeout(() => {
+            closeModal('createWebexMeetingModal');
+        }, 500);
 
         // Log activity
-        logWorkflowActivity('webex_meeting_created', `Meeting created: ${title}`);
+        logWorkflowActivity('webex_meeting_created', `Meeting created: ${title} scheduled for ${new Date(startTime).toLocaleString()}`);
     } catch (error) {
         console.error('Create meeting error:', error);
-        showNotification(`Error creating meeting: ${error.message}`, 'error');
+        const errorMessage = error.message || 'Failed to create meeting. Please check all fields and try again.';
+        showNotification(`❌ ${errorMessage}`, 'error');
+    } finally {
+        // Re-enable submit button
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-play"></i> Create Meeting';
+        }
     }
 }
 
