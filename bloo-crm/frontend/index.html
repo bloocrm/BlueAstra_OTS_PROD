@@ -520,10 +520,12 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                 <div id="email" class="view">
                     <div class="view-header">
                         <h2><i class="fas fa-envelope"></i> Email Management</h2>
-                        <button onclick="showModal('emailSyncModal')" class="btn btn-primary">
-                            <i class="fas fa-sync"></i> Sync Email
+                        <button onclick="refreshEmailConnections()" class="btn btn-secondary">
+                            <i class="fas fa-sync"></i> Refresh
                         </button>
                     </div>
+
+                    <div id="emailProvidersSection" class="email-providers-container"></div>
 
                     <div class="sync-info-box">
                         <div id="emailSyncStatus" class="sync-status-card">
@@ -533,7 +535,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                     </div>
 
                     <div id="emailContainer" class="email-list">
-                        <p class="empty-state">No synced emails yet. Click "Sync Email" to connect your email provider.</p>
+                        <p class="empty-state">No synced emails yet. Click "Connect" on an email provider to get started.</p>
                     </div>
 
                     <!-- Email Upgrade Section -->
@@ -1521,6 +1523,59 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     </div>
 
     <!-- Email Sync Modal -->
+    <div id="emailSyncConfigModal" class="modal">
+        <div class="modal-content sync-modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-envelope"></i> Email Sync Configuration</h2>
+                <button class="close-btn" onclick="closeModal('emailSyncConfigModal')">&times;</button>
+            </div>
+            <form onsubmit="handleEmailSync(event)">
+                <div class="sync-instructions">
+                    <h3>Configure Email Sync</h3>
+                    <p>Select sync options and start downloading your emails.</p>
+                </div>
+
+                <div id="emailSyncProviderInfo" class="provider-info"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Sync Period</label>
+                        <select id="emailSyncDays">
+                            <option value="7">Last 7 days</option>
+                            <option value="30" selected>Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                            <option value="180">Last 6 months</option>
+                            <option value="365">Last year</option>
+                            <option value="all">All emails</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="emailSyncAttachments" checked>
+                            Include attachments
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="emailSyncRead" checked>
+                            Include read emails
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('emailSyncConfigModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sync"></i> Start Sync
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="emailSyncModal" class="modal">
         <div class="modal-content sync-modal-content">
             <div class="modal-header">
@@ -1854,6 +1909,10 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/ai-insights.js"></script>
     <script src="js/upload.js"></script>
     <script src="js/sync.js"></script>
+    <script src="js/email-platform-manager.js"></script>
+    <script src="js/gmail-sso.js"></script>
+    <script src="js/outlook-sso.js"></script>
+    <script src="js/email-management.js"></script>
     <script src="js/compliance.js"></script>
     <script src="js/meeting-room.js"></script>
     <script src="js/utils.js"></script>
