@@ -520,9 +520,14 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                 <div id="email" class="view">
                     <div class="view-header">
                         <h2><i class="fas fa-envelope"></i> Email Management</h2>
-                        <button onclick="refreshEmailConnections()" class="btn btn-secondary">
-                            <i class="fas fa-sync"></i> Refresh
-                        </button>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="window.location.href='email-client.html'" class="btn btn-primary">
+                                <i class="fas fa-expand"></i> Open Full Email Client
+                            </button>
+                            <button onclick="refreshEmailConnections()" class="btn btn-secondary">
+                                <i class="fas fa-sync"></i> Sync Email
+                            </button>
+                        </div>
                     </div>
 
                     <div id="emailProvidersSection" class="email-providers-container"></div>
@@ -535,7 +540,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                     </div>
 
                     <div id="emailContainer" class="email-list">
-                        <p class="empty-state">No synced emails yet. Click "Connect" on an email provider to get started.</p>
+                        <p class="empty-state">No synced emails yet. Click "Open Full Email Client" for the advanced email interface or click "Connect" on an email provider to get started.</p>
                     </div>
 
                     <!-- Email Upgrade Section -->
@@ -546,9 +551,14 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                 <div id="calendar" class="view">
                     <div class="view-header">
                         <h2><i class="fas fa-calendar-alt"></i> Calendar & Scheduling</h2>
-                        <button onclick="showModal('calendarSyncModal')" class="btn btn-primary">
-                            <i class="fas fa-sync"></i> Sync Calendar
-                        </button>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="window.location.href='calendar-view.html'" class="btn btn-primary">
+                                <i class="fas fa-expand"></i> Open Full Calendar
+                            </button>
+                            <button onclick="showModal('calendarSyncModal')" class="btn btn-secondary">
+                                <i class="fas fa-sync"></i> Sync Calendar
+                            </button>
+                        </div>
                     </div>
 
                     <div class="sync-info-box">
@@ -559,7 +569,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                     </div>
 
                     <div id="calendarContainer" class="calendar-list">
-                        <p class="empty-state">No synced events yet. Click "Sync Calendar" to connect your calendar provider.</p>
+                        <p class="empty-state">No synced events yet. Click "Sync Calendar" to connect your calendar provider or "Open Full Calendar" for the advanced calendar interface.</p>
                     </div>
 
                     <!-- Calendar Upgrade Section -->
