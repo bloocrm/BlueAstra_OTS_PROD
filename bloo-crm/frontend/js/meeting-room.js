@@ -531,6 +531,372 @@ function viewMeetingDetails(meetingId) {
     alert(detailsHTML);
 }
 
+// =====================================================
+// WEBEX MEETING CREATION (NEW API-BASED)
+// =====================================================
+
+let currentMeetingSessionId = null;
+let meetingHeartbeatInterval = null;
+let statusPollingInterval = null;
+
+// Create Webex meeting via API
+async function createWebexMeeting(config) {
+    try {
+        const response = await fetch('/api/meeting-rooms/create-webex', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiClient.token}`
+            },
+            body: JSON.stringify(config)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to create meeting');
+        }
+
+        return data.data || data;
+    } catch (error) {
+        console.error('Create Webex meeting error:', error);
+        throw error;
+    }
+}
+
+// End active Webex meeting
+async function endWebexMeeting(sessionId) {
+    try {
+        const response = await fetch(`/api/meeting-rooms/${sessionId}/end-meeting`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiClient.token}`
+            },
+            body: JSON.stringify({ endReason: 'User ended meeting' })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to end meeting');
+        }
+
+        return data.data || data;
+    } catch (error) {
+        console.error('End meeting error:', error);
+        throw error;
+    }
+}
+
+// Get meeting status
+async function getMeetingStatus(sessionId) {
+    try {
+        const response = await fetch(`/api/meeting-rooms/${sessionId}/meeting-status`, {
+            headers: { 'Authorization': `Bearer ${apiClient.token}` }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to get meeting status');
+        }
+
+        return data.data || data;
+    } catch (error) {
+        console.error('Get meeting status error:', error);
+        return null;
+    }
+}
+
+// Send heartbeat to keep meeting alive
+async function sendMeetingHeartbeat(sessionId) {
+    try {
+        await fetch(`/api/meeting-rooms/${sessionId}/heartbeat`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiClient.token}`
+            },
+            body: JSON.stringify({ isActive: true })
+        });
+    } catch (error) {
+        console.error('Heartbeat error:', error);
+    }
+}
+
+// Start heartbeat (every 30 seconds)
+function startMeetingHeartbeat(sessionId) {
+    if (meetingHeartbeatInterval) {
+        clearInterval(meetingHeartbeatInterval);
+    }
+
+    meetingHeartbeatInterval = setInterval(() => {
+        sendMeetingHeartbeat(sessionId);
+    }, 30000);
+}
+
+// Start status polling (every 10 seconds)
+function startStatusPolling(sessionId) {
+    if (statusPollingInterval) {
+        clearInterval(statusPollingInterval);
+    }
+
+    statusPollingInterval = setInterval(async () => {
+        const status = await getMeetingStatus(sessionId);
+        if (status) {
+            updateMeetingDisplay(status);
+        }
+    }, 10000);
+}
+
+// Update meeting display with current status
+function updateMeetingDisplay(status) {
+    const panel = document.getElementById('activeMeetingPanel');
+    if (!panel) return;
+
+    // Update participant list
+    const participantsList = document.getElementById('activeParticipantsList');
+    if (participantsList && status.participants) {
+        participantsList.innerHTML = status.participants
+            .map(p => `<li><strong>${p.name}</strong> (${p.email}) - ${p.isActive ? 'Active' : 'Idle'}</li>`)
+            .join('');
+    }
+
+    // Update participant count
+    const countEl = document.getElementById('participantCount');
+    if (countEl) {
+        countEl.textContent = status.activeParticipants || status.participants.length;
+    }
+
+    // Update duration
+    const durationEl = document.getElementById('meetingDuration');
+    if (durationEl && status.duration !== undefined) {
+        const hours = Math.floor(status.duration / 60);
+        const mins = status.duration % 60;
+        durationEl.textContent = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+    }
+
+    // Update recording status
+    const recordingEl = document.getElementById('recordingStatus');
+    if (recordingEl) {
+        recordingEl.textContent = status.recordingStatus || 'Recording...';
+    }
+
+    // Update status badge
+    const statusBadge = document.getElementById('meetingStatus');
+    if (statusBadge) {
+        statusBadge.textContent = status.status ? status.status.toUpperCase() : 'ACTIVE';
+    }
+}
+
+// Display active meeting panel
+function displayActiveMeeting(meetingData) {
+    const panel = document.getElementById('activeMeetingPanel');
+    if (!panel) {
+        console.warn('activeMeetingPanel element not found');
+        return;
+    }
+
+    // Set meeting title
+    const titleEl = document.getElementById('activeMeetingTitle');
+    if (titleEl) {
+        titleEl.textContent = meetingData.meetingTitle || 'Meeting';
+    }
+
+    // Set meeting URL
+    const urlEl = document.getElementById('meetingUrlDisplay');
+    if (urlEl) {
+        urlEl.innerHTML = `<a href="${meetingData.meetingUrl}" target="_blank">${meetingData.meetingUrl}</a>`;
+    }
+
+    // Set meeting password
+    const passwordEl = document.getElementById('meetingPasswordDisplay');
+    if (passwordEl) {
+        passwordEl.textContent = meetingData.joinPassword || 'No password';
+    }
+
+    // Set SIP address
+    const sipEl = document.getElementById('sipAddressDisplay');
+    if (sipEl) {
+        sipEl.textContent = meetingData.sipAddress || 'N/A';
+    }
+
+    // Show panel
+    panel.style.display = 'block';
+
+    // Hide any modals
+    const modals = document.querySelectorAll('.modal.active');
+    modals.forEach(m => m.classList.remove('active'));
+}
+
+// Handle Webex meeting creation form
+async function handleCreateWebexMeeting(event) {
+    if (event) {
+        event.preventDefault();
+    }
+
+    const title = document.getElementById('webexMeetingTitle')?.value;
+    const description = document.getElementById('webexMeetingDescription')?.value;
+    const startTime = document.getElementById('webexStartTime')?.value;
+    const duration = parseInt(document.getElementById('webexDuration')?.value || 60);
+    const participantEmails = getWebexParticipants();
+    const clientEmail = document.getElementById('webexClientEmail')?.value;
+
+    if (!title || !startTime) {
+        showNotification('Meeting title and start time are required', 'error');
+        return;
+    }
+
+    try {
+        showNotification('Creating Webex meeting...', 'info');
+
+        const config = {
+            meetingTitle: title,
+            meetingDescription: description,
+            startTime,
+            duration,
+            participantEmails,
+            clientEmail
+        };
+
+        const result = await createWebexMeeting(config);
+
+        // Store session ID
+        currentMeetingSessionId = result.sessionId;
+
+        // Display meeting details
+        displayActiveMeeting(result);
+
+        // Start heartbeat to keep meeting alive
+        startMeetingHeartbeat(result.sessionId);
+
+        // Start status polling
+        startStatusPolling(result.sessionId);
+
+        showNotification('Webex meeting created successfully!', 'success');
+
+        // Log activity
+        logWorkflowActivity('webex_meeting_created', `Meeting created: ${title}`);
+    } catch (error) {
+        console.error('Create meeting error:', error);
+        showNotification(`Error creating meeting: ${error.message}`, 'error');
+    }
+}
+
+// Get Webex participants from form
+function getWebexParticipants() {
+    const list = document.getElementById('webexParticipantList');
+    if (!list) return [];
+
+    const items = list.querySelectorAll('li');
+    return Array.from(items).map(item => item.dataset.email).filter(Boolean);
+}
+
+// Add participant to Webex form
+function addWebexParticipant() {
+    const emailInput = document.getElementById('webexParticipantEmail');
+    const email = emailInput?.value?.trim();
+
+    if (!email) {
+        showNotification('Please enter an email address', 'error');
+        return;
+    }
+
+    if (!email.includes('@')) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+    }
+
+    const list = document.getElementById('webexParticipantList');
+    if (!list) return;
+
+    // Check if already added
+    const existing = Array.from(list.querySelectorAll('li')).some(li => li.dataset.email === email);
+    if (existing) {
+        showNotification('This email is already added', 'error');
+        return;
+    }
+
+    // Add to list
+    const li = document.createElement('li');
+    li.dataset.email = email;
+    li.innerHTML = `
+        <span>${email}</span>
+        <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
+    `;
+    list.appendChild(li);
+
+    // Clear input
+    emailInput.value = '';
+    emailInput.focus();
+}
+
+// Copy meeting link to clipboard
+function copyMeetingLink() {
+    const urlEl = document.getElementById('meetingUrlDisplay');
+    if (urlEl) {
+        const url = urlEl.textContent;
+        navigator.clipboard.writeText(url);
+        showNotification('Meeting link copied to clipboard', 'success');
+    }
+}
+
+// Open meeting in new tab
+function openMeetingUrl() {
+    const urlEl = document.getElementById('meetingUrlDisplay');
+    if (urlEl) {
+        const link = urlEl.querySelector('a');
+        if (link) {
+            window.open(link.href, '_blank');
+        }
+    }
+}
+
+// End active meeting
+async function endActiveMeeting() {
+    if (!currentMeetingSessionId) {
+        showNotification('No active meeting session', 'error');
+        return;
+    }
+
+    if (!confirm('Are you sure you want to end this meeting?')) {
+        return;
+    }
+
+    try {
+        showNotification('Ending meeting...', 'info');
+
+        const result = await endWebexMeeting(currentMeetingSessionId);
+
+        // Stop heartbeat
+        if (meetingHeartbeatInterval) {
+            clearInterval(meetingHeartbeatInterval);
+        }
+
+        // Stop status polling
+        if (statusPollingInterval) {
+            clearInterval(statusPollingInterval);
+        }
+
+        // Hide meeting panel
+        const panel = document.getElementById('activeMeetingPanel');
+        if (panel) {
+            panel.style.display = 'none';
+        }
+
+        showNotification('Meeting ended successfully', 'success');
+
+        // Log activity
+        logWorkflowActivity('webex_meeting_ended', `Meeting ended after ${result.duration} minutes with ${result.participantCount} participants`);
+
+        currentMeetingSessionId = null;
+    } catch (error) {
+        console.error('End meeting error:', error);
+        showNotification(`Error ending meeting: ${error.message}`, 'error');
+    }
+}
+
 // Initialize meeting room on page load
 function initializeMeetingRoom() {
     loadVideoProviders();

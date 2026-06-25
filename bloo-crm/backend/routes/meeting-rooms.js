@@ -7,6 +7,7 @@ const { successResponse, paginatedResponse } = require('../utils/response');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { ValidationError, NotFoundError } = require('../utils/errors');
 const crypto = require('crypto');
+const WebexMeetingService = require('../services/webexMeetingService');
 
 router.use(verifyToken);
 
@@ -330,6 +331,257 @@ router.get('/:sessionId/participants', asyncHandler(async (req, res) => {
     session.participants,
     'Participants retrieved successfully'
   );
+}));
+
+// =====================================================
+// CISCO WEBEX SPECIFIC ENDPOINTS
+// =====================================================
+
+// POST /api/meeting-rooms/create-webex - Create persistent Webex meeting
+router.post('/create-webex', asyncHandler(async (req, res) => {
+  const {
+    meetingTitle,
+    meetingDescription,
+    startTime,
+    duration,
+    participantEmails = [],
+    clientId,
+    leadId,
+    clientEmail
+  } = req.body;
+
+  if (!meetingTitle) {
+    throw new ValidationError('Meeting title is required');
+  }
+
+  if (!startTime || !duration) {
+    throw new ValidationError('Start time and duration are required');
+  }
+
+  try {
+    // Create Webex meeting via API
+    const webexService = new WebexMeetingService();
+
+    const user = await User.findById(req.userId);
+
+    const webexConfig = {
+      title: meetingTitle,
+      description: meetingDescription || `Meeting created by ${user.name}`,
+      startTime,
+      duration,
+      participantEmails
+    };
+
+    const webexMeeting = await webexService.createMeeting(webexConfig);
+
+    // Create session in MongoDB
+    const sessionId = crypto.randomBytes(16).toString('hex');
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+
+    const sessionData = {
+      userId: req.userId,
+      sessionId,
+      sessionToken,
+      sessionSecret: crypto.randomBytes(32).toString('hex'),
+      provider: 'webex',
+      meetingTitle,
+      meetingDescription,
+      status: 'active',
+      webexMeetingId: webexMeeting.webexMeetingId,
+      webexMeetingNumber: webexMeeting.webexMeetingNumber,
+      webexSipAddress: webexMeeting.sipAddress,
+      meetingUrl: webexMeeting.meetingUrl,
+      meetingPassword: webexMeeting.joinPassword,
+      organizerEmail: user.email,
+      organizerName: user.name,
+      participantEmails,
+      linkedClientEmail: clientEmail,
+      scheduledStartTime: new Date(startTime),
+      duration,
+      recordingEnabled: true,
+      encryptionEnabled: true,
+      encryptionLevel: 'enterprise',
+      clientId,
+      leadId,
+      createdBy: req.userId,
+      lastHeartbeat: new Date()
+    };
+
+    const session = new MeetingRoomSession(sessionData);
+    await session.save();
+
+    return successResponse(
+      res,
+      {
+        success: true,
+        sessionId: session.sessionId,
+        webexMeetingId: webexMeeting.webexMeetingId,
+        webexMeetingNumber: webexMeeting.webexMeetingNumber,
+        meetingUrl: webexMeeting.meetingUrl,
+        joinPassword: webexMeeting.joinPassword,
+        sipAddress: webexMeeting.sipAddress,
+        message: 'Webex meeting created successfully'
+      },
+      'Webex meeting created successfully',
+      201
+    );
+  } catch (error) {
+    console.error('Error creating Webex meeting:', error);
+    throw new Error(`Failed to create Webex meeting: ${error.message}`);
+  }
+}));
+
+// POST /api/meeting-rooms/:sessionId/end-meeting - End persistent Webex meeting
+router.post('/:sessionId/end-meeting', asyncHandler(async (req, res) => {
+  const { endReason } = req.body;
+
+  const session = await MeetingRoomSession.findOne({
+    sessionId: req.params.sessionId,
+    userId: req.userId
+  });
+
+  if (!session) {
+    throw new NotFoundError('Meeting room session');
+  }
+
+  if (session.provider !== 'webex') {
+    throw new ValidationError('This endpoint only supports Webex meetings');
+  }
+
+  try {
+    // End meeting via Webex API
+    const webexService = new WebexMeetingService();
+    await webexService.endMeeting(session.webexMeetingId);
+
+    // End session in MongoDB
+    await session.endSession(req.userId);
+
+    // Calculate actual duration
+    const durationMinutes = Math.floor(
+      (session.actualEndTime - session.actualStartTime) / 1000 / 60
+    );
+
+    // Get recordings if available
+    let recordings = [];
+    try {
+      recordings = await webexService.getMeetingRecordings(session.webexMeetingId);
+    } catch (err) {
+      console.log('Recording retrieval not available yet');
+    }
+
+    return successResponse(
+      res,
+      {
+        success: true,
+        sessionId: session.sessionId,
+        meetingEnded: true,
+        duration: durationMinutes,
+        participantCount: session.participants.filter(p => p.isActive === false).length,
+        recordings: recordings.length > 0 ? recordings : null,
+        message: 'Meeting ended successfully'
+      },
+      'Meeting ended successfully'
+    );
+  } catch (error) {
+    console.error('Error ending Webex meeting:', error);
+    throw new Error(`Failed to end meeting: ${error.message}`);
+  }
+}));
+
+// GET /api/meeting-rooms/:sessionId/meeting-status - Get current meeting status
+router.get('/:sessionId/meeting-status', asyncHandler(async (req, res) => {
+  const session = await MeetingRoomSession.findOne({
+    sessionId: req.params.sessionId,
+    userId: req.userId
+  });
+
+  if (!session) {
+    throw new NotFoundError('Meeting room session');
+  }
+
+  if (session.provider !== 'webex') {
+    throw new ValidationError('This endpoint only supports Webex meetings');
+  }
+
+  // Calculate current duration if meeting is active
+  let currentDuration = 0;
+  if (session.status === 'active' && session.actualStartTime) {
+    currentDuration = Math.floor((Date.now() - session.actualStartTime) / 1000 / 60);
+  }
+
+  return successResponse(
+    res,
+    {
+      sessionId: session.sessionId,
+      status: session.status,
+      meetingId: session.webexMeetingId,
+      meetingNumber: session.webexMeetingNumber,
+      participants: session.participants.map(p => ({
+        email: p.email,
+        name: p.name,
+        joinedAt: p.joinedAt,
+        isActive: p.isActive,
+        role: p.role
+      })),
+      duration: currentDuration,
+      recordingStatus: session.metrics.recordingStatus,
+      totalParticipants: session.participants.length,
+      activeParticipants: session.participants.filter(p => p.isActive).length
+    },
+    'Meeting status retrieved successfully'
+  );
+}));
+
+// POST /api/meeting-rooms/:sessionId/add-participant - Add participant during meeting
+router.post('/:sessionId/add-participant', asyncHandler(async (req, res) => {
+  const { email, name } = req.body;
+
+  if (!email) {
+    throw new ValidationError('Participant email is required');
+  }
+
+  const session = await MeetingRoomSession.findOne({
+    sessionId: req.params.sessionId,
+    userId: req.userId
+  });
+
+  if (!session) {
+    throw new NotFoundError('Meeting room session');
+  }
+
+  if (session.provider !== 'webex') {
+    throw new ValidationError('This endpoint only supports Webex meetings');
+  }
+
+  try {
+    // Add participant via Webex API
+    const webexService = new WebexMeetingService();
+    const participant = await webexService.addParticipant(
+      session.webexMeetingId,
+      email,
+      name
+    );
+
+    // Store in session
+    if (!session.participantEmails.includes(email)) {
+      session.participantEmails.push(email);
+      await session.save();
+    }
+
+    return successResponse(
+      res,
+      {
+        success: true,
+        email,
+        name,
+        message: 'Participant invitation sent successfully'
+      },
+      'Participant added successfully'
+    );
+  } catch (error) {
+    console.error('Error adding participant:', error);
+    throw new Error(`Failed to add participant: ${error.message}`);
+  }
 }));
 
 module.exports = router;

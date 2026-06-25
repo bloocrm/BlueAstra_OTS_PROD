@@ -41,6 +41,41 @@ const meetingRoomSessionSchema = new mongoose.Schema(
       select: false
     },
 
+    // Webex-Specific Fields
+    webexMeetingId: String,
+    webexMeetingNumber: Number,
+    webexSipAddress: String,
+    meetingUrl: String,
+    meetingPassword: {
+      type: String,
+      select: false
+    },
+    organizerEmail: String,
+    organizerName: String,
+    participantEmails: [String],
+    linkedClientEmail: String,
+    emailsSent: {
+      inviteEmail: {
+        success: Boolean,
+        sentAt: Date,
+        recipients: [String]
+      },
+      reminderEmail: {
+        success: Boolean,
+        sentAt: Date,
+        recipients: [String]
+      },
+      recordingEmail: {
+        success: Boolean,
+        sentAt: Date,
+        recipients: [String]
+      }
+    },
+    recordingId: String,
+    recordingUrl: String,
+    recordingPlaybackUrl: String,
+    recordingPassword: String,
+
     // Meeting Configuration
     meetingTitle: String,
     meetingDescription: String,
