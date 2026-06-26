@@ -178,6 +178,13 @@ const emailClientApiRoutes = require('./routes/email-client-api');
 app.use('/api', emailClientApiRoutes);
 
 // =====================================================
+// MEETING EMAIL ROUTES
+// =====================================================
+
+const meetingEmailRoutes = require('./routes/meeting-email');
+app.use('/api', meetingEmailRoutes);
+
+// =====================================================
 // ERROR HANDLING
 // =====================================================
 

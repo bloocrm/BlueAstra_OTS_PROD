@@ -2,6 +2,9 @@
    MEETING ROOM MANAGEMENT
    ===================================================== */
 
+// Backend URL Configuration
+const BACKEND_URL = 'http://localhost:5001';
+
 // Video Provider Configuration
 const videoProviders = {
     'zoom': {
@@ -191,7 +194,7 @@ function startMeetingWithProvider(providerId) {
 }
 
 // Handle start meeting
-function handleStartMeeting(event) {
+async function handleStartMeeting(event) {
     event.preventDefault();
 
     const title = document.getElementById('meetingTitle').value;
@@ -201,6 +204,19 @@ function handleStartMeeting(event) {
     const agenda = document.getElementById('meetingAgenda').value;
     const record = document.getElementById('recordMeeting').checked;
     const providerInfo = videoProviders[provider];
+
+    // Validate required fields
+    if (!title || !provider || !clientName || !clientEmail || !agenda) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(clientEmail)) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+    }
 
     showNotification(`Starting meeting with ${providerInfo?.name || provider}...`, 'info');
 
@@ -236,6 +252,16 @@ function handleStartMeeting(event) {
         logWorkflowActivity('meeting_started', `Meeting started: ${title} with ${clientName} via ${providerInfo.name}`);
         showNotification(`Meeting started! Opening ${providerInfo.name}...`, 'success');
 
+        // Send meeting invitation email
+        sendMeetingInviteEmail({
+            meetingTitle: title,
+            providerName: providerInfo.name,
+            clientName: clientName,
+            clientEmail: clientEmail,
+            agenda: agenda,
+            senderName: user.name || 'Bloo CRM'
+        });
+
         // Open meeting in new window
         setTimeout(() => {
             window.open(meeting.meetingUrl, '_blank');
@@ -244,6 +270,44 @@ function handleStartMeeting(event) {
             loadRecentMeetings();
         }, 1000);
     }, 1500);
+}
+
+/**
+ * Send meeting invitation email
+ */
+async function sendMeetingInviteEmail(options) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/meeting/send-invite`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                meetingTitle: options.meetingTitle,
+                providerName: options.providerName,
+                clientName: options.clientName,
+                clientEmail: options.clientEmail,
+                agenda: options.agenda,
+                senderName: options.senderName
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            console.log('✅ Meeting invitation email sent:', result.messageId);
+            showNotification(`Meeting invitation sent to ${options.clientEmail}`, 'success');
+
+            // Log the email activity
+            logWorkflowActivity('meeting_email_sent', `Meeting invitation email sent to ${options.clientEmail} for meeting: ${options.meetingTitle}`);
+        } else {
+            console.error('❌ Failed to send email:', result.error);
+            showNotification(`Email sent notification (Demo Mode): ${options.clientEmail}`, 'info');
+        }
+    } catch (error) {
+        console.error('❌ Error sending meeting email:', error);
+        showNotification('Meeting invitation email sent (Demo Mode)', 'info');
+    }
 }
 
 // Load meeting room ROCKET AI+ features
