@@ -41,7 +41,7 @@
     "paypal-rest-sdk": "^1.7.1",
     "razorpay": "^2.9.1",
     "redis": "^4.6.5",
-    "uuid": "^9.0.0",
+    "uuid": "^14.0.0",
     "winston": "^3.8.2",
     "xss-clean": "^0.1.1"
   },
