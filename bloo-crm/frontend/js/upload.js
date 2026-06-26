@@ -64,56 +64,75 @@ function handleLeadDataUpload(event) {
     parseFile(file, 'lead', statusDiv, fileInput);
 }
 
-// Parse CSV or Excel file
-function parseFile(file, type, statusDiv, fileInput) {
+// Parse file with format detection and conversion
+async function parseFile(file, type, statusDiv, fileInput) {
     const fileName = file.name;
     const fileExtension = fileName.split('.').pop().toLowerCase();
 
-    if (fileExtension === 'csv') {
-        parseCSV(file, type, statusDiv, fileInput);
-    } else if (['xlsx', 'xls'].includes(fileExtension)) {
-        parseExcel(file, type, statusDiv, fileInput);
-    } else {
-        showUploadStatus(statusDiv, 'Unsupported file format. Please use CSV or Excel files.', 'error');
+    try {
+        showUploadStatus(statusDiv, `Converting ${fileConverter.getFileTypeLabel(fileExtension)} file to CSV format...`, 'info');
+
+        // Validate and convert file
+        const csvData = await fileConverter.convertToCSV(file);
+
+        // Parse the CSV data
+        parseCSVFromData(csvData, type, statusDiv, fileInput);
+    } catch (error) {
+        console.error('File conversion error:', error);
+        showUploadStatus(
+            statusDiv,
+            `Error converting file: ${error.message}`,
+            'error'
+        );
     }
 }
 
-// Parse CSV file
+// Parse CSV data directly (without file)
+function parseCSVFromData(csvData, type, statusDiv, fileInput) {
+    try {
+        const csv = csvData.trim();
+        const lines = csv.split('\n');
+
+        if (lines.length < 2) {
+            showUploadStatus(statusDiv, 'File must contain header and at least one data row', 'error');
+            return;
+        }
+
+        const headers = parseCSVLine(lines[0]);
+        const data = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim()) {
+                const row = parseCSVLine(lines[i]);
+                const obj = {};
+
+                headers.forEach((header, index) => {
+                    obj[header] = row[index] || '';
+                });
+
+                data.push(obj);
+            }
+        }
+
+        if (data.length === 0) {
+            showUploadStatus(statusDiv, 'No data rows found in file', 'error');
+            return;
+        }
+
+        processImportedData(data, type, statusDiv, fileInput);
+    } catch (error) {
+        showUploadStatus(statusDiv, `Error parsing file: ${error.message}`, 'error');
+    }
+}
+
+// Parse CSV file (kept for backward compatibility)
 function parseCSV(file, type, statusDiv, fileInput) {
     const reader = new FileReader();
 
     reader.onload = (e) => {
         try {
             const csv = e.target.result;
-            const lines = csv.trim().split('\n');
-
-            if (lines.length < 2) {
-                showUploadStatus(statusDiv, 'CSV file must contain header and at least one data row', 'error');
-                return;
-            }
-
-            const headers = parseCSVLine(lines[0]);
-            const data = [];
-
-            for (let i = 1; i < lines.length; i++) {
-                if (lines[i].trim()) {
-                    const row = parseCSVLine(lines[i]);
-                    const obj = {};
-
-                    headers.forEach((header, index) => {
-                        obj[header] = row[index] || '';
-                    });
-
-                    data.push(obj);
-                }
-            }
-
-            if (data.length === 0) {
-                showUploadStatus(statusDiv, 'No data rows found in CSV', 'error');
-                return;
-            }
-
-            processImportedData(data, type, statusDiv, fileInput);
+            parseCSVFromData(csv, type, statusDiv, fileInput);
         } catch (error) {
             showUploadStatus(statusDiv, `Error parsing CSV: ${error.message}`, 'error');
         }

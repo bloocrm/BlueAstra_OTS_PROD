@@ -87,6 +87,13 @@ app.get('/api/version', (req, res) => {
 });
 
 // =====================================================
+// OAUTH AUTHENTICATION ROUTES
+// =====================================================
+
+const oauthAuthRoutes = require('./routes/oauth-auth');
+app.use('/api/auth', oauthAuthRoutes);
+
+// =====================================================
 // AUTHENTICATION ROUTES
 // =====================================================
 

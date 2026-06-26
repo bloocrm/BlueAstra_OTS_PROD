@@ -251,14 +251,14 @@
                     <div class="upload-container">
                         <div class="upload-section">
                             <h2><i class="fas fa-cloud-upload-alt"></i> Upload Source Data</h2>
-                            <p class="section-subtitle">Import client and lead data in bulk using CSV or Excel files</p>
+                            <p class="section-subtitle">Import client and lead data in bulk using CSV, Excel, ODS, or PDF files</p>
 
                             <!-- Instructions -->
                             <div class="instructions-container">
                                 <div class="instruction-card">
                                     <h3><i class="fas fa-info-circle"></i> Upload Instructions</h3>
                                     <div class="instruction-content">
-                                        <p><strong>Supported Formats:</strong> CSV (.csv) or Excel (.xlsx, .xls)</p>
+                                        <p><strong>Supported Formats:</strong> CSV (.csv), Excel (.xlsx, .xls), LibreOffice Calc (.ods), and PDF (.pdf)</p>
                                         <p><strong>File Size Limit:</strong> Maximum 5MB per file</p>
                                         <p><strong>Important:</strong></p>
                                         <ul>
@@ -306,9 +306,9 @@ John Doe,john@example.com,555-1234,555-5678,123 Main St,456 Business Ave,B2B,Tec
 
                             <form onsubmit="handleClientDataUpload(event)" class="upload-form">
                                 <div class="form-group">
-                                    <label for="clientFileInput">Select Client Data File (CSV or Excel)</label>
+                                    <label for="clientFileInput">Select Client Data File (CSV, Excel, ODS, or PDF)</label>
                                     <div class="file-input-wrapper">
-                                        <input type="file" id="clientFileInput" accept=".csv,.xlsx,.xls" required>
+                                        <input type="file" id="clientFileInput" accept=".csv,.xlsx,.xls,.ods,.pdf" required>
                                         <span class="file-name">Choose file...</span>
                                     </div>
                                 </div>
@@ -339,9 +339,9 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
 
                             <form onsubmit="handleLeadDataUpload(event)" class="upload-form">
                                 <div class="form-group">
-                                    <label for="leadFileInput">Select Lead Data File (CSV or Excel)</label>
+                                    <label for="leadFileInput">Select Lead Data File (CSV, Excel, ODS, or PDF)</label>
                                     <div class="file-input-wrapper">
-                                        <input type="file" id="leadFileInput" accept=".csv,.xlsx,.xls" required>
+                                        <input type="file" id="leadFileInput" accept=".csv,.xlsx,.xls,.ods,.pdf" required>
                                         <span class="file-name">Choose file...</span>
                                     </div>
                                 </div>
@@ -1917,6 +1917,11 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/communications.js"></script>
     <script src="js/workflow.js"></script>
     <script src="js/ai-insights.js"></script>
+    <!-- File Conversion Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="js/file-converter.js"></script>
     <script src="js/upload.js"></script>
     <script src="js/sync.js"></script>
     <script src="js/email-platform-manager.js"></script>

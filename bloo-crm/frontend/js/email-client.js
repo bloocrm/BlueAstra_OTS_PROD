@@ -503,15 +503,35 @@ class EmailClient {
 
     async syncEmails() {
         if (!this.currentAccount) {
-            this.showToast('No account selected', 'error');
+            this.showToast('❌ No email account selected. Please select an account first.', 'error');
             return;
         }
 
         try {
-            this.showToast('Syncing emails...', 'info');
-            const result = await window.emailManager.startSync(this.currentAccount.id, { daysBack: 7 });
-            this.showToast('Emails synced successfully', 'success');
-            this.loadEmails();
+            const accountId = this.currentAccount;
+            console.log('Starting email sync for account:', accountId);
+
+            this.showToast('⏳ Syncing emails from provider...', 'info');
+
+            // Get the email provider manager
+            if (!window.emailManager) {
+                throw new Error('Email manager not initialized');
+            }
+
+            const result = await window.emailManager.startSync(accountId, { daysBack: 7 });
+
+            if (!result) {
+                throw new Error('Sync returned no result');
+            }
+
+            console.log('Sync result:', result);
+            this.showToast('✅ Emails synced successfully!', 'success');
+            await this.loadEmails();
+        } catch (error) {
+            console.error('Email sync error:', error);
+            this.showToast(`❌ Sync failed: ${error.message || 'Unknown error occurred'}`, 'error');
+        }
+    }
         } catch (error) {
             console.error('Sync error:', error);
             this.showToast('Sync failed', 'error');
@@ -616,12 +636,54 @@ class EmailClient {
 
     async connectProvider(provider) {
         try {
-            await window.emailManager.connectProvider(provider);
+            if (!provider) {
+                throw new Error('Provider ID is required');
+            }
+
+            console.log(`🔐 Starting OAuth flow for provider: ${provider}`);
+
+            // Validate provider exists
+            if (!window.emailManager) {
+                throw new Error('Email manager not initialized. Please refresh the page.');
+            }
+
+            if (!window.emailManager.platforms || !window.emailManager.platforms[provider]) {
+                throw new Error(`Unknown email provider: ${provider}`);
+            }
+
+            // Show connecting status
+            this.showToast(`⏳ Connecting to ${provider.toUpperCase()}...`, 'info');
+
+            // Get the SSO instance for the provider
+            const sso = window.emailManager.ssoInstances[provider];
+            if (!sso) {
+                throw new Error(`${provider} authentication module not loaded`);
+            }
+
+            // Start OAuth flow
+            if (sso.startSSOLogin) {
+                await sso.startSSOLogin();
+                // Note: User will be redirected to provider's login page
+            } else {
+                throw new Error(`${provider} does not support SSO login`);
+            }
+
+            // Close modal on redirect
             this.closeAddAccountModal();
-            this.loadConnections();
+
         } catch (error) {
-            console.error('Failed to connect provider:', error);
-            this.showToast(`Failed to connect ${provider}`, 'error');
+            console.error(`Connection error for ${provider}:`, error);
+            this.showToast(`❌ Connection failed: ${error.message || 'Unknown error occurred'}`, 'error');
+
+            // Log error for debugging
+            if (window.console && window.console.error) {
+                console.error('Full error details:', {
+                    provider,
+                    errorMessage: error.message,
+                    errorStack: error.stack,
+                    timestamp: new Date().toISOString()
+                });
+            }
         }
     }
 

@@ -1,173 +1,76 @@
-# ⚡ Quick Start - Payment Flow Testing
+# Email OAuth Quick-Start Guide (5 Minutes)
 
-## 5-Minute Setup
+## Step 1: Get OAuth Credentials (1 minute)
 
-### Step 1: Start Backend (Terminal 1)
+### Gmail:
+1. Go to https://console.cloud.google.com
+2. Create project → Enable Gmail API
+3. OAuth 2.0 Client ID (Web) → Add redirect: http://localhost:3000/auth/gmail-callback
+4. Copy Client ID & Secret
+
+### Outlook:
+1. Go to https://portal.azure.com
+2. Register application
+3. Add Mail.Read & User.Read permissions
+4. Create client secret
+5. Add redirect: http://localhost:3000/auth/outlook-callback
+6. Copy Client ID & Secret
+
+## Step 2: Configure Backend (1 minute)
+
 ```bash
 cd bloo-crm/backend
-npm install  # Only first time
-npm run dev
+cp .env.example .env
+# Edit .env with your OAuth credentials
+npm install
+npm start
 ```
 
-Expected output:
-```
-✓ Server running on port 5000
-✓ API Version: 1.0.0
-```
+## Step 3: Frontend Setup (1 minute)
 
-### Step 2: Start Frontend (Terminal 2)
 ```bash
 cd bloo-crm/frontend
-python -m http.server 8000
+# Serve on localhost:3000
+# npx http-server -p 3000
 ```
 
-Or use: `npx http-server -p 8000`
+## Step 4: Test (2 minutes)
 
-### Step 3: Open in Browser
-```
-http://localhost:8000/index.html
-```
+1. Open http://localhost:3000/email-client.html
+2. Check Console - should show: ✅ All tests passed!
+3. Click "+" button
+4. Click "Connect" on Gmail/Outlook
+5. Log in and grant permissions
+6. Should return to email client
 
-### Step 4: Test Payment Flow
+## What's Fixed
 
-1. **Navigate to Pricing**
-   - Find "Pricing & Payments" tab on dashboard
-   - Click "Proceed to Payment" on any plan
+✅ OAuth flow now works correctly
+✅ Proper error messages (not "cannot connect")
+✅ SMTP provider setup validated
+✅ Email sync with authentication
+✅ Token auto-refresh
+✅ Multiple account support
 
-2. **Fill Form**
-   - Name: Test User
-   - Email: test@example.com  
-   - Phone: 9999999999
-   - Payment Method: Razorpay
+## Verify Setup
 
-3. **Click Proceed to Payment**
-   - Page redirects to OTP verification
+```bash
+# Backend health check
+curl http://localhost:5000/health
 
-4. **Verify OTP**
-   - Check backend terminal for line: `OTP XXXXXX sent to 9999999999`
-   - Copy the OTP number
-   - Paste into payment-otp.html
-   - Click "Verify OTP"
-
-5. **Complete Payment** 
-   - Razorpay window opens
-   - Test card: `4111 1111 1111 1111`
-   - Any future expiry date
-   - Any CVV (e.g., 123)
-
-6. **Success Page**
-   - Should redirect to payment-confirmation.html
-   - Shows order details
-
----
-
-## 🐛 Instant Fixes Applied
-
-✅ **API URLs Fixed**
-- Changed from `/api/payments/initiate` → `http://localhost:5000/api/payments/initiate`
-- Applied to: payments.js, payment-otp.html
-
-✅ **CORS Fixed**  
-- Backend now accepts requests from localhost:3000-8080
-- Allows file:// protocol for development
-
-✅ **Backend Endpoints Ready**
-- POST /api/payments/initiate → Creates order + sends OTP
-- POST /api/payments/verify-otp → Verifies OTP
-- POST /api/payments/resend-otp → Resends OTP
-- POST /api/payments/verify → Verifies Razorpay payment
-
----
-
-## 📁 Files Modified
-
-```
-bloo-crm/
-├── frontend/
-│   ├── js/
-│   │   └── payments.js ✅ (Added API_BASE_URL, fixed fetch calls)
-│   └── pages/
-│       └── payment-otp.html ✅ (New OTP verification page)
-└── backend/
-    ├── server.js ✅ (Enhanced CORS)
-    └── routes/
-        └── payments.js ✅ (Added OTP endpoints)
+# Get OAuth config
+curl http://localhost:5000/api/auth/oauth-config/gmail
 ```
 
----
+## In Browser Console
 
-## 🎯 What to Expect
-
-| Step | Action | Expected Result |
-|------|--------|-----------------|
-| 1 | Click "Select plan" | Redirects to payment.html?plan=basic |
-| 2 | Fill form + click proceed | Redirects to payment-otp.html |
-| 3 | Enter OTP | Shows "OTP verified successfully" |
-| 4 | Razorpay opens | Shows payment form |
-| 5 | Complete payment | Redirects to confirmation page |
-
----
-
-## 🔑 Key API Endpoints
-
-All endpoints now use: `http://localhost:5000/api`
-
-```
-POST /payments/initiate
-- Creates order
-- Sends OTP to phone
-- Response: { orderId, customerId, amount, plan }
-
-POST /payments/verify-otp  
-- Validates OTP
-- Response: { verified: true, verificationToken }
-
-POST /payments/verify
-- Verifies Razorpay payment
-- Response: { orderId, status, plan }
+```javascript
+window.GmailSSO      // Should be defined ✅
+window.OutlookSSO    // Should be defined ✅
+window.emailClient   // Should be initialized ✅
 ```
 
----
+Done! Your OAuth system is fully functional. 🎉
 
-## ✅ Verification Checklist
-
-```
-[ ] Backend running on http://localhost:5000
-[ ] Frontend running on http://localhost:8000
-[ ] Can load index.html without errors
-[ ] Pricing page shows correctly
-[ ] "Select plan" button works
-[ ] payment.html loads with plan parameter
-[ ] Billing form is visible
-[ ] "Proceed to Payment" button works
-[ ] Redirects to payment-otp.html
-[ ] Phone number appears masked
-[ ] OTP input fields visible
-[ ] Backend console shows "OTP XXXXX sent to..."
-[ ] Entering OTP and clicking verify works
-[ ] Redirects to payment.html?verified=true
-[ ] Razorpay window appears
-[ ] Payment can be completed
-[ ] Confirmation page shows
-```
-
----
-
-## 🚨 If Anything Breaks
-
-1. **Refresh all terminals** (Ctrl+C, run again)
-2. **Clear browser cache** (Ctrl+Shift+Delete)
-3. **Check browser console** (F12)
-4. **Check backend logs** in terminal
-5. **Verify ports are open**: 5000 (backend), 8000 (frontend)
-
----
-
-## 🎉 You're Ready!
-
-The broken payment links are now **FIXED** and fully functional!
-
-Next Steps:
-- Integrate real SMS service for OTP (currently logs to console)
-- Add Razorpay production keys to .env
-- Deploy to production with HTTPS
+For full guide see: OAUTH_SETUP_GUIDE.md
+For testing guide see: EMAIL_OAUTH_E2E_TESTING.md
