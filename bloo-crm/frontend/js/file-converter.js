@@ -216,30 +216,28 @@ class FileConverter {
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
 
-        return new Promise(async (resolve, reject) => {
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
 
-                let fullText = '';
+            let fullText = '';
 
-                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    const page = await pdf.getPage(pageNum);
-                    const textContent = await page.getTextContent();
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
 
-                    const pageText = textContent.items.map(item => item.str).join(' ');
-                    fullText += pageText + '\n';
-                }
-
-                // Convert extracted text to basic CSV format
-                const lines = fullText.split('\n').filter(line => line.trim().length > 0);
-                const csv = lines.map(line => this.escapeCSV(line.trim())).join('\n');
-
-                resolve(csv);
-            } catch (error) {
-                reject(new Error(`Error converting PDF to CSV: ${error.message}`));
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + '\n';
             }
-        });
+
+            // Convert extracted text to basic CSV format
+            const lines = fullText.split('\n').filter(line => line.trim().length > 0);
+            const csv = lines.map(line => this.escapeCSV(line.trim())).join('\n');
+
+            return csv;
+        } catch (error) {
+            throw new Error(`Error converting PDF to CSV: ${error.message}`);
+        }
     }
 
     /**

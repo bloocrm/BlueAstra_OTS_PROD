@@ -1,0 +1,6 @@
+name,email,phone,company,leadStatus,leadSource,notes
+John Doe,john@example.com,555-1234,TechCorp,Interested,Website,Great prospect from blog
+Jane Smith,jane@example.com,555-5678,FinanceInc,Qualified,Referral,Referred by existing client
+Mike Johnson,mike@example.com,555-9999,DataSys,Contacted,LinkedIn,Reached out regarding proposal
+Sarah Williams,sarah@example.com,555-4321,CloudBase,Negotiating,Trade Show,Met at industry conference
+Robert Brown,robert@example.com,555-8765,SecureNet,Prospect,Email Campaign,Opened email campaign link

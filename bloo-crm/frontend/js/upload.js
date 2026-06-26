@@ -21,7 +21,7 @@ document.addEventListener('change', (e) => {
 });
 
 // Handle client data upload
-function handleClientDataUpload(event) {
+async function handleClientDataUpload(event) {
     event.preventDefault();
 
     const fileInput = document.getElementById('clientFileInput');
@@ -39,11 +39,11 @@ function handleClientDataUpload(event) {
         return;
     }
 
-    parseFile(file, 'client', statusDiv, fileInput);
+    await parseFile(file, 'client', statusDiv, fileInput);
 }
 
 // Handle lead data upload
-function handleLeadDataUpload(event) {
+async function handleLeadDataUpload(event) {
     event.preventDefault();
 
     const fileInput = document.getElementById('leadFileInput');
@@ -61,7 +61,7 @@ function handleLeadDataUpload(event) {
         return;
     }
 
-    parseFile(file, 'lead', statusDiv, fileInput);
+    await parseFile(file, 'lead', statusDiv, fileInput);
 }
 
 // Parse file with format detection and conversion
