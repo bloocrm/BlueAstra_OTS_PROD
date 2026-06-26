@@ -913,9 +913,38 @@ body {
    ===================================================== */
 
 .provider-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 15px;
+    display: block;
+    font-size: 0;
+}
+
+.provider-section {
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+.provider-section h4 {
+    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.provider-section .provider-card {
+    display: inline-block;
+    width: 23%;
+    margin: 0 1% 12px 0;
+    vertical-align: top;
+    font-size: 14px;
+}
+
+.provider-section .provider-card:nth-child(4n+1) {
+    margin-left: 0;
+}
+
+.provider-section .provider-card:nth-child(4n) {
+    margin-right: 0;
 }
 
 .provider-card {
@@ -924,13 +953,15 @@ body {
     border: 2px solid #ecf0f1;
     border-radius: 8px;
     text-align: center;
-    cursor: pointer;
     transition: all 0.3s;
+    position: relative;
+    box-sizing: border-box;
 }
 
 .provider-card:hover {
     border-color: #3498db;
     background: #ecf0f1;
+    transform: translateY(-2px);
 }
 
 .provider-logo {
@@ -942,6 +973,34 @@ body {
     font-size: 13px;
     font-weight: 600;
     color: #2c3e50;
+    margin-bottom: 10px;
+    white-space: pre-line;
+}
+
+.btn-connect {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-connect:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+}
+
+.btn-connect.smtp-connect {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-connect.smtp-connect:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 }
 
 /* =====================================================
@@ -1074,6 +1133,15 @@ body {
     .email-item {
         grid-template-columns: 40px 1fr 100px;
     }
+
+    .provider-section .provider-card {
+        width: 32%;
+        margin: 0 1% 12px 0;
+    }
+
+    .provider-section .provider-card:nth-child(3n) {
+        margin-right: 0;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1103,6 +1171,15 @@ body {
     .detail-actions {
         width: 100%;
         margin-top: 10px;
+    }
+
+    .provider-section .provider-card {
+        width: 48%;
+        margin: 0 2% 12px 0;
+    }
+
+    .provider-section .provider-card:nth-child(2n) {
+        margin-right: 0;
     }
 }
 

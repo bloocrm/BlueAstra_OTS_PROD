@@ -528,13 +528,18 @@ class EmailClient {
         list.innerHTML = '';
 
         const providers = [
-            { name: 'Gmail', icon: '📧', id: 'gmail' },
-            { name: 'Outlook', icon: '📨', id: 'outlook' },
-            { name: 'Yahoo', icon: '🔶', id: 'yahoo' },
-            { name: 'ProtonMail', icon: '🔐', id: 'protonmail' },
-            { name: 'Tutamail', icon: '📮', id: 'tutamail' },
-            { name: 'MailChimp', icon: '📬', id: 'mailchimp' }
+            { name: 'Gmail', icon: '📧', id: 'gmail', type: 'imap' },
+            { name: 'Outlook', icon: '📨', id: 'outlook', type: 'imap' },
+            { name: 'Yahoo', icon: '🔶', id: 'yahoo', type: 'imap' },
+            { name: 'ProtonMail', icon: '🔐', id: 'protonmail', type: 'imap' },
+            { name: 'Tutamail', icon: '📮', id: 'tutamail', type: 'imap' },
+            { name: 'MailChimp', icon: '📬', id: 'mailchimp', type: 'imap' }
         ];
+
+        // Email providers section
+        const emailSection = document.createElement('div');
+        emailSection.className = 'provider-section';
+        emailSection.innerHTML = '<h4>Email Providers</h4>';
 
         providers.forEach(provider => {
             const card = document.createElement('div');
@@ -542,12 +547,67 @@ class EmailClient {
             card.innerHTML = `
                 <div class="provider-logo">${provider.icon}</div>
                 <div class="provider-name">${provider.name}</div>
+                <button class="btn-connect" data-provider="${provider.id}">Connect</button>
             `;
-            card.addEventListener('click', () => this.connectProvider(provider.id));
-            list.appendChild(card);
+            card.querySelector('.btn-connect').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.connectProvider(provider.id);
+            });
+            emailSection.appendChild(card);
         });
+        list.appendChild(emailSection);
+
+        // SMTP providers section
+        const smtpSection = document.createElement('div');
+        smtpSection.className = 'provider-section';
+        smtpSection.innerHTML = '<h4>SMTP Sending Services</h4>';
+
+        const smtpProviders = [
+            { name: 'Amazon\nSES', icon: '📦', id: 'amazon-ses' },
+            { name: 'Postmark', icon: '📮', id: 'postmark' },
+            { name: 'Mailgun', icon: '💌', id: 'mailgun' },
+            { name: 'SMTP2Go', icon: '🚀', id: 'smtp2go' }
+        ];
+
+        smtpProviders.forEach(provider => {
+            const card = document.createElement('div');
+            card.className = 'provider-card smtp-provider-card';
+            card.innerHTML = `
+                <div class="provider-logo">${provider.icon}</div>
+                <div class="provider-name">${provider.name}</div>
+                <button class="btn-connect smtp-connect" data-provider="${provider.id}">Setup</button>
+            `;
+            card.querySelector('.btn-connect').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.openSMTPProviderModal(provider.id);
+            });
+            smtpSection.appendChild(card);
+        });
+        list.appendChild(smtpSection);
 
         modal.classList.add('active');
+    }
+
+    openSMTPProviderModal(providerId) {
+        const userId = this.getCurrentUserId();
+        const accountId = this.currentAccount || 'default-account';
+
+        const modal = new SMTPProviderModal(userId, accountId);
+
+        modal.onSuccess = (data) => {
+            this.showToast(`${data.providerType} provider configured successfully!`, 'success');
+        };
+
+        modal.open();
+
+        // Pre-select the provider
+        modal.selectProvider(providerId);
+
+        this.closeAddAccountModal();
+    }
+
+    getCurrentUserId() {
+        return localStorage.getItem('userId') || 'user-' + Date.now();
     }
 
     closeAddAccountModal() {

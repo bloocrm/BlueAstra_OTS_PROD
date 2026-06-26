@@ -1,0 +1,567 @@
+/* =====================================================
+   SMTP PROVIDER SETUP MODAL STYLING
+   ===================================================== */
+
+.smtp-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.smtp-modal-overlay.active {
+  display: flex;
+}
+
+.smtp-modal-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
+}
+
+.smtp-modal-header {
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.smtp-modal-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.smtp-modal-header-icon {
+  font-size: 28px;
+}
+
+.smtp-modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.3s;
+}
+
+.smtp-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* =====================================================
+   TABS
+   ===================================================== */
+
+.smtp-tabs-container {
+  display: flex;
+  border-bottom: 2px solid #f0f0f0;
+  padding: 0 24px;
+  gap: 30px;
+}
+
+.smtp-tab-button {
+  background: none;
+  border: none;
+  padding: 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #999;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.smtp-tab-button:hover {
+  color: #667eea;
+}
+
+.smtp-tab-button.active {
+  color: #667eea;
+}
+
+.smtp-tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px 2px 0 0;
+}
+
+.smtp-tab-icon {
+  font-size: 16px;
+}
+
+/* =====================================================
+   TAB CONTENT
+   ===================================================== */
+
+.smtp-modal-body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.smtp-tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.smtp-tab-content.active {
+  display: block;
+}
+
+/* =====================================================
+   PROVIDER SELECTION
+   ===================================================== */
+
+.smtp-provider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.smtp-provider-card {
+  padding: 16px;
+  border: 2px solid #f0f0f0;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #fafafa;
+}
+
+.smtp-provider-card:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.smtp-provider-card.selected {
+  border-color: #667eea;
+  background: #f0f4ff;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+.smtp-provider-logo {
+  font-size: 32px;
+  height: 32px;
+}
+
+.smtp-provider-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.smtp-provider-badge {
+  font-size: 10px;
+  background: #e0e0e0;
+  color: #666;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-top: auto;
+}
+
+.smtp-provider-card.selected .smtp-provider-badge {
+  background: #667eea;
+  color: white;
+}
+
+/* =====================================================
+   FORM GROUPS
+   ===================================================== */
+
+.smtp-form-group {
+  margin-bottom: 18px;
+}
+
+.smtp-form-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.smtp-form-group label .required {
+  color: #e74c3c;
+}
+
+.smtp-form-group label .hint {
+  font-size: 11px;
+  color: #999;
+  font-weight: 400;
+}
+
+.smtp-form-group input,
+.smtp-form-group select,
+.smtp-form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.3s;
+  background: white;
+}
+
+.smtp-form-group input:focus,
+.smtp-form-group select:focus,
+.smtp-form-group textarea:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  outline: none;
+}
+
+.smtp-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.smtp-form-row-full {
+  grid-column: 1 / -1;
+}
+
+/* =====================================================
+   SECTION HEADERS
+   ===================================================== */
+
+.smtp-section-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.smtp-section-icon {
+  font-size: 18px;
+  color: #667eea;
+}
+
+/* =====================================================
+   HELPER TEXT
+   ===================================================== */
+
+.smtp-help-text {
+  font-size: 12px;
+  color: #999;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.smtp-help-text strong {
+  color: #666;
+}
+
+.smtp-info-box {
+  background: #f8f9ff;
+  border-left: 3px solid #667eea;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 16px;
+}
+
+.smtp-info-box strong {
+  color: #333;
+}
+
+/* =====================================================
+   SWITCH / TOGGLE
+   ===================================================== */
+
+.smtp-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.smtp-toggle input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+}
+
+.smtp-toggle label {
+  margin-bottom: 0;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* =====================================================
+   BUTTONS
+   ===================================================== */
+
+.smtp-modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.smtp-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.smtp-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.smtp-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.smtp-btn-primary:active {
+  transform: translateY(0);
+}
+
+.smtp-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.smtp-btn-secondary {
+  background: white;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.smtp-btn-secondary:hover {
+  border-color: #999;
+  background: #f8f8f8;
+}
+
+.smtp-btn-test {
+  background: #27ae60;
+  color: white;
+}
+
+.smtp-btn-test:hover {
+  background: #229954;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+}
+
+.smtp-btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* =====================================================
+   STATUS INDICATORS
+   ===================================================== */
+
+.smtp-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.smtp-status-indicator.verified {
+  background: #d4edda;
+  color: #155724;
+}
+
+.smtp-status-indicator.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.smtp-status-indicator.failed {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.smtp-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.smtp-status-indicator.verified .smtp-status-dot {
+  background: #28a745;
+}
+
+.smtp-status-indicator.pending .smtp-status-dot {
+  background: #ffc107;
+  animation: pulse 2s infinite;
+}
+
+.smtp-status-indicator.failed .smtp-status-dot {
+  background: #dc3545;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* =====================================================
+   FIELD GROUPING
+   ===================================================== */
+
+.smtp-field-group {
+  background: white;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.smtp-field-group-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #667eea;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* =====================================================
+   LOADING STATE
+   ===================================================== */
+
+.smtp-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #667eea;
+}
+
+.smtp-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #f0f0f0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =====================================================
+   ANIMATIONS
+   ===================================================== */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 600px) {
+  .smtp-modal-container {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .smtp-modal-header {
+    padding: 16px;
+  }
+
+  .smtp-modal-body {
+    padding: 16px;
+  }
+
+  .smtp-modal-footer {
+    padding: 16px;
+  }
+
+  .smtp-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .smtp-provider-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
+  .smtp-tabs-container {
+    gap: 20px;
+    padding: 0 16px;
+    overflow-x: auto;
+  }
+}

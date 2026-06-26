@@ -150,6 +150,13 @@ const calendarEventsApiRoutes = require('./routes/calendar-events-api');
 app.use('/api', calendarEventsApiRoutes);
 
 // =====================================================
+// SMTP PROVIDER API ROUTES
+// =====================================================
+
+const smtpProviderApiRoutes = require('./routes/smtp-provider-api');
+app.use('/api', smtpProviderApiRoutes);
+
+// =====================================================
 // EMAIL MANAGEMENT API ROUTES
 // =====================================================
 
