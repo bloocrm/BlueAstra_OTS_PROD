@@ -11,8 +11,10 @@
     if (override) {
         base = override;
     } else if (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http')) {
-        // Served over http(s): assume the API is reachable on port 5000 of the same host
-        base = `${window.location.protocol}//${window.location.hostname}:5000/api`;
+        // Served over http(s): use a SAME-ORIGIN relative path. A reverse proxy
+        // (e.g. nginx) must forward /api to the backend on localhost:5000.
+        // This avoids cross-origin/mixed-content/port-exposure failures.
+        base = '/api';
     } else {
         // Opened via file:// (no origin) — fall back to localhost backend
         base = 'http://localhost:5000/api';
