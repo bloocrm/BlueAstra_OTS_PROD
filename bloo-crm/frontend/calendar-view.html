@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloo Calendar - Month View</title>
+    <link rel="stylesheet" href="css/calendar-view.css">
+</head>
+<body>
+    <div class="calendar-container">
+        <!-- Sidebar -->
+        <div class="calendar-sidebar">
+            <div class="sidebar-header">
+                <h2>📅 Bloo Calendar</h2>
+            </div>
+
+            <!-- Calendar Account Selector -->
+            <div class="account-selector">
+                <label>Connected Calendars:</label>
+                <div class="calendar-accounts" id="calendarAccounts"></div>
+            </div>
+
+            <!-- Mini Calendar (Quick Month Navigation) -->
+            <div class="mini-calendar">
+                <div class="mini-calendar-header">
+                    <button class="mini-nav-btn" id="miniPrev">‹</button>
+                    <span id="miniMonth"></span>
+                    <button class="mini-nav-btn" id="miniNext">›</button>
+                </div>
+                <div class="mini-calendar-days" id="miniCalendarDays"></div>
+            </div>
+
+            <!-- Today Button -->
+            <button class="btn-today" id="btnToday">📍 Today</button>
+
+            <!-- Upcoming Events -->
+            <div class="upcoming-events-section">
+                <h4>Upcoming Events</h4>
+                <div class="upcoming-events-list" id="upcomingEventsList"></div>
+            </div>
+
+            <!-- Calendar Settings -->
+            <div class="sidebar-footer">
+                <button class="btn-icon-small" id="btnCalendarSettings" title="Settings">⚙️</button>
+                <button class="btn-icon-small" id="btnSyncCalendar" title="Sync">🔄</button>
+                <button class="btn-icon-small" id="btnAddCalendar" title="Add Calendar">+</button>
+            </div>
+        </div>
+
+        <!-- Main Calendar View -->
+        <div class="calendar-main">
+            <!-- Calendar Header -->
+            <div class="calendar-header">
+                <button class="btn-month-nav" id="btnPrevMonth">← Previous</button>
+                <div class="month-year-display">
+                    <h1 id="monthName"></h1>
+                    <div class="year-badge" id="yearBadge"></div>
+                </div>
+                <button class="btn-month-nav" id="btnNextMonth">Next →</button>
+            </div>
+
+            <!-- Calendar Controls -->
+            <div class="calendar-controls">
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="month">Month</button>
+                    <button class="view-btn" data-view="week">Week</button>
+                    <button class="view-btn" data-view="day">Day</button>
+                </div>
+                <div class="calendar-actions">
+                    <button class="btn-new-event" id="btnNewEvent">+ New Event</button>
+                    <input type="text" id="eventSearch" class="event-search" placeholder="🔍 Search events...">
+                </div>
+            </div>
+
+            <!-- Main Calendar Grid -->
+            <div class="calendar-grid">
+                <!-- Day Headers -->
+                <div class="calendar-weekdays">
+                    <div class="weekday">Sunday</div>
+                    <div class="weekday">Monday</div>
+                    <div class="weekday">Tuesday</div>
+                    <div class="weekday">Wednesday</div>
+                    <div class="weekday">Thursday</div>
+                    <div class="weekday">Friday</div>
+                    <div class="weekday">Saturday</div>
+                </div>
+
+                <!-- Day Cells -->
+                <div class="calendar-days" id="calendarDays"></div>
+            </div>
+
+            <!-- Legend -->
+            <div class="calendar-legend">
+                <div class="legend-item">
+                    <div class="legend-color google-calendar"></div>
+                    <span>Google Calendar</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color outlook-calendar"></div>
+                    <span>Outlook Calendar</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color calendly-calendar"></div>
+                    <span>Calendly</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color other-calendar"></div>
+                    <span>Other</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div class="modal" id="eventDetailModal">
+        <div class="modal-content event-detail-modal">
+            <div class="modal-header">
+                <h3 id="eventDetailTitle"></h3>
+                <button class="btn-close" id="btnCloseEventDetail">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="event-detail-content" id="eventDetailContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnEditEvent">✏️ Edit</button>
+                <button class="btn btn-danger" id="btnDeleteEvent">🗑️ Delete</button>
+                <button class="btn btn-primary" id="btnCloseEvent">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Event Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content event-modal">
+            <div class="modal-header">
+                <h3 id="eventModalTitle">Create Event</h3>
+                <button class="btn-close" id="btnCloseEvent">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="eventForm">
+                    <div class="form-group">
+                        <label>Event Title *</label>
+                        <input type="text" id="eventTitle" class="form-control" placeholder="Event title" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Calendar *</label>
+                            <select id="eventCalendar" class="form-control" required>
+                                <option value="">Select calendar</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Color</label>
+                            <div class="color-picker" id="colorPicker"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Start Date *</label>
+                            <input type="date" id="eventStartDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Start Time</label>
+                            <input type="time" id="eventStartTime" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>End Date *</label>
+                            <input type="date" id="eventEndDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>End Time</label>
+                            <input type="time" id="eventEndTime" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="eventAllDay">
+                            All Day Event
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="eventDescription" class="form-control" placeholder="Event description" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="eventLocation" class="form-control" placeholder="Event location">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Attendees</label>
+                        <input type="text" id="eventAttendees" class="form-control" placeholder="email@example.com (comma separated)">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Recurrence</label>
+                        <select id="eventRecurrence" class="form-control">
+                            <option value="none">No Recurrence</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="biweekly">Bi-weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="recurrenceEndGroup" style="display: none;">
+                        <label>Recurrence End Date</label>
+                        <input type="date" id="eventRecurrenceEnd" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reminder</label>
+                        <select id="eventReminder" class="form-control">
+                            <option value="none">None</option>
+                            <option value="0">On time</option>
+                            <option value="5">5 minutes before</option>
+                            <option value="15">15 minutes before</option>
+                            <option value="30">30 minutes before</option>
+                            <option value="60">1 hour before</option>
+                            <option value="1440">1 day before</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnCancelEvent">Cancel</button>
+                <button class="btn btn-primary" id="btnSaveEvent">💾 Save Event</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Status Modal -->
+    <div class="modal" id="syncModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Sync Calendars</h3>
+                <button class="btn-close" id="btnCloseSyncModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="sync-status-list" id="syncStatusList"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="btnStartSync">🔄 Start Sync</button>
+                <button class="btn btn-secondary" id="btnCloseSyncBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="calendarSettingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Calendar Settings</h3>
+                <button class="btn-close" id="btnCloseCalendarSettings">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="tab-btn active" data-tab="calendars">Calendars</button>
+                    <button class="tab-btn" data-tab="preferences">Preferences</button>
+                    <button class="tab-btn" data-tab="holidays">Holidays</button>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-pane active" id="calendarsTab">
+                        <div class="calendar-list" id="calendarList"></div>
+                    </div>
+                    <div class="tab-pane" id="preferencesTab">
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="showWeekends">
+                                Show Weekends
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="show24HourTime">
+                                24-Hour Time Format
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>Work Week Start Day</label>
+                            <select id="weekStartDay" class="form-control">
+                                <option value="0">Sunday</option>
+                                <option value="1">Monday</option>
+                                <option value="6">Saturday</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>Default Event Duration (minutes)</label>
+                            <input type="number" id="defaultEventDuration" class="form-control" min="15" max="480" step="15">
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="holidaysTab">
+                        <div class="holiday-list" id="holidayList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/calendar-platform-manager.js"></script>
+    <script src="js/calendar-view.js"></script>
+</body>
+</html>

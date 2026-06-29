@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enroll - RedCRM</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root{
+    --primary:#ff1e1e;
+    --primary-dark:#d90000;
+    --light:#fff5f5;
+    --dark:#222;
+    --white:#ffffff;
+    --text:#555;
+}
+
+body{
+    background:var(--light);
+    color:var(--dark);
+}
+
+/* Header */
+
+header{
+    background:var(--white);
+    padding:20px 8%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.logo{
+    font-size:32px;
+    font-weight:700;
+    color:var(--primary);
+}
+
+nav ul{
+    display:flex;
+    list-style:none;
+    gap:30px;
+}
+
+nav a{
+    text-decoration:none;
+    color:var(--dark);
+    font-weight:600;
+}
+
+.btn{
+    background:var(--primary);
+    color:white;
+    padding:12px 28px;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:600;
+    transition:.3s;
+    border:none;
+    cursor:pointer;
+    display:inline-block;
+}
+
+.container{
+    width:90%;
+    max-width:1200px;
+    margin:40px auto;
+}
+
+.section-title{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+.section-title h2{
+    color:var(--primary);
+    font-size:36px;
+}
+
+/* Package Cards */
+
+.packages{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:25px;
+    margin-bottom:50px;
+}
+
+.package{
+    background:white;
+    border-radius:15px;
+    padding:30px;
+    text-align:center;
+    box-shadow:0 5px 20px rgba(0,0,0,.08);
+    transition:.3s;
+    border:3px solid transparent;
+}
+
+.package:hover{
+    transform:translateY(-5px);
+    border-color:var(--primary);
+}
+
+.package h3{
+    font-size:32px;
+    color:var(--primary);
+}
+
+.price{
+    font-size:42px;
+    font-weight:bold;
+    margin:15px 0;
+}
+
+.package ul{
+    list-style:none;
+    margin:20px 0;
+}
+
+.package ul li{
+    padding:8px 0;
+}
+
+.select-package{
+    margin-top:15px;
+}
+
+/* Enrollment Form */
+
+.form-container{
+    background:white;
+    padding:40px;
+    border-radius:15px;
+    box-shadow:0 5px 20px rgba(0,0,0,.08);
+}
+
+.form-container h2{
+    color:var(--primary);
+    margin-bottom:25px;
+}
+
+.form-group{
+    margin-bottom:18px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+    width:100%;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:8px;
+}
+
+button{
+    background:var(--primary);
+    color:white;
+    border:none;
+    padding:14px 28px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:600;
+}
+
+button:hover{
+    background:var(--primary-dark);
+}
+
+.btn:hover{
+    background:var(--primary-dark);
+}
+
+footer{
+    background:#111;
+    color:white;
+    text-align:center;
+    padding:20px;
+    margin-top:50px;
+}
+
+@media(max-width:900px){
+
+nav{
+    display:none;
+}
+
+</style>
+
+<script>
+
+function choosePackage(packageName, price){
+    // Store the selected package and price in sessionStorage
+    sessionStorage.setItem('selectedPackage', packageName);
+    sessionStorage.setItem('selectedPrice', price);
+    
+    // Redirect to payment page with parameters
+    window.location.href = 'Payment.html?package=' + encodeURIComponent(packageName) + '&price=' + encodeURIComponent(price);
+}
+
+</script>
+
+</head>
+
+<body>
+
+<header>
+    <div class="logo">RedCRM</div>
+    <nav>
+        <ul>
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="Features.html">Features</a></li>
+            <li><a href="Enroll.html">Enroll</a></li>
+            <li><a href="CusomerSupport.html">Customer Support</a></li>
+        </ul>
+    </nav>
+    <div style="display:flex; gap:12px; align-items:center;">
+    <a href="login.html" class="btn btn-login">Login</a>
+      <a href="Renew.html" class="btn btn-login">Renew/ Upgrade</a> 
+    <a href="Features.html" class="btn">Start Free</a>
+</header>
+
+<div class="container">
+
+
+<div class="section-title">
+    <h2>Choose Your CRM Package</h2>
+    <p>Select the package that best fits your business</p>
+</div>
+
+<div class="packages">
+
+    <div class="package">
+
+        <h3>BASIC</h3>
+
+        <div class="price">$5/mo</div>
+
+        <ul>
+            <li>✓ Contact Management</li>
+            <li>✓ Lead Tracking</li>
+            <li>✓ Email Support</li>
+            <li>✓ 5 Users</li>
+        </ul>
+
+        <button onclick="choosePackage('BASIC')">
+            Select BASIC
+        </button>
+
+    </div>
+
+    <div class="package">
+
+        <h3>SWIFT</h3>
+
+        <div class="price">$10/mo</div>
+
+        <ul>
+            <li>✓ Sales Automation</li>
+            <li>✓ Advanced Reporting</li>
+            <li>✓ Workflow Automation</li>
+            <li>✓ 25 Users</li>
+        </ul>
+
+        <button onclick="choosePackage('SWIFT AI', '$10')">
+            Select SWIFT AI
+        </button>
+
+    </div>
+
+    <div class="package">
+
+        <h3>ROCKET</h3>
+
+        <div class="price">$15/mo</div>
+
+        <ul>
+            <li>✓ Full CRM Suite</li>
+            <li>✓ AI Insights</li>
+            <li>✓ Unlimited Users</li>
+            <li>✓ Priority Support</li>
+        </ul>
+
+        <button onclick="choosePackage('Rocket AI+', '$15')">
+            Select Rocket AI+
+        </button>
+
+    </div>
+
+</div>
+
+<div class="form-container" id="enrollmentForm">
+
+    <h2>Customer Enrollment Form</h2>
+
+    <form action="submit.php" method="POST">
+
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" name="fullname" required>
+        </div>
+
+        <div class="form-group">
+            <label>Company Name</label>
+            <input type="text" name="company">
+        </div>
+
+        <div class="form-group">
+            <label>Contact Number</label>
+            <input type="tel" name="phone" required>
+        </div>
+
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label>Selected Package</label>
+
+            <select name="package" id="package" required>
+
+                <option value="">Choose Package</option>
+                <option value="BASIC">BASIC</option>
+                <option value="SWIFT">SWIFT</option>
+                <option value="ROCKET">ROCKET</option>
+
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Business Requirements</label>
+
+            <textarea rows="5"
+                      name="requirements"
+                      placeholder="Tell us about your CRM requirements..."></textarea>
+        </div>
+
+        <button type="submit">
+            Submit Enrollment
+        </button>
+
+    </form>
+
+</div>
+
+
+</div>
+
+<footer>
+    © 2026 RedCRM Enrollment Center
+</footer>
+
+</body>
+</html>

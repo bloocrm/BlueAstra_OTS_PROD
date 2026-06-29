@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedCRM - Customer Support Center</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root{
+    --primary:#ff1e1e;
+    --secondary:#ff4d4d;
+    --dark:#1f1f1f;
+    --light:#fff5f5;
+    --text:#555;
+    --white:#ffffff;
+    --gray:#666;
+}
+
+body{
+    background:var(--light);
+}
+
+/* Header */
+
+header{
+    background:var(--white);
+    padding:20px 8%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.logo{
+    font-size:32px;
+    font-weight:700;
+    color:var(--primary);
+}
+
+nav ul{
+    display:flex;
+    list-style:none;
+    gap:30px;
+}
+
+nav a{
+    text-decoration:none;
+    color:var(--dark);
+    font-weight:600;
+}
+
+.btn{
+    background:var(--primary);
+    color:#fff;
+    padding:12px 28px;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:600;
+    transition:.3s;
+    border:none;
+    cursor:pointer;
+    display:inline-block;
+}
+
+.btn:hover{
+    background:#d90000;
+}
+
+/* Hero */
+
+.hero{
+    text-align:center;
+    padding:50px 8%;
+    background:white;
+}
+
+.hero h1{
+    font-size:48px;
+    margin-bottom:15px;
+}
+
+.hero p{
+    color:var(--gray);
+}
+
+/* Main Layout */
+
+.container{
+    width:95%;
+    max-width:1600px;
+    margin:30px auto;
+}
+
+.support-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:25px;
+}
+
+/* Cards */
+
+.card{
+    background:white;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    overflow:hidden;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+}
+
+.card-header{
+    background:var(--primary);
+    color:white;
+    padding:18px;
+    font-weight:bold;
+    text-align:center;
+}
+
+/* Ticket Form */
+
+.content{
+    padding:20px;
+    flex:1;
+    overflow-y:auto;
+}
+
+.form-group{
+    margin-bottom:15px;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:600;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:8px;
+}
+
+/* Ticket History */
+
+.ticket{
+    border-bottom:1px solid #eee;
+    padding:15px 0;
+}
+
+.ticket:last-child{
+    border-bottom:none;
+}
+
+.ticket-id{
+    color:var(--primary);
+    font-weight:bold;
+}
+
+.status{
+    display:inline-block;
+    background:#ffe3e3;
+    color:var(--primary);
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:12px;
+    margin-top:5px;
+}
+
+/* Agent Info */
+
+.agent-card{
+    text-align:center;
+}
+
+.agent-avatar{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background:var(--primary);
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:32px;
+    margin:20px auto;
+}
+
+.online{
+    color:green;
+    font-weight:bold;
+}
+
+.section-title{
+    margin:20px 0 15px 0;
+    font-size:14px;
+    font-weight:bold;
+    color:var(--dark);
+}
+
+.list-item{
+    padding:12px 0;
+    border-bottom:1px solid #eee;
+    font-size:14px;
+}
+
+.list-item:last-child{
+    border-bottom:none;
+}
+
+.detail-label{
+    font-weight:600;
+    color:var(--text);
+    margin-top:15px;
+    margin-bottom:5px;
+    font-size:12px;
+}
+
+.detail-value{
+    color:var(--dark);
+    font-size:14px;
+}
+
+/* Responsive */
+
+@media(max-width:1400px){
+
+.support-grid{
+    grid-template-columns:repeat(2, 1fr);
+}
+
+}
+
+@media(max-width:900px){
+
+nav{
+    display:none;
+}
+
+.support-grid{
+    grid-template-columns:1fr;
+}
+
+}
+
+footer{
+    background:#111;
+    color:white;
+    text-align:center;
+    padding:20px;
+    margin-top:40px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+    <div class="logo">RedCRM</div>
+    <nav>
+        <ul>
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="Features.html">Features</a></li>
+            <li><a href="Enroll.html">Enroll</a></li>
+            <li><a href="CusomerSupport.html">Customer Support</a></li>
+        </ul>
+    </nav>
+       <div style="display:flex; gap:12px; align-items:center;">
+    <a href="login.html" class="btn btn-login">Login</a>
+      <a href="Renew.html" class="btn btn-login">Renew/ Upgrade</a> 
+    <a href="Features.html" class="btn">Start Free</a> </div>
+</header>
+
+<section class="hero">
+    <h1>Customer Support Ticket Submission</h1>
+    <p>
+        Submit a new support ticket here. If you are already logged in to Bloo CRM, use the Grievance section inside the CRM application for ticket history and ongoing case tracking.
+    </p>
+</section>
+
+<div class="container">
+
+<div class="support-grid">
+
+<!-- LEFT PANEL: Create Support Ticket -->
+
+<div class="card">
+    <div class="card-header">
+        Create Support Ticket
+    </div>
+    <div class="content">
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text">
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email">
+        </div>
+        <div class="form-group">
+            <label>Issue Type</label>
+            <select>
+                <option>Billing</option>
+                <option>Technical Support</option>
+                <option>Subscription</option>
+                <option>Renewal</option>
+                <option>Complaint</option>
+                <option>Feature Request</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Priority</label>
+            <select>
+                <option>Low</option>
+                <option>Medium</option>
+                <option>High</option>
+                <option>Critical</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea rows="5"></textarea>
+        </div>
+        <button class="btn">
+            Submit Ticket
+        </button>
+    </div>
+</div>
+
+<!-- RIGHT PANEL: CRM Grievance Section -->
+
+<div class="card">
+    <div class="card-header">
+        Bloo CRM Grievance Section
+    </div>
+    <div class="content">
+        <p>All ticket history, previous conversations, and grievance tracking are available inside Bloo CRM for users who are already logged in.</p>
+        <p>Use the new Grievance section after login to review open issues, track resolutions, and escalate complaints from within the CRM workspace.</p>
+        <div style="margin-top:20px; text-align:center;">
+            <a href="../bloo-crm/frontend/index.html#grievance" class="btn">Open CRM Grievance</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div>
+        
+
+<footer>
+    © 2026 RedCRM Customer Support Center
+</footer>
+
+</body>
+</html>

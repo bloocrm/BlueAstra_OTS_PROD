@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Room - Bloo CRM</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .meeting-room-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 1200px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .meeting-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .header-info h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .header-info p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .session-badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .session-badge.active {
+      background: #4ade80;
+      color: white;
+      border-color: #22c55e;
+    }
+
+    .meeting-content {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 20px;
+      padding: 30px;
+      min-height: 500px;
+    }
+
+    .video-area {
+      background: #1a1a1a;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .video-stream {
+      flex: 1;
+      background: #0a0a0a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 400px;
+    }
+
+    .video-placeholder {
+      text-align: center;
+      color: #666;
+    }
+
+    .video-placeholder svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    .video-controls {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      background: #667eea;
+      border: none;
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      font-size: 20px;
+    }
+
+    .control-btn:hover {
+      background: #764ba2;
+      transform: scale(1.1);
+    }
+
+    .control-btn.off {
+      background: #ef4444;
+    }
+
+    .control-btn.off:hover {
+      background: #dc2626;
+    }
+
+    .participants-panel {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .participants-panel h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .participant-count {
+      background: #667eea;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .participant-item {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .participant-avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .participant-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .participant-name {
+      font-weight: 600;
+      font-size: 13px;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .participant-status {
+      font-size: 11px;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    .participant-status.active {
+      color: #4ade80;
+    }
+
+    .info-panel {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .info-section {
+      margin-bottom: 15px;
+    }
+
+    .info-label {
+      font-weight: 600;
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      font-size: 14px;
+      color: #333;
+      padding: 8px 12px;
+      background: white;
+      border-radius: 6px;
+      border-left: 3px solid #667eea;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .metric-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #764ba2;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #d1d5db;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .modal-message {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 16px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      max-width: 400px;
+      z-index: 999;
+      animation: slideIn 0.3s ease;
+    }
+
+    .notification.error {
+      border-left: 4px solid #ef4444;
+    }
+
+    .notification.success {
+      border-left: 4px solid #4ade80;
+    }
+
+    .notification.warning {
+      border-left: 4px solid #f59e0b;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .meeting-content {
+        grid-template-columns: 1fr;
+      }
+
+      .meeting-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .participants-panel {
+        max-height: 300px;
+      }
+
+      .video-stream {
+        min-height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="meeting-room-container">
+    <!-- Header -->
+    <div class="meeting-header">
+      <div class="header-info">
+        <h1 id="meetingTitle">Meeting Room</h1>
+        <p id="meetingSubtitle">Secure Video Conference</p>
+      </div>
+      <div class="session-badge active" id="sessionBadge">
+        <span id="sessionStatus">●</span> Active
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="meeting-content">
+      <!-- Video Area -->
+      <div class="video-area">
+        <div class="video-stream" id="videoStream">
+          <div class="video-placeholder">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <div>Camera Ready</div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="video-controls">
+          <button class="control-btn" id="micBtn" title="Toggle Microphone">
+            <span>🎤</span>
+          </button>
+          <button class="control-btn" id="cameraBtn" title="Toggle Camera">
+            <span>📹</span>
+          </button>
+          <button class="control-btn" id="screenBtn" title="Share Screen">
+            <span>🖥️</span>
+          </button>
+          <button class="control-btn" id="recordBtn" title="Toggle Recording">
+            <span>⏺️</span>
+          </button>
+          <button class="control-btn off" id="leaveBtn" title="Leave Meeting">
+            <span>☎️</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Panel -->
+      <div>
+        <!-- Participants -->
+        <div class="participants-panel">
+          <h3>
+            Participants
+            <span class="participant-count" id="participantCount">1</span>
+          </h3>
+          <div id="participantsList">
+            <div class="participant-item">
+              <div class="participant-avatar">You</div>
+              <div class="participant-info">
+                <div class="participant-name">You (Host)</div>
+                <div class="participant-status active">Connected</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel">
+          <div class="info-section">
+            <div class="info-label">Session ID</div>
+            <div class="info-value" id="sessionId" title="Click to copy" style="cursor: pointer;">
+              Copy to clipboard
+            </div>
+          </div>
+
+          <div class="info-section">
+            <div class="info-label">Encryption</div>
+            <div class="info-value">
+              🔒 Enterprise Level
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-label">Duration</div>
+              <div class="metric-value" id="duration">00:00</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Latency</div>
+              <div class="metric-value" id="latency">--ms</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Upload</div>
+              <div class="metric-value" id="uploadSpeed">--</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Download</div>
+              <div class="metric-value" id="downloadSpeed">--</div>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn btn-secondary" id="lockBtn">
+              🔓 Unlock Room
+            </button>
+            <button class="btn btn-secondary" id="settingsBtn">
+              ⚙️ Settings
+            </button>
+            <button class="btn btn-danger" id="endSessionBtn">
+              End Session
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout Warning Modal -->
+  <div class="modal" id="logoutWarningModal">
+    <div class="modal-content">
+      <div class="modal-header">⚠️ Session Termination Warning</div>
+      <div class="modal-message">
+        You are about to log out. This will terminate your active meeting session and disconnect all participants.
+        <br><br>
+        <strong>Time remaining: <span id="logoutCountdown">60</span> seconds</strong>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="confirmLogoutBtn">Log Out</button>
+        <button class="btn btn-primary" id="cancelLogoutBtn">Cancel & Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Container -->
+  <div id="notificationContainer"></div>
+
+  <script src="../js/api-client.js"></script>
+  <script src="../js/meeting-room-manager.js"></script>
+
+  <script>
+    // Initialize
+    const apiClient = new SecureApiClient('/api');
+    const meetingManager = new SecureMeetingRoomManager(apiClient);
+
+    let micEnabled = true;
+    let cameraEnabled = true;
+    let screenSharing = false;
+    let recordingEnabled = false;
+    let roomLocked = false;
+    let sessionStartTime = null;
+    let durationInterval = null;
+
+    // UI Elements
+    const micBtn = document.getElementById('micBtn');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const screenBtn = document.getElementById('screenBtn');
+    const recordBtn = document.getElementById('recordBtn');
+    const leaveBtn = document.getElementById('leaveBtn');
+    const lockBtn = document.getElementById('lockBtn');
+    const endSessionBtn = document.getElementById('endSessionBtn');
+    const logoutWarningModal = document.getElementById('logoutWarningModal');
+    const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+    const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+
+    // Initialize meeting room
+    async function initializeRoom() {
+      try {
+        const config = {
+          provider: 'custom',
+          meetingTitle: 'Bloo CRM Meeting',
+          recordingEnabled: true,
+          waitingRoomEnabled: true
+        };
+
+        const result = await meetingManager.initializeRoom(config);
+        document.getElementById('sessionId').textContent = result.sessionId;
+        sessionStartTime = Date.now();
+
+        // Join the room
+        await meetingManager.joinRoom(result.sessionId, result.sessionPassword);
+        showNotification('Connected to meeting room', 'success');
+
+        startDurationTimer();
+        loadParticipants();
+      } catch (error) {
+        showNotification(error.message, 'error');
+      }
+    }
+
+    // Control buttons
+    micBtn.addEventListener('click', () => {
+      micEnabled = !micEnabled;
+      micBtn.classList.toggle('off', !micEnabled);
+      showNotification(`Microphone ${micEnabled ? 'enabled' : 'disabled'}`, 'success');
+    });
+
+    cameraBtn.addEventListener('click', () => {
+      cameraEnabled = !cameraEnabled;
+      cameraBtn.classList.toggle('off', !cameraEnabled);
+      showNotification(`Camera ${cameraEnabled ? 'enabled' : 'disabled'}`, 'success');
+    });
+
+    screenBtn.addEventListener('click', () => {
+      screenSharing = !screenSharing;
+      screenBtn.classList.toggle('off', !screenSharing);
+      showNotification(`Screen share ${screenSharing ? 'started' : 'stopped'}`, 'success');
+    });
+
+    recordBtn.addEventListener('click', () => {
+      recordingEnabled = !recordingEnabled;
+      recordBtn.classList.toggle('off', !recordingEnabled);
+      showNotification(`Recording ${recordingEnabled ? 'started' : 'stopped'}`, 'success');
+    });
+
+    leaveBtn.addEventListener('click', async () => {
+      await meetingManager.leaveRoom();
+      showNotification('Left meeting room', 'success');
+      setTimeout(() => {
+        window.location.href = '/dashboard.html';
+      }, 1000);
+    });
+
+    lockBtn.addEventListener('click', async () => {
+      try {
+        roomLocked = !roomLocked;
+        await meetingManager.toggleRoomLock(roomLocked, roomLocked ? 'Host locked' : 'Unlocked');
+        lockBtn.textContent = roomLocked ? '🔒 Lock Room' : '🔓 Unlock Room';
+        showNotification(`Room ${roomLocked ? 'locked' : 'unlocked'}`, 'success');
+      } catch (error) {
+        showNotification(error.message, 'error');
+      }
+    });
+
+    endSessionBtn.addEventListener('click', async () => {
+      try {
+        await meetingManager.forceEndSession();
+        showNotification('Session ended', 'success');
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1000);
+      } catch (error) {
+        showNotification(error.message, 'error');
+      }
+    });
+
+    // Logout warning
+    meetingManager.eventEmitter.on('logout_warning', (data) => {
+      showLogoutWarning(data.gracePeriod);
+    });
+
+    function showLogoutWarning(gracePeriod) {
+      logoutWarningModal.classList.add('active');
+      let remaining = gracePeriod / 1000;
+
+      const countdownInterval = setInterval(() => {
+        remaining -= 1;
+        document.getElementById('logoutCountdown').textContent = remaining;
+
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+          meetingManager.forceEndSession();
+          logoutWarningModal.classList.remove('active');
+        }
+      }, 1000);
+
+      confirmLogoutBtn.onclick = () => {
+        clearInterval(countdownInterval);
+        meetingManager.forceEndSession();
+        logoutWarningModal.classList.remove('active');
+        apiClient.logout();
+      };
+
+      cancelLogoutBtn.onclick = () => {
+        clearInterval(countdownInterval);
+        meetingManager.cancelLogoutWarning();
+        logoutWarningModal.classList.remove('active');
+      };
+    }
+
+    // Duration timer
+    function startDurationTimer() {
+      durationInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        document.getElementById('duration').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    // Load participants
+    async function loadParticipants() {
+      try {
+        const participants = await meetingManager.getParticipants();
+        document.getElementById('participantCount').textContent = participants.length + 1; // +1 for self
+      } catch (error) {
+        console.error('Failed to load participants:', error);
+      }
+    }
+
+    // Show notification
+    function showNotification(message, type = 'info') {
+      const container = document.getElementById('notificationContainer');
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+
+      container.appendChild(notification);
+
+      setTimeout(() => {
+        notification.remove();
+      }, 5000);
+    }
+
+    // Copy session ID
+    document.getElementById('sessionId').addEventListener('click', function() {
+      navigator.clipboard.writeText(this.textContent);
+      showNotification('Session ID copied to clipboard', 'success');
+    });
+
+    // Initialize on load
+    window.addEventListener('load', initializeRoom);
+
+    // Cleanup on unload
+    window.addEventListener('beforeunload', () => {
+      clearInterval(durationInterval);
+      meetingManager.destroy();
+    });
+  </script>
+</body>
+</html>

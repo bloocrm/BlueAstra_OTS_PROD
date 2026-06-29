@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedCRM - Customer Relationship Management</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root{
+    --primary:#ff1e1e;
+    --secondary:#ff4d4d;
+    --dark:#1f1f1f;
+    --light:#fff5f5;
+    --text:#555;
+    --white:#ffffff;
+}
+
+
+body{
+    background:#ffffff;
+    color:var(--dark);
+    line-height:1.6;
+}
+
+/* Header */
+header{
+    background:var(--white);
+    padding:20px 8%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.logo{
+    font-size:32px;
+    font-weight:700;
+    color:var(--primary);
+}
+
+nav ul{
+    display:flex;
+    list-style:none;
+    gap:30px;
+}
+
+nav a{
+    text-decoration:none;
+    color:var(--dark);
+    font-weight:600;
+}
+
+.btn{
+    background:var(--primary);
+    color:#fff;
+    padding:12px 28px;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn:hover{
+    background:#d90000;
+}
+
+.btn-login{
+    background:#ff0000;
+    color:#fff;
+    padding:16px 36px;
+    border-radius:10px;
+    font-weight:700;
+    font-size:1.05rem;
+    text-decoration:none;
+    display:inline-block;
+    transition:.3s;
+}
+
+.btn-login:hover{
+    background:#d10000;
+}
+
+/* Hero */
+.hero{
+    padding:90px 8%;
+    display:flex;
+    align-items:center; 
+    justify-content:space-between;
+    gap:60px;
+}
+
+.hero-content{
+    flex:1;
+}
+
+.hero-content h1{
+    font-size:60px;
+    color:var(--primary);
+    line-height:1.1;
+    margin-bottom:20px;
+}
+
+.hero-content span{
+    color:var(--primary);
+}
+
+.hero-content p{
+    color:var(--text);
+    font-size:18px;
+    margin-bottom:30px;
+}
+
+.hero-image{
+    flex:1;
+}
+
+.dashboard{
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.12);
+}
+
+.stat{
+    background:var(--light);
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:15px;
+}
+
+.stat h3{
+    color:#666;
+    margin-bottom:10px;
+}
+
+.stat h2{
+    color:var(--primary);
+}
+
+.progress{
+    height:10px;
+    background:#eee;
+    border-radius:50px;
+    overflow:hidden;
+}
+
+.progress span{
+    display:block;
+    height:100%;
+    width:82%;
+    background:var(--primary);
+}
+
+/* Features */
+.features{
+    padding:80px 8%;
+    background:var(--light);
+}
+
+.section-title{
+    text-align:center;
+    margin-bottom:50px;
+}
+
+.section-title h2{
+    font-size:42px;
+    color:var(--primary);
+    margin-bottom:10px;
+}
+
+.feature-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:25px;
+}
+
+body, p, h1, h2, h3, h4, h5, h6, td, th, li {
+    color:#111;
+}
+
+.feature-card{
+    background:white;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.06);
+}
+
+.feature-card h3{
+    color:var(--primary);
+    margin-bottom:15px;
+}
+
+/* CRM Preview */
+.preview{
+    padding:80px 8%;
+}
+
+.crm-panel{
+    background:white;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 15px 40px rgba(0,0,0,.1);
+}
+
+.crm-header{
+    background:var(--primary);
+    color:white;
+    padding:20px;
+    font-weight:bold;
+}
+
+.crm-content{
+    padding:30px;
+}
+
+.table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.table th{
+    background:#cc0d0d;
+    color:white;
+    padding:15px;
+    text-align:left;
+}
+
+.table td{
+    padding:15px;
+    border-bottom:1px solid #960606;
+}
+
+/* CTA */
+.cta{
+    background:linear-gradient(135deg,#ff1e1e,#ff5252);
+    color:white;
+    text-align:center;
+    padding:80px 8%;
+}
+
+.cta h2{
+    font-size:42px;
+    margin-bottom:20px;
+}
+
+.cta .btn{
+    background:white;
+    color:var(--primary);
+    margin-top:20px;
+    display:inline-block;
+}
+
+.capability-list{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:20px;
+    padding:20px;
+}
+
+.capability-list div{
+    background:#fff5f5;
+    color:black;
+    padding:22px 24px;
+    border-left:6px solid var(--primary);
+    border-radius:10px;
+    font-weight:700;
+    font-size:15px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    text-align:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:90px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.05);
+}
+
+/* Footer */
+footer{
+    background:#111;
+    color:white;
+    text-align:center;
+    padding:25px;
+}
+
+/* Mobile */
+
+@media(max-width:900px){
+
+.hero{
+    flex-direction:column;
+}
+
+.capability-list{
+    grid-template-columns:1fr;
+}
+
+.hero-content{
+    flex:1;
+    position:relative;
+    padding:40px;
+    border-radius:20px;
+    overflow:hidden;
+    z-index:1;
+}
+
+.hero-content::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background-image:url('images/wealth-bg.jpg');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    opacity:0.15;
+    z-index:-1;
+}
+
+.hero-content h1{
+    font-size:60px;
+    color:var(--primary);
+    line-height:1.1;
+    margin-bottom:20px;
+}
+
+nav{
+    display:none;
+}
+
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+    <div class="logo">RedCRM</div>
+
+
+<nav>
+    <ul>
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="Features.html">Features</a></li>
+        <li><a href="Enroll.html">Enroll</a></li>
+        <li><a href="CusomerSupport.html">Customer Support</a></li>
+    </ul>
+</nav>
+
+    <div style="display:flex; gap:12px; align-items:center;">
+    <a href="login.html" class="btn">Login</a>
+      <a href="Renew.html" class="btn">Renew/ Upgrade</a> 
+    <a href="Features.html" class="btn">Start Free</a>
+</div>
+
+</header>
+
+<section class="hero">
+
+    <div class="hero-content">
+    <h1>Wealth Management & <span>Financial Advisory CRM</span></h1>
+
+    <p>
+        Manage HNI and UHNI clients, investment portfolios, SIPs, mutual funds,
+        insurance policies, PMS/AIF investments, KYC records, risk profiles,
+        goal-based planning, compliance workflows and AI-powered client engagement.
+    </p>
+
+    <a href="Features.html" class="btn">Get Started</a>
+</div>
+
+<div class="hero-image">
+
+    <div class="dashboard">
+
+        <div class="stat"><h3>Active HNI Clients</h3><h2>428</h2></div>
+       <div class="stat"><h3>Assets Under Advisory (AUA)</h3><h2>$128M</h2></div>
+       <div class="stat"><h3>Portfolio Review Completion</h3><div class="progress"><span></span></div></div>
+       <div class="stat"><h3>SIPs Monitored</h3><h2>2,846</h2></div>
+       <div class="stat"><h3>KYC Pending</h3><h2>17</h2></div>
+       <div class="stat"><h3>Annual Advisory Revenue</h3><h2>$2.4M</h2></div>
+
+    </div>
+
+</div>
+
+</section>
+
+<section class="features">
+
+<div class="section-title">
+    <h2>CRM Features</h2>
+    <p>Purpose-built for Financial Advisors, Wealth Managers, RIAs, MFDs and Family Offices.</p>
+</div>
+
+<div class="feature-grid">
+
+    <div class="feature-card"><h3>Client & Family Office Management</h3><p>Maintain HNI client profiles, nominees, family structures, KYC documents, risk appetite and investment objectives.</p></div>
+    <div class="feature-card"><h3>Portfolio Tracking</h3><p>Track mutual funds, equities, bonds, PMS, AIFs, insurance and alternative investments.</p></div>
+    <div class="feature-card"><h3>AI Client Communication</h3><p>Generate portfolio reviews, market updates, onboarding emails and renewal reminders using AI.</p></div>
+    <div class="feature-card"><h3>Compliance & KYC</h3><p>Document vault, audit trails, suitability checks, FATCA tracking and regulatory workflows.</p></div>
+    <div class="feature-card"><h3>Goal Based Planning</h3><p>Retirement, education, wealth creation and succession planning dashboards.</p></div>
+    <div class="feature-card"><h3>Revenue & Trail Analytics</h3><p>Monitor advisory fees, commissions, trails and AUM growth.</p></div>
+
+    <div class="feature-card">
+        <h3>Sales Pipeline</h3>
+        <p>Track deals and monitor opportunities in real time.</p>
+    </div>
+
+    <div class="feature-card">
+        <h3>Email Automation</h3>
+        <p>Automate follow-ups and customer communication.</p>
+    </div>
+
+    <div class="feature-card">
+        <h3>Advanced Reports</h3>
+        <p>Visualize performance with powerful analytics.</p>
+    </div>
+
+</div>
+
+
+</section>
+
+<section class="preview">
+
+<div class="crm-panel">
+
+    <div class="crm-header">
+        Customer Management Dashboard
+    </div>
+
+    <div class="crm-content">
+
+        <table class="table">
+
+            <tr>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Status</th>
+                <th>Value</th>
+                <th>KPIs</th>
+                <th>Total AUM</th>
+                <th>KYC Pending</th>
+
+            </tr>
+
+            <tr>
+                <td>John Smith</td>
+                <td>ABC Corp</td>
+                <td>Qualified</td>
+                <td>$12,000</td>
+                <td>$42M</td>
+                <td>4</td>
+            </tr>
+
+            <tr>
+                <td>Sarah Wilson</td>
+                <td>Global Tech</td>
+                <td>Proposal</td>
+                <td>$24,500</td>
+                  <td>$162M</td>
+                <td>None</td>
+            </tr>
+
+            <tr>
+                <td>David Brown</td>
+                <td>Bright Solutions</td>
+                <td>Won</td>
+                <td>$41,000</td>
+                 <td>$82M</td>
+                <td>None</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+</section>
+
+<section class="cta">
+
+
+<h2>Ready To Grow Your Sales?</h2>
+
+<p>
+    Join thousands of businesses using RedCRM to increase revenue.
+</p>
+
+<a href="Features.html" class="btn">Start Free Trial</a>
+
+
+</section>
+
+<footer>
+    © 2026 RedCRM. All Rights Reserved.
+
+<section class="features" style="background:#f9f8f8;">
+<div class="section-title">
+<h2 style="color:black;">Trusted By Elite Wealth Advisors</h2>
+<p>Feedback from RIAs, Wealth Managers, MFDs and Family Offices.</p>
+</div>
+<div class="feature-grid">
+<div class="feature-card"><h3>₹2,500 Cr AUA Practice</h3><p>"The CRM delivers institutional-grade client lifecycle management, portfolio intelligence, KYC governance and revenue analytics at a fraction of enterprise platform costs."</p></div>
+<div class="feature-card"><h3>Multi-Family Office</h3><p>"Exceptional suitability tracking, risk-profiling workflows, investment mandate management and document governance."</p></div>
+<div class="feature-card"><h3>Independent Wealth Advisor</h3><p>"The AI-generated portfolio review notes, SIP monitoring and client engagement automation significantly improved advisor productivity."</p></div>
+</div>
+</section>
+
+<section class="preview">
+<div class="crm-panel">
+<div class="crm-header capability-list">Financial Advisory Capabilities</div>
+<div class="crm-content">
+
+    <div>ASSET ALLOCATION & PORTFOLIO REBALANCING</div>
+    <div>MUTUAL FUND, EQUITY, BOND, PMS & AIF TRACKING</div>
+    <div>RISK-ADJUSTED RETURN ANALYTICS</div>
+    <div>GOAL-BASED FINANCIAL PLANNING & RETIREMENT MODELLING</div>
+    <div>SUCCESSION PLANNING & ESTATE DOCUMENTATION</div>
+    <div>ADVISOR FEE, TRAIL COMMISSION & REVENUE INTELLIGENCE</div>
+    <div>INVESTOR SUITABILITY, FATCA & COMPLIANCE MONITORING</div>
+    <div>RELATIONSHIP ALPHA, CLIENT RETENTION & REFERRAL ANALYTICS</div>
+
+</div>
+</div>
+</section>
+
+<section class="features">
+<div class="section-title">
+<h2>NASDAQ Market Intelligence Feed</h2>
+<p>Live market news, earnings updates, macroeconomic developments and capital market insights.</p>
+</div>
+<div class="feature-grid">
+<div class="feature-card">
+<h3>Real-Time News Integration</h3>
+<p>Connect directly to NASDAQ APIs, RSS feeds or market data providers to display current headlines, earnings releases, ETF flows, analyst actions and market-moving events.</p>
+</div>
+<div class="feature-card">
+<h3>Advisor Research Hub</h3>
+<p>Curated intelligence covering equities, fixed income, alternatives, global macro trends and wealth management opportunities.</p>
+</div>
+<div class="feature-card">
+<h3>Client Communication Ready</h3>
+<p>Convert market events into AI-generated client updates, portfolio commentary and investment review summaries.</p>
+</div>
+</div>
+</section>
+
+
+<section class="features" style="background:#0b0b0b9c;">
+<div class="section-title">
+<h2>Workflow Approvals & Compliance Governance</h2>
+<p>Multi-level approval engine designed for Wealth Managers, RIAs, MFDs and Family Offices.</p>
+</div>
+<div class="feature-grid">
+<div class="feature-card">
+<h3>Investment Approval Workflow</h3>
+<p>Advisor → Senior Advisor → Investment Committee → Compliance Officer approval routing with complete audit trails.</p>
+</div>
+<div class="feature-card">
+<h3>KYC & Onboarding Controls</h3>
+<p>Automated approval queues for KYC, FATCA, CKYC, risk profiling, nominee verification and document validation.</p>
+</div>
+<div class="feature-card">
+<h3>Portfolio Rebalancing Authorization</h3>
+<p>Approve model portfolio changes, tactical asset allocation shifts and client mandate exceptions.</p>
+</div>
+<div class="feature-card">
+<h3>Digital Signatures</h3>
+<p>Integrated approval workflows with electronic signatures, client consent capture and compliance logs.</p>
+</div>
+</div>
+</section>
+
+<section class="preview">
+<div class="crm-panel">
+<div class="crm-header">Sample Wealth Management Approval Journey</div>
+<div class="crm-content">
+<table class="table">
+<tr><th>Stage</th><th>Owner</th><th>Status</th><th>SLA</th></tr>
+<tr><td>Client Risk Assessment</td><td>Relationship Manager</td><td>Approved</td><td>2 Hours</td></tr>
+<tr><td>Portfolio Recommendation</td><td>Investment Team</td><td>Pending Review</td><td>1 Day</td></tr>
+<tr><td>Compliance Validation</td><td>Compliance Officer</td><td>Queued</td><td>4 Hours</td></tr>
+<tr><td>Client Execution</td><td>Advisor</td><td>Awaiting Signature</td><td>24 Hours</td></tr>
+</table>
+</div>
+</div>
+</section>
+
+<section class="cta">
+<h2>Flexible Ways To Acquire The CRM</h2>
+<p>Select the commercial model that best fits your advisory practice.</p>
+<div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:30px;">
+<div style="background:rgb(169, 7, 7);color:white;padding:25px;border-radius:12px;max-width:280px;">
+<h3>Per Advisor License</h3>
+<p>Ideal for independent advisors and boutique wealth managers.</p>
+</div>
+<div style="background:white;color:black;padding:25px;border-radius:12px;max-width:280px;">
+<h3>Enterprise Deployment</h3>
+<p>Unlimited users, family office support, private hosting and custom workflows.</p>
+</div>
+<div style="background:rgb(183, 5, 5);color:white;padding:25px;border-radius:12px;max-width:280px;">
+<h3>White-Label Edition</h3>
+<p>Rebrand the platform with your logo, domain, colors and client portal.</p>
+</div>
+<div style="background:white;color:black;padding:25px;border-radius:12px;max-width:280px;">
+<h3>On-Premise Installation</h3>
+<p>Own your data with a perpetual-license deployment on your infrastructure.</p>
+</div>
+</div>
+</section>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+# ===== Secrets / credentials =====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+SSHKeyFile
+SSHKeyFile.pub
+id_rsa
+id_rsa.pub
+keypair.pem
+
+# ===== Dependencies =====
+node_modules/
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== OS / editor cruft =====
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# ===== Build / temp =====
+dist/
+build/
+tmp/
+*.tmp
