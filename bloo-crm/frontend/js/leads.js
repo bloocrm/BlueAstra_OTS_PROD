@@ -229,8 +229,9 @@ function editLead(leadId) {
                         industry: 'other'
                     };
                     
-                    addClient(clientData);
-                    logWorkflowActivity('lead_converted', `Lead ${leadData.name} converted to client`);
+                    addClient(clientData)
+                        .then(() => logWorkflowActivity('lead_converted', `Lead ${leadData.name} converted to client`))
+                        .catch(err => showNotification(err.message || 'Failed to convert lead to client', 'error'));
                 }
             }
         } else {
@@ -267,12 +268,12 @@ function deleteLeadConfirm(leadId) {
 }
 
 // Convert lead to client (can be called from lead details)
-function convertLeadToClient(leadId) {
+async function convertLeadToClient(leadId) {
     const leads = getLeads();
     const lead = leads.find(l => l.id === leadId);
-    
+
     if (!lead) return;
-    
+
     const clientData = {
         name: lead.name,
         email: lead.email,
@@ -283,18 +284,22 @@ function convertLeadToClient(leadId) {
         industry: 'other',
         details: lead.notes
     };
-    
-    const client = addClient(clientData);
-    
-    // Update lead status
-    updateLead(leadId, { status: 'converted' });
-    
-    logWorkflowActivity('lead_converted', 
-        `Lead ${lead.name} converted to client`,
-        { leadId, clientId: client.id }
-    );
-    
-    showNotification(`${lead.name} converted to client!`, 'success');
-    loadLeadsList();
-    loadDashboardStats();
+
+    try {
+        const client = await addClient(clientData);
+
+        // Update lead status
+        updateLead(leadId, { status: 'converted' });
+
+        logWorkflowActivity('lead_converted',
+            `Lead ${lead.name} converted to client`,
+            { leadId, clientId: client.clientId }
+        );
+
+        showNotification(`${lead.name} converted to client!`, 'success');
+        loadLeadsList();
+        loadDashboardStats();
+    } catch (error) {
+        showNotification(error.message || 'Failed to convert lead to client', 'error');
+    }
 }

@@ -11,103 +11,142 @@ function toggleAuthForms() {
     registerForm.classList.toggle('active');
 }
 
+// ---- Backend auth helpers ------------------------------------------------
+
+// Current JWT (issued by the backend on login/register)
+function getAuthToken() {
+    return localStorage.getItem('authToken');
+}
+
+function isLoggedIn() {
+    return !!getAuthToken();
+}
+
+// Shared authenticated fetch against the backend API.
+// Returns the parsed JSON body, throws Error(message) on failure.
+async function apiRequest(path, { method = 'GET', body = null, auth = true } = {}) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (auth) {
+        const token = getAuthToken();
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    let response;
+    try {
+        response = await fetch(`${window.API_BASE_URL}${path}`, {
+            method,
+            headers,
+            body: body ? JSON.stringify(body) : undefined
+        });
+    } catch (networkError) {
+        throw new Error('Cannot reach the server. Is the backend running?');
+    }
+
+    let data = {};
+    try { data = await response.json(); } catch (_) { /* empty body */ }
+
+    if (response.status === 401) {
+        // Token invalid/expired — force re-login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('currentUser');
+    }
+
+    if (!response.ok) {
+        const message = data.message
+            || (data.errors && data.errors[0] && (data.errors[0].msg || data.errors[0].message))
+            || data.error
+            || 'Request failed';
+        throw new Error(message);
+    }
+
+    return data;
+}
+
 // Handle login
-function handleLogin(event) {
+async function handleLogin(event) {
     event.preventDefault();
-    
+
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
-    
-    // Get stored users
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Find user
-    const user = users.find(u => u.email === email && u.password === password);
-    
-    if (user) {
-        // Store current user session
+
+    try {
+        const result = await apiRequest('/auth/login', {
+            method: 'POST',
+            auth: false,
+            body: { email, password }
+        });
+
+        const { user, token } = result.data;
+        localStorage.setItem('authToken', token);
         localStorage.setItem('currentUser', JSON.stringify(user));
-        
-        // Show success message and redirect
+
         showNotification('Login successful!', 'success');
-        setTimeout(() => {
-            showDashboard();
-        }, 500);
-    } else {
-        showNotification('Invalid email or password!', 'error');
+        showDashboard();
+    } catch (error) {
+        showNotification(error.message || 'Invalid email or password!', 'error');
     }
 }
 
 // Handle registration
-function handleRegister(event) {
+async function handleRegister(event) {
     event.preventDefault();
-    
+
     const name = document.getElementById('regName').value;
     const email = document.getElementById('regEmail').value;
+    const phone = document.getElementById('regPhone').value;
     const password = document.getElementById('regPassword').value;
     const confirmPassword = document.getElementById('regConfirmPassword').value;
     const company = document.getElementById('regCompany').value;
-    const plan = document.getElementById('regPlan').value;
-    
+
     // Validate passwords match
     if (password !== confirmPassword) {
         showNotification('Passwords do not match!', 'error');
         return;
     }
-    
+
     // Check password length
     if (password.length < 8) {
         showNotification('Password must be at least 8 characters!', 'error');
         return;
     }
-    
-    // Get stored users
-    let users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Check if email exists
-    if (users.find(u => u.email === email)) {
-        showNotification('Email already exists!', 'error');
-        return;
-    }
-    
-    // Create new user
-    const newUser = {
-        id: Date.now().toString(),
-        name: name,
-        email: email,
-        password: password, // In production, this should be hashed
-        company: company,
-        plan: plan,
-        createdAt: new Date().toISOString(),
-        clients: [],
-        leads: [],
-        communications: [],
-        payments: []
-    };
-    
-    // Add user and save
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    // Set current user
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
-    
-    showNotification(`Welcome ${name}! Account created successfully!`, 'success');
-    setTimeout(() => {
+
+    try {
+        const result = await apiRequest('/auth/register', {
+            method: 'POST',
+            auth: false,
+            body: { name, email, phone, password, company }
+        });
+
+        const { user, token } = result.data;
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('currentUser', JSON.stringify(user));
+
+        showNotification(`Welcome ${name}! Account created successfully!`, 'success');
         showDashboard();
-    }, 500);
+    } catch (error) {
+        showNotification(error.message || 'Registration failed!', 'error');
+    }
 }
 
 // Show dashboard and hide auth
-function showDashboard() {
+async function showDashboard() {
     const authContainer = document.getElementById('authContainer');
     const dashboardContainer = document.getElementById('dashboardContainer');
-    
+
     authContainer.style.display = 'none';
     dashboardContainer.style.display = 'flex';
-    
+
     // Load user data
     loadUserData();
+
+    // Pull this user's clients from MongoDB into the in-memory cache
+    if (typeof loadClientsFromServer === 'function') {
+        try {
+            await loadClientsFromServer();
+        } catch (error) {
+            showNotification(error.message || 'Failed to load clients from server', 'error');
+        }
+    }
 
     // Navigate to a view from the hash if present
     const initialView = window.location.hash.replace('#', '');
@@ -128,7 +167,9 @@ function loadUserData() {
 // Handle logout
 function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('authToken');
         localStorage.removeItem('currentUser');
+        if (typeof clearClientsCache === 'function') clearClientsCache();
         location.reload();
     }
 }
@@ -159,16 +200,10 @@ function showNotification(message, type = 'info') {
     }, 4000);
 }
 
-// Check if user is logged in
+// Check if user is logged in (valid backend token present)
 window.addEventListener('load', () => {
-    const currentUser = localStorage.getItem('currentUser');
-    
-    if (currentUser) {
+    if (isLoggedIn()) {
         showDashboard();
-        const initialView = window.location.hash.replace('#', '');
-        if (initialView) {
-            switchView(initialView);
-        }
     }
 });
 

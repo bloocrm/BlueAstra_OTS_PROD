@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid');
 const { encrypt, decrypt } = require('../utils/encryption');
+
+// Generate a unique, human-readable client identifier (e.g. CLT-3F9A2B1C)
+const generateClientId = () => `CLT-${uuidv4().split('-')[0].toUpperCase()}`;
 
 // Plugin to auto-decrypt on retrieve
 const decryptPlugin = (schema, options) => {
@@ -40,6 +44,14 @@ const clientSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
       index: true
+    },
+
+    // Unique, stable client identifier (generated, never reused)
+    clientId: {
+      type: String,
+      unique: true,
+      index: true,
+      default: generateClientId
     },
 
     // Basic Information

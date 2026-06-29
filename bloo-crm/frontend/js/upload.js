@@ -192,7 +192,7 @@ function parseExcel(file, type, statusDiv, fileInput) {
 }
 
 // Process imported data
-function processImportedData(data, type, statusDiv, fileInput) {
+async function processImportedData(data, type, statusDiv, fileInput) {
     try {
         let validation = null;
         let importedCount = 0;
@@ -202,7 +202,7 @@ function processImportedData(data, type, statusDiv, fileInput) {
         if (type === 'client') {
             validation = validateClientData(data);
             if (validation.valid) {
-                importedCount = importClientData(data);
+                importedCount = await importClientData(data);
                 skippedCount = data.length - importedCount;
             }
         } else if (type === 'lead') {
@@ -341,18 +341,18 @@ function validateLeadData(data) {
 }
 
 // Import client data
-function importClientData(data) {
+async function importClientData(data) {
     const existingClients = getClients();
     let importedCount = 0;
 
-    data.forEach(row => {
+    for (const row of data) {
         // Check for duplicates
         const isDuplicate = existingClients.some(client =>
             client.email.toLowerCase() === row.email.toLowerCase()
         );
 
         if (isDuplicate) {
-            return; // Skip duplicate
+            continue; // Skip duplicate
         }
 
         // Create client object with all fields
@@ -397,10 +397,14 @@ function importClientData(data) {
             totalLiabilities: 0
         };
 
-        addClient(clientData);
-        logWorkflowActivity('bulk_import', `Client imported: ${clientData.name}`);
-        importedCount++;
-    });
+        try {
+            await addClient(clientData);
+            logWorkflowActivity('bulk_import', `Client imported: ${clientData.name}`);
+            importedCount++;
+        } catch (error) {
+            console.error('Bulk import failed for', clientData.email, error);
+        }
+    }
 
     return importedCount;
 }

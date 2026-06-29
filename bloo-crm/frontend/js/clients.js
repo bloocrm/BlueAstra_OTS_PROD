@@ -34,7 +34,7 @@ function handleAddClient(event) {
 }
 
 // Save client with file data
-function saveClientWithFile(fileData, fileObj) {
+async function saveClientWithFile(fileData, fileObj) {
     const clientData = {
         name: document.getElementById('clientName').value,
         email: document.getElementById('clientEmail').value,
@@ -78,22 +78,26 @@ function saveClientWithFile(fileData, fileObj) {
         totalLiabilities: 0
     };
 
-    // Add client to storage
-    const client = addClient(clientData);
+    // Add client to MongoDB via the backend
+    try {
+        await addClient(clientData);
 
-    // Log workflow activity
-    logWorkflowActivity('client_added', `New client added: ${clientData.name}`);
+        // Log workflow activity
+        logWorkflowActivity('client_added', `New client added: ${clientData.name}`);
 
-    // Show success message
-    showNotification(`Client ${clientData.name} added successfully!`, 'success');
+        // Show success message
+        showNotification(`Client ${clientData.name} added successfully!`, 'success');
 
-    // Close modal and reload clients
-    closeModal('addClientModal');
-    loadClientsList();
-    loadClientDashboard();
+        // Close modal and reload clients
+        closeModal('addClientModal');
+        loadClientsList();
+        loadClientDashboard();
 
-    // Update dashboard stats
-    loadDashboardStats();
+        // Update dashboard stats
+        loadDashboardStats();
+    } catch (error) {
+        showNotification(error.message || 'Failed to save client', 'error');
+    }
 }
 
 // Load clients list
@@ -266,7 +270,7 @@ function editClient(clientId) {
     const newForm = form.cloneNode(true);
     form.parentNode.replaceChild(newForm, form);
 
-    newForm.onsubmit = (event) => {
+    newForm.onsubmit = async (event) => {
         event.preventDefault();
 
         const documentInput = newForm.querySelector('#clientDocument');
@@ -313,35 +317,44 @@ function editClient(clientId) {
             totalLiabilities: client.totalLiabilities || 0
         };
 
-        updateClient(clientId, clientData);
-        logWorkflowActivity('client_updated', `Client updated: ${clientData.name}`);
+        try {
+            await updateClient(clientId, clientData);
+            logWorkflowActivity('client_updated', `Client updated: ${clientData.name}`);
 
-        showNotification('Client updated successfully!', 'success');
-        closeModal('addClientModal');
-        loadClientsList();
-        loadClientDashboard();
+            showNotification('Client updated successfully!', 'success');
+            closeModal('addClientModal');
+            loadClientsList();
+            loadClientDashboard();
 
-        // Restore original form
-        newForm.onsubmit = handleAddClient;
+            // Restore original form
+            newForm.onsubmit = handleAddClient;
+        } catch (error) {
+            showNotification(error.message || 'Failed to update client', 'error');
+        }
     };
 
     showModal('addClientModal');
 }
 
 // Delete client with confirmation
-function deleteClientConfirm(clientId) {
+async function deleteClientConfirm(clientId) {
     const clients = getClients();
     const client = clients.find(c => c.id === clientId);
-    
+
     if (!client) return;
-    
+
     if (confirm(`Are you sure you want to delete ${client.name}?`)) {
-        deleteClient(clientId);
-        logWorkflowActivity('client_deleted', `Client deleted: ${client.name}`);
-        
-        showNotification(`${client.name} deleted!`, 'success');
-        loadClientsList();
-        loadDashboardStats();
+        try {
+            await deleteClient(clientId);
+            logWorkflowActivity('client_deleted', `Client deleted: ${client.name}`);
+
+            showNotification(`${client.name} deleted!`, 'success');
+            loadClientsList();
+            loadClientDashboard();
+            loadDashboardStats();
+        } catch (error) {
+            showNotification(error.message || 'Failed to delete client', 'error');
+        }
     }
 }
 
@@ -407,7 +420,7 @@ function loadClientDashboard() {
 
     container.innerHTML = clients.map(client => `
         <div class="client-box">
-            <div class="client-box-id">Client ID: ${client.id}</div>
+            <div class="client-box-id">Client ID: ${client.clientId || client.id}</div>
             <div class="client-box-name">${client.name}</div>
             <div class="client-box-info">
                 <i class="fas fa-envelope"></i>
@@ -444,7 +457,7 @@ function filterClientDashboard() {
         client.name.toLowerCase().includes(searchTerm) ||
         client.email.toLowerCase().includes(searchTerm) ||
         client.phone.includes(searchTerm) ||
-        client.id.includes(searchTerm)
+        (client.clientId || '').toLowerCase().includes(searchTerm)
     );
 
     const container = document.getElementById('dashboardClientsList');
@@ -456,7 +469,7 @@ function filterClientDashboard() {
 
     container.innerHTML = filtered.map(client => `
         <div class="client-box">
-            <div class="client-box-id">Client ID: ${client.id}</div>
+            <div class="client-box-id">Client ID: ${client.clientId || client.id}</div>
             <div class="client-box-name">${client.name}</div>
             <div class="client-box-info">
                 <i class="fas fa-envelope"></i>
@@ -494,7 +507,7 @@ function viewClientDetails(clientId) {
 
     // Populate detail view
     document.getElementById('detailClientName').textContent = client.name;
-    document.getElementById('detailClientID').textContent = `ID: ${client.id}`;
+    document.getElementById('detailClientID').textContent = `ID: ${client.clientId || client.id}`;
 
     // Overview tab data
     document.getElementById('d-email').textContent = client.email || 'N/A';
@@ -616,7 +629,7 @@ function switchDetailTab(tabName) {
 }
 
 // Save client details
-function saveClientDetails() {
+async function saveClientDetails() {
     const clientId = window.currentViewingClientId;
     const clients = getClients();
     const clientIndex = clients.findIndex(c => c.id === clientId);
@@ -639,12 +652,16 @@ function saveClientDetails() {
         totalLiabilities: document.getElementById('edit-totalLiabilities').value
     };
 
-    updateClient(clientId, updatedData);
-    logWorkflowActivity('client_details_updated', `Client details updated: ${clients[clientIndex].name}`);
+    try {
+        await updateClient(clientId, updatedData);
+        logWorkflowActivity('client_details_updated', `Client details updated: ${clients[clientIndex].name}`);
 
-    showNotification('Client details updated successfully!', 'success');
-    closeModal('clientDetailModal');
-    loadClientDashboard();
+        showNotification('Client details updated successfully!', 'success');
+        closeModal('clientDetailModal');
+        loadClientDashboard();
+    } catch (error) {
+        showNotification(error.message || 'Failed to update client details', 'error');
+    }
 }
 
 // Display client documents

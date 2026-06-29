@@ -12,57 +12,84 @@ function saveCurrentUser(user) {
     localStorage.setItem('currentUser', JSON.stringify(user));
 }
 
-// Get all clients for current user
-function getClients() {
-    const user = getCurrentUser();
-    return user.clients || [];
+/* =====================================================
+   CLIENTS — persisted in MongoDB via the backend API.
+   A synchronous in-memory cache backs getClients() so the
+   existing (synchronous) render code keeps working, while
+   create/update/delete go to the server and survive logout.
+   ===================================================== */
+
+let _clientsCache = [];
+
+// Clear the cache (called on logout)
+function clearClientsCache() {
+    _clientsCache = [];
 }
 
-// Add client
-function addClient(clientData) {
-    const user = getCurrentUser();
-    
-    const client = {
-        id: Date.now().toString(),
-        ...clientData,
-        createdAt: new Date().toISOString(),
-        lastModified: new Date().toISOString()
+// Convert a server Client document into the flat shape the UI expects.
+// Custom fields are flattened back to the top level; `id` is the Mongo _id
+// (operational handle for edit/delete), `clientId` is the friendly unique id.
+function mapServerClient(doc) {
+    const custom = doc.customFields || {};
+    return {
+        ...custom,
+        _id: doc._id,
+        id: doc._id,
+        clientId: doc.clientId,
+        name: doc.name,
+        email: doc.email,
+        phone: doc.phone,
+        createdAt: doc.createdAt,
+        lastModified: doc.updatedAt
     };
-    
-    if (!user.clients) {
-        user.clients = [];
-    }
-    
-    user.clients.push(client);
-    saveCurrentUser(user);
-    
+}
+
+// Build the request payload: core fields stay top-level (validated by the
+// backend), everything else is carried in customFields. Metadata is stripped.
+function buildClientPayload(data) {
+    const { name, email, phone, _id, id, clientId, createdAt, lastModified, ...rest } = data;
+    return { name, email, phone, customFields: rest };
+}
+
+// Synchronous accessor used throughout the UI — returns the cached list.
+function getClients() {
+    return _clientsCache;
+}
+
+// Load this user's clients from MongoDB into the cache.
+async function loadClientsFromServer() {
+    const result = await apiRequest('/clients?page=1&limit=1000', { method: 'GET' });
+    const list = Array.isArray(result.data) ? result.data : [];
+    _clientsCache = list.map(mapServerClient);
+    return _clientsCache;
+}
+
+// Create a client in MongoDB, then update the cache.
+async function addClient(clientData) {
+    const payload = buildClientPayload(clientData);
+    const result = await apiRequest('/clients', { method: 'POST', body: payload });
+    const client = mapServerClient(result.data);
+    _clientsCache.unshift(client);
     return client;
 }
 
-// Update client
-function updateClient(clientId, clientData) {
-    const user = getCurrentUser();
-    
-    const clientIndex = user.clients.findIndex(c => c.id === clientId);
-    if (clientIndex !== -1) {
-        user.clients[clientIndex] = {
-            ...user.clients[clientIndex],
-            ...clientData,
-            lastModified: new Date().toISOString()
-        };
-        saveCurrentUser(user);
-        return user.clients[clientIndex];
-    }
-    
-    return null;
+// Update a client in MongoDB. Merges with the cached record so that partial
+// updates (e.g. the planning/assets tab) don't wipe other custom fields.
+async function updateClient(clientId, clientData) {
+    const existing = _clientsCache.find(c => c.id === clientId) || {};
+    const merged = { ...existing, ...clientData };
+    const payload = buildClientPayload(merged);
+    const result = await apiRequest(`/clients/${clientId}`, { method: 'PUT', body: payload });
+    const client = mapServerClient(result.data);
+    const idx = _clientsCache.findIndex(c => c.id === clientId);
+    if (idx !== -1) _clientsCache[idx] = client; else _clientsCache.push(client);
+    return client;
 }
 
-// Delete client
-function deleteClient(clientId) {
-    const user = getCurrentUser();
-    
-    user.clients = user.clients.filter(c => c.id !== clientId);
-    saveCurrentUser(user);
+// Soft-delete a client in MongoDB, then update the cache.
+async function deleteClient(clientId) {
+    await apiRequest(`/clients/${clientId}`, { method: 'DELETE' });
+    _clientsCache = _clientsCache.filter(c => c.id !== clientId);
 }
 
 // Get all leads for current user
