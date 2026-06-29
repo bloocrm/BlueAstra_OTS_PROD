@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const dotenv = require('dotenv');
+const path = require('path');
 const connectDB = require('./config/db');
 
 // Load environment variables
@@ -22,7 +23,14 @@ connectDB();
 // =====================================================
 
 // Security middleware
-app.use(helmet());
+// CSP / cross-origin isolation are disabled because the SPA uses inline
+// event handlers, inline styles, and external CDN scripts. Other helmet
+// protections (HSTS, noSniff, frameguard, etc.) remain enabled.
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false
+}));
 
 // CORS configuration
 app.use(cors({
@@ -183,6 +191,21 @@ app.use('/api', emailClientApiRoutes);
 
 const meetingEmailRoutes = require('./routes/meeting-email');
 app.use('/api', meetingEmailRoutes);
+
+// =====================================================
+// STATIC FRONTEND
+// Serve the SPA from the backend so the whole app runs same-origin
+// (relative /api calls work without a separate reverse proxy).
+// =====================================================
+
+const frontendPath = path.join(__dirname, '..', 'frontend');
+app.use(express.static(frontendPath));
+
+// SPA fallback: any non-API GET returns index.html
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path === '/health') return next();
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
 
 // =====================================================
 // ERROR HANDLING
