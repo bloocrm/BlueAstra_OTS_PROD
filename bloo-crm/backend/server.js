@@ -33,31 +33,14 @@ app.use(helmet({
 }));
 
 // CORS configuration
+// Reflect the request origin (allow any). This is safe here because auth uses
+// the Authorization header (JWT), not cookies, so a permissive CORS policy does
+// not expose credentials. Same-origin requests via the nginx proxy don't need
+// CORS at all; this prevents cross-origin setups (e.g. direct :5000 access)
+// from being blocked with "Not allowed by CORS".
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow localhost on any port, and specific production domains
-    const allowedOrigins = [
-      'http://localhost:3000',
-      '/api',
-      'http://localhost:8000',
-      'http://localhost:8080',
-      'http://127.0.0.1:3000',
-      '/api',
-      'http://127.0.0.1:8000',
-      'http://127.0.0.1:8080',
-      'file://' // Allow file:// protocol for local development
-    ];
-
-    // In development, allow all localhost
-    if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1') || origin === 'file://') {
-      callback(null, true);
-    } else if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
