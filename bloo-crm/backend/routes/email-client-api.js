@@ -373,7 +373,7 @@ router.get('/email/stats', async (req, res) => {
 // =====================================================
 
 // Store/sync a batch of downloaded emails into MongoDB for the logged-in user
-router.post('/email/store', verifyToken, async (req, res) => {
+router.post('/email-store', verifyToken, async (req, res) => {
     try {
         const provider = (req.body.provider || 'outlook').toLowerCase();
         const emails = Array.isArray(req.body.emails) ? req.body.emails : [];
@@ -415,7 +415,7 @@ router.post('/email/store', verifyToken, async (req, res) => {
 });
 
 // List the logged-in user's emails from MongoDB
-router.get('/email/list', verifyToken, async (req, res) => {
+router.get('/email-list', verifyToken, async (req, res) => {
     try {
         const query = { userId: req.userId, deletedAt: null };
         if (req.query.provider) query.provider = String(req.query.provider).toLowerCase();

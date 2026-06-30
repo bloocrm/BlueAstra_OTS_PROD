@@ -224,7 +224,7 @@ class EmailClient {
         }
         if (emailList) emailList.innerHTML = '<div class="empty-state"><div class="empty-state-text">Loading emails…</div></div>';
         try {
-            const res = await this.apiCall(`/email/list?provider=${encodeURIComponent(this.currentAccount.provider)}`);
+            const res = await this.apiCall(`/email-list?provider=${encodeURIComponent(this.currentAccount.provider)}`);
             const docs = (res && res.emails) || [];
             const emails = docs.map(d => ({
                 id: d._id,
@@ -597,7 +597,7 @@ class EmailClient {
             const raw = (sso && sso.getSyncedEmails) ? await sso.getSyncedEmails(25) : [];
             const payload = (raw || []).map(m => this.toStorePayload(m, this.currentAccount.provider));
             // ...and persist them to MongoDB
-            const res = await this.apiCall('/email/store', {
+            const res = await this.apiCall('/email-store', {
                 method: 'POST',
                 body: { provider: this.currentAccount.provider, emails: payload }
             });
