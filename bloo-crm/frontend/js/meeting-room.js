@@ -202,7 +202,7 @@ async function handleStartMeeting(event) {
     let title = document.getElementById('meetingTitle').value || 'Meeting';
     let provider = document.getElementById('meetingProvider').value || 'zoom';
     let clientName = document.getElementById('clientName').value || 'Client';
-    let clientEmail = document.getElementById('clientEmail').value || 'client@example.com';
+    let clientEmail = document.getElementById('clientEmail').value || 'blue2027astra@tutamail.com';
     let agenda = document.getElementById('meetingAgenda').value || 'Meeting discussion';
     const record = document.getElementById('recordMeeting').checked;
 
