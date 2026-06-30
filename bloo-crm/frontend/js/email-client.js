@@ -124,18 +124,40 @@ class EmailClient {
     }
 
     async loadConnections() {
-        try {
-            if (window.emailManager) {
-                const connections = await window.emailManager.getConnections();
-                this.connections = connections;
-                this.populateAccountDropdown();
-                if (connections.length > 0) {
-                    this.switchAccount(connections[0].id);
-                }
+        this.connections = [];
+        const mgr = window.emailManager;
+        if (!mgr || !mgr.ssoInstances) {
+            // Manager not ready yet — retry shortly
+            setTimeout(() => this.loadConnections(), 400);
+            return;
+        }
+
+        // A provider is "connected" if it has a valid OAuth token (single source of truth)
+        for (const provider of ['outlook', 'gmail']) {
+            const sso = mgr.ssoInstances[provider];
+            if (!sso) continue;
+            try { await sso.checkExistingSession(); } catch (e) { /* not connected */ }
+            if (sso.isUserLoggedIn && sso.isUserLoggedIn()) {
+                this.connections.push({
+                    id: provider,
+                    provider: provider,
+                    email: sso.userEmail || provider,
+                    sso: sso
+                });
             }
-        } catch (error) {
-            console.error('Failed to load connections:', error);
-            this.showToast('Failed to load email accounts', 'error');
+        }
+
+        this.populateAccountDropdown();
+
+        if (this.connections.length > 0) {
+            const sel = document.getElementById('accountSelect');
+            if (sel) sel.value = this.connections[0].id;
+            this.switchAccount(this.connections[0].id);
+        } else {
+            const emailList = document.getElementById('emailList');
+            if (emailList) {
+                emailList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔌</div><div class="empty-state-text">No email account connected. Click the + button to connect Outlook or Gmail.</div></div>';
+            }
         }
     }
 
@@ -177,36 +199,63 @@ class EmailClient {
     }
 
     async loadEmails() {
-        try {
-            if (!this.currentAccount) return;
+        const emailList = document.getElementById('emailList');
+        if (!this.currentAccount) {
+            if (emailList) emailList.innerHTML = '<div class="empty-state"><div class="empty-state-text">Select a connected account.</div></div>';
+            return;
+        }
+        const sso = this.currentAccount.sso;
+        if (emailList) emailList.innerHTML = '<div class="empty-state"><div class="empty-state-text">Loading emails…</div></div>';
 
-            const emails = await window.emailManager.getCalendarEvents(this.currentAccount.id, {
-                folder: this.currentFolder
-            });
+        try {
+            // Fetch real messages from the provider using the OAuth token
+            const raw = (sso && sso.getSyncedEmails) ? await sso.getSyncedEmails(25) : [];
+            const emails = (raw || []).map(m => this.normalizeEmail(m, this.currentAccount.provider));
 
             this.emails.clear();
-            const emailList = document.getElementById('emailList');
             emailList.innerHTML = '';
 
             if (emails.length === 0) {
-                emailList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📭</div>
-                        <div class="empty-state-text">No emails in ${this.currentFolder}</div>
-                    </div>
-                `;
+                emailList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">No emails found in this mailbox.</div></div>';
                 return;
             }
 
             emails.forEach(email => {
                 this.emails.set(email.id, email);
-                const emailElement = this.createEmailListItem(email);
-                emailList.appendChild(emailElement);
+                emailList.appendChild(this.createEmailListItem(email));
             });
         } catch (error) {
             console.error('Failed to load emails:', error);
-            this.showToast('Failed to load emails', 'error');
+            emailList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Could not load emails: ${error.message}. Try reconnecting the account.</div></div>`;
         }
+    }
+
+    // Normalize a provider message into the shape the UI expects
+    normalizeEmail(m, provider) {
+        if (provider === 'outlook') {
+            const addr = m.from && m.from.emailAddress;
+            return {
+                id: m.id,
+                from: (addr && (addr.address || addr.name)) || 'Unknown',
+                to: (m.toRecipients && m.toRecipients[0] && m.toRecipients[0].emailAddress && m.toRecipients[0].emailAddress.address) || '',
+                subject: m.subject || '(No subject)',
+                date: m.receivedDateTime || m.sentDateTime || new Date().toISOString(),
+                body: m.bodyPreview || (m.body && m.body.content) || '',
+                read: !!m.isRead,
+                attachments: []
+            };
+        }
+        // Gmail / generic fallback
+        return {
+            id: m.id || ('e_' + Math.random().toString(36).slice(2)),
+            from: m.from || m.sender || 'Unknown',
+            to: m.to || '',
+            subject: m.subject || '(No subject)',
+            date: m.date || m.receivedDateTime || m.internalDate || new Date().toISOString(),
+            body: m.body || m.snippet || '',
+            read: m.read || false,
+            attachments: []
+        };
     }
 
     createEmailListItem(email) {
@@ -517,34 +566,13 @@ class EmailClient {
 
     async syncEmails() {
         if (!this.currentAccount) {
-            this.showToast('❌ No email account selected. Please select an account first.', 'error');
+            this.showToast('❌ No account selected. Connect Outlook or Gmail first (+).', 'error');
             return;
         }
-
-        try {
-            const accountId = this.currentAccount;
-            console.log('Starting email sync for account:', accountId);
-
-            this.showToast('⏳ Syncing emails from provider...', 'info');
-
-            // Get the email provider manager
-            if (!window.emailManager) {
-                throw new Error('Email manager not initialized');
-            }
-
-            const result = await window.emailManager.startSync(accountId, { daysBack: 7 });
-
-            if (!result) {
-                throw new Error('Sync returned no result');
-            }
-
-            console.log('Sync result:', result);
-            this.showToast('✅ Emails synced successfully!', 'success');
-            await this.loadEmails();
-        } catch (error) {
-            console.error('Email sync error:', error);
-            this.showToast(`❌ Sync failed: ${error.message || 'Unknown error occurred'}`, 'error');
-        }
+        this.showToast(`⏳ Syncing ${this.currentAccount.email}…`, 'info');
+        await this.loadEmails();
+        const count = this.emails.size;
+        this.showToast(`✅ Synced ${count} email${count === 1 ? '' : 's'} from ${this.currentAccount.email}.`, 'success');
     }
 
     async refreshEmails() {
