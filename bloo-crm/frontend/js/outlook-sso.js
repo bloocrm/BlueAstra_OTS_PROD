@@ -101,10 +101,17 @@ if (window.location.pathname.includes('outlook-callback')) {
         const sso = new OutlookSSO();
         try {
             await sso.handleCallback();
-            window.close();
+            // Full-page OAuth redirect (not a popup) — return to the email client
+            window.location.href = '/email-client.html';
         } catch (error) {
             console.error('Outlook callback error:', error);
-            alert('Authentication failed: ' + error.message);
+            const el = document.getElementById('error');
+            if (el) {
+                el.textContent = 'Authentication failed: ' + error.message;
+                el.style.display = 'block';
+            } else {
+                alert('Authentication failed: ' + error.message);
+            }
         }
     });
 }

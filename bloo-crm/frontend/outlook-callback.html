@@ -20,33 +20,10 @@
         <p>Please wait while we complete your authentication</p>
         <div class="error" id="error"></div>
     </div>
+    <!-- oauth-base.js defines OAuthBase (OutlookSSO extends it); outlook-sso.js's
+         built-in callback handler exchanges the code and redirects to the app. -->
+    <script src="js/api-config.js"></script>
+    <script src="js/oauth-base.js"></script>
     <script src="js/outlook-sso.js"></script>
-    <script>
-        async function handleCallback() {
-            try {
-                const params = new URLSearchParams(window.location.search);
-                const code = params.get('code');
-                const state = params.get('state');
-
-                if (!code) throw new Error('No authorization code received');
-
-                const savedState = sessionStorage.getItem('outlookState');
-                if (state !== savedState) throw new Error('Invalid state parameter - CSRF validation failed');
-
-                const outlookSSO = new OutlookSSO();
-                await outlookSSO.exchangeCodeForToken(code);
-
-                console.log('✅ Outlook authentication successful, redirecting to Outlook...');
-                setTimeout(() => {
-                    window.location.href = 'https://outlook.office.com/';
-                }, 2000);
-            } catch (error) {
-                console.error('Outlook authentication error:', error);
-                document.getElementById('error').textContent = `Error: ${error.message}`;
-                document.getElementById('error').style.display = 'block';
-            }
-        }
-        document.addEventListener('DOMContentLoaded', handleCallback);
-    </script>
 </body>
 </html>
