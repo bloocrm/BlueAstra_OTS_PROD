@@ -208,6 +208,32 @@ function readFileAsBase64(file) {
     });
 }
 
+// Ask the backend for a real meeting link. With JaaS configured this returns an
+// authenticated room (host JWT = moderator, guest JWT = lobby); otherwise it falls
+// back to a public Jitsi room. Returns { hostUrl, guestUrl, authenticated }.
+async function createMeetingLinks(title, user, guestName) {
+    const fallbackSlug = `BlooCRM-${(title || 'Meeting').replace(/[^a-zA-Z0-9]+/g, '-')}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    const fallbackUrl = `https://meet.jit.si/${fallbackSlug}`;
+    try {
+        const token = localStorage.getItem('authToken');
+        const resp = await fetch(`${window.API_BASE_URL || '/api'}/meeting/jaas-create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+            body: JSON.stringify({ title, hostName: user && user.name, hostEmail: user && user.email, guestName })
+        });
+        if (!resp.ok) throw new Error('jaas-create ' + resp.status);
+        const d = await resp.json();
+        return {
+            hostUrl: d.hostUrl || fallbackUrl,
+            guestUrl: d.guestUrl || fallbackUrl,
+            authenticated: !!d.authenticated
+        };
+    } catch (e) {
+        console.warn('Meeting link service unavailable, using public Jitsi:', e.message);
+        return { hostUrl: fallbackUrl, guestUrl: fallbackUrl, authenticated: false };
+    }
+}
+
 // Handle start meeting
 async function handleStartMeeting(event) {
     event.preventDefault();
@@ -244,13 +270,13 @@ async function handleStartMeeting(event) {
 
     showNotification(`Starting meeting with ${providerInfo?.name || 'Zoom'}...`, 'info');
 
-    setTimeout(() => {
+    setTimeout(async () => {
         const user = getCurrentUser();
 
-        // Generate a REAL, click-to-join meeting link. Jitsi Meet rooms let
-        // recipients join as a guest (just enter a name) OR sign in — no API/account needed.
-        const roomSlug = `BlooCRM-${(title || 'Meeting').replace(/[^a-zA-Z0-9]+/g, '-')}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-        const joinUrl = `https://meet.jit.si/${roomSlug}`;
+        // Get a REAL meeting link from the backend. With JaaS configured this is an
+        // AUTHENTICATED room (host = moderator, guests admitted via lobby); otherwise
+        // it falls back to a public Jitsi room. Recipients join as guest or signed in.
+        const links = await createMeetingLinks(title, user, clientName);
 
         const meeting = {
             id: 'meeting_' + Date.now(),
@@ -264,7 +290,8 @@ async function handleStartMeeting(event) {
             startTime: new Date().toISOString(),
             endTime: null,
             status: 'active',
-            meetingUrl: joinUrl,
+            meetingUrl: links.hostUrl,
+            guestUrl: links.guestUrl,
             minutes: null,
             highlights: null,
             decisions: [],
@@ -302,7 +329,7 @@ async function handleStartMeeting(event) {
             senderName: user.name || 'Bloo CRM',
             senderEmail: user.email || null,
             meetingTime: new Date(meeting.startTime).toLocaleString(),
-            meetingUrl: meeting.meetingUrl,
+            meetingUrl: links.guestUrl,
             record: record,
             attachment: attachment
         });
