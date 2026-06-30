@@ -199,6 +199,7 @@ let emailManager = null;
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Initializing Email Platform Manager...');
     emailManager = new EmailPlatformManager();
+    window.emailManager = emailManager; // expose to other scripts (email-client.js uses window.emailManager)
 
     // Check existing sessions for all providers
     for (const providerId in emailManager.ssoInstances) {
