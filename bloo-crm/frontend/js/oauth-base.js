@@ -6,7 +6,7 @@ class OAuthBase {
     constructor(providerId, config = {}) {
         this.providerId = providerId;
         this.config = config;
-        this.apiBase = 'http://localhost:5000/api';
+        this.apiBase = (window.API_BASE_URL || '/api');
         this.accessToken = null;
         this.refreshToken = null;
         this.tokenExpiresAt = 0;

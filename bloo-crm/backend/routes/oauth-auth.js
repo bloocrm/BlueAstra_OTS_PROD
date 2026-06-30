@@ -13,7 +13,7 @@ const OAUTH_PROVIDERS = {
     'gmail': {
         clientId: process.env.GMAIL_CLIENT_ID,
         clientSecret: process.env.GMAIL_CLIENT_SECRET,
-        redirectUri: `${process.env.APP_URL}/auth/gmail-callback`,
+        redirectUri: `${process.env.APP_URL}/gmail-callback.html`,
         authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
         tokenUrl: 'https://oauth2.googleapis.com/token',
         userInfoUrl: 'https://www.googleapis.com/oauth2/v2/userinfo',
@@ -23,7 +23,7 @@ const OAUTH_PROVIDERS = {
     'outlook': {
         clientId: process.env.OUTLOOK_CLIENT_ID,
         clientSecret: process.env.OUTLOOK_CLIENT_SECRET,
-        redirectUri: `${process.env.APP_URL}/auth/outlook-callback`,
+        redirectUri: `${process.env.APP_URL}/outlook-callback.html`,
         authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
         tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
         userInfoUrl: 'https://graph.microsoft.com/v1.0/me',
@@ -33,7 +33,7 @@ const OAUTH_PROVIDERS = {
     'protonmail': {
         clientId: process.env.PROTONMAIL_CLIENT_ID,
         clientSecret: process.env.PROTONMAIL_CLIENT_SECRET,
-        redirectUri: `${process.env.APP_URL}/auth/protonmail-callback`,
+        redirectUri: `${process.env.APP_URL}/protonmail-callback.html`,
         authorizationUrl: 'https://account.proton.me/oauth/authorize',
         tokenUrl: 'https://account.proton.me/oauth/token',
         userInfoUrl: 'https://mail-api.proton.me/api/users',

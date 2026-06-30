@@ -5,7 +5,8 @@
 class OutlookSSO extends OAuthBase {
     constructor() {
         super('outlook', {
-            clientId: process.env.OUTLOOK_CLIENT_ID,
+            // clientId is provided by the backend /auth/oauth-config/outlook endpoint
+            // (from OUTLOOK_CLIENT_ID in the server .env); never reference process.env in the browser.
             scope: 'Mail.Read User.Read offline_access',
             apiUrl: 'https://graph.microsoft.com/v1.0',
             userInfoUrl: 'https://graph.microsoft.com/v1.0/me'

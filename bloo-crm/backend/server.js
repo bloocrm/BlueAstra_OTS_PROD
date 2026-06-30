@@ -7,6 +7,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const dotenv = require('dotenv');
 const path = require('path');
+const session = require('express-session');
 const connectDB = require('./config/db');
 
 // Load environment variables
@@ -48,6 +49,15 @@ app.use(cors({
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// Session (used by the OAuth flow to hold the CSRF state across the redirect)
+app.set('trust proxy', 1);
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'bloo-crm-session-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, httpOnly: true, maxAge: 30 * 60 * 1000 }
+}));
 
 // Request logging middleware
 app.use((req, res, next) => {

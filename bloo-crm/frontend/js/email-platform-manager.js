@@ -24,8 +24,14 @@ class EmailPlatformManager {
             const platform = this.platforms[platformId];
             const SSOClass = window[platform.ssoClass];
             if (SSOClass) {
-                this.ssoInstances[platformId] = new SSOClass();
-                console.log(`✅ Initialized ${platform.name}`);
+                try {
+                    this.ssoInstances[platformId] = new SSOClass();
+                    console.log(`✅ Initialized ${platform.name}`);
+                } catch (error) {
+                    console.warn(`⚠️ Could not initialize ${platform.name}:`, error.message);
+                }
+            } else {
+                console.warn(`⚠️ ${platform.ssoClass} not loaded for ${platform.name}`);
             }
         }
     }
