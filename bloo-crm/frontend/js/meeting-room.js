@@ -195,6 +195,19 @@ function startMeetingWithProvider(providerId) {
     document.getElementById('meetingProvider').value = providerId;
 }
 
+// Read a File into { name, type, data(base64) } for emailing as an attachment
+function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = String(reader.result || '').split(',')[1] || '';
+            resolve({ name: file.name, type: file.type || 'application/octet-stream', data: base64 });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
 // Handle start meeting
 async function handleStartMeeting(event) {
     event.preventDefault();
@@ -205,6 +218,27 @@ async function handleStartMeeting(event) {
     let clientEmail = document.getElementById('clientEmail').value || 'blue2027astra@tutamail.com';
     let agenda = document.getElementById('meetingAgenda').value || 'Meeting discussion';
     const record = document.getElementById('recordMeeting').checked;
+
+    // Optional attachment to email along with the invite
+    let attachment = null;
+    const attachFile = document.getElementById('meetingAttachment')?.files?.[0];
+    if (attachFile) {
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'image/jpeg', 'image/png', 'image/gif'];
+        if (attachFile.type && !allowedTypes.includes(attachFile.type)) {
+            showNotification('Invalid attachment type. Use PDF, Word, Excel, Text, or Image.', 'error');
+            return;
+        }
+        if (attachFile.size > 10 * 1024 * 1024) {
+            showNotification('Attachment exceeds the 10MB limit.', 'error');
+            return;
+        }
+        try {
+            attachment = await readFileAsBase64(attachFile);
+        } catch (e) {
+            showNotification('Could not read the attachment.', 'error');
+            return;
+        }
+    }
 
     const providerInfo = videoProviders[provider];
 
@@ -263,7 +297,8 @@ async function handleStartMeeting(event) {
             senderEmail: user.email || null,
             meetingTime: new Date(meeting.startTime).toLocaleString(),
             meetingUrl: meeting.meetingUrl,
-            record: record
+            record: record,
+            attachment: attachment
         });
 
         // Open meeting in new window
@@ -296,7 +331,8 @@ async function sendMeetingInviteEmail(options) {
                 senderEmail: options.senderEmail,
                 meetingTime: options.meetingTime,
                 meetingUrl: options.meetingUrl,
-                record: options.record
+                record: options.record,
+                attachment: options.attachment
             })
         });
 

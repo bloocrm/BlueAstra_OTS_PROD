@@ -59,7 +59,7 @@ class EmailService {
     async sendMeetingInvite(options) {
         try {
             // Validate required fields (only email is truly required)
-            const { meetingTitle, providerName, clientName, clientEmail, agenda, senderEmail, senderName } = options;
+            const { meetingTitle, providerName, clientName, clientEmail, agenda, senderEmail, senderName, attachment } = options;
 
             if (!clientEmail) {
                 throw new Error('Client email is required');
@@ -78,14 +78,26 @@ class EmailService {
             // like Brevo reject unverified "from" addresses. The actual sender's
             // address (e.g. the CRM user) becomes the reply-to.
             const fromAddress = process.env.DEFAULT_FROM_EMAIL || senderEmail || 'noreply@bluocrm.com';
-            const result = await this.transporter.sendMail({
+            const mailOptions = {
                 from: `"${senderName || 'Bloo CRM'}" <${fromAddress}>`,
                 replyTo: senderEmail || undefined,
                 to: clientEmail,
                 subject: `Meeting Invitation: ${meetingTitle}`,
                 html: emailContent,
                 text: this.generateMeetingEmailText(options)
-            });
+            };
+
+            // Attach a document (PDF/Word/Excel/Text/Image) if provided
+            if (attachment && attachment.data) {
+                mailOptions.attachments = [{
+                    filename: attachment.name || 'attachment',
+                    content: attachment.data,
+                    encoding: 'base64',
+                    contentType: attachment.type || 'application/octet-stream'
+                }];
+            }
+
+            const result = await this.transporter.sendMail(mailOptions);
 
             console.log(`✅ Meeting email sent to ${clientEmail}:`, result.messageId);
             return {

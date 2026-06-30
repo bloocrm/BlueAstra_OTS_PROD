@@ -13,7 +13,7 @@ const emailService = require('../utils/email-service');
  */
 router.post('/meeting/send-invite', async (req, res) => {
     try {
-        let { meetingTitle, providerName, clientName, clientEmail, agenda, senderEmail, senderName, meetingTime, meetingUrl, record } = req.body;
+        let { meetingTitle, providerName, clientName, clientEmail, agenda, senderEmail, senderName, meetingTime, meetingUrl, record, attachment } = req.body;
 
         // Validate email (only mandatory field)
         if (!clientEmail || clientEmail.trim() === '') {
@@ -49,7 +49,8 @@ router.post('/meeting/send-invite', async (req, res) => {
             senderName: senderName || 'Bloo CRM',
             meetingTime: (meetingTime && String(meetingTime).trim()) || new Date().toLocaleString(),
             meetingUrl: (meetingUrl && String(meetingUrl).trim()) || null,
-            record: !!record
+            record: !!record,
+            attachment: (attachment && attachment.data) ? attachment : null
         });
 
         if (result.success) {
