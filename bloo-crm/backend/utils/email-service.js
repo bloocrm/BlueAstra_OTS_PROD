@@ -74,9 +74,13 @@ class EmailService {
             // Create email content
             const emailContent = this.generateMeetingEmailHTML(options);
 
-            // Send email
+            // Always send FROM the verified sender (DEFAULT_FROM_EMAIL) — providers
+            // like Brevo reject unverified "from" addresses. The actual sender's
+            // address (e.g. the CRM user) becomes the reply-to.
+            const fromAddress = process.env.DEFAULT_FROM_EMAIL || senderEmail || 'noreply@bluocrm.com';
             const result = await this.transporter.sendMail({
-                from: `"${senderName || 'Bloo CRM'}" <${senderEmail || process.env.DEFAULT_FROM_EMAIL || 'noreply@bluocrm.com'}>`,
+                from: `"${senderName || 'Bloo CRM'}" <${fromAddress}>`,
+                replyTo: senderEmail || undefined,
                 to: clientEmail,
                 subject: `Meeting Invitation: ${meetingTitle}`,
                 html: emailContent,
