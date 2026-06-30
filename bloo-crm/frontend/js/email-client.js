@@ -163,30 +163,50 @@ class EmailClient {
 
     populateAccountDropdown() {
         const select = document.getElementById('accountSelect');
-        select.innerHTML = '<option value="">Select Email Account</option>';
-        this.connections.forEach(conn => {
-            const option = document.createElement('option');
-            option.value = conn.id;
-            option.textContent = `${conn.email} (${conn.provider})`;
-            select.appendChild(option);
-        });
+        if (select) {
+            // Always offer Outlook + Gmail; show connection status
+            const providers = [
+                { id: 'outlook', name: 'Microsoft Outlook' },
+                { id: 'gmail', name: 'Gmail' }
+            ];
+            select.innerHTML = '';
+            providers.forEach(p => {
+                const conn = this.connections.find(c => c.id === p.id);
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.textContent = conn ? `${conn.email} — ${p.name}` : `${p.name} (not connected)`;
+                select.appendChild(option);
+            });
+        }
 
-        // Also populate the "From" dropdown in compose
+        // "From" dropdown in compose: connected accounts only
         const fromSelect = document.getElementById('fromSelect');
-        fromSelect.innerHTML = '';
-        this.connections.forEach(conn => {
-            const option = document.createElement('option');
-            option.value = conn.id;
-            option.textContent = conn.email;
-            fromSelect.appendChild(option);
-        });
+        if (fromSelect) {
+            fromSelect.innerHTML = '';
+            this.connections.forEach(conn => {
+                const option = document.createElement('option');
+                option.value = conn.id;
+                option.textContent = conn.email;
+                fromSelect.appendChild(option);
+            });
+        }
     }
 
-    switchAccount(accountId) {
-        this.currentAccount = this.connections.find(c => c.id === accountId);
-        if (this.currentAccount) {
+    switchAccount(providerId) {
+        const conn = this.connections.find(c => c.id === providerId);
+        if (conn) {
+            this.currentAccount = conn;
             // Download from the provider into MongoDB, then display from MongoDB
             this.syncEmails();
+        } else {
+            // Selected provider isn't connected yet — start the OAuth connect
+            this.currentAccount = null;
+            const name = providerId === 'gmail' ? 'Gmail' : 'Microsoft Outlook';
+            const emailList = document.getElementById('emailList');
+            if (emailList) {
+                emailList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔌</div><div class="empty-state-text">${name} isn't connected — redirecting to sign in…</div></div>`;
+            }
+            if (typeof this.connectProvider === 'function') this.connectProvider(providerId);
         }
     }
 
