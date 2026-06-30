@@ -68,7 +68,8 @@ const calendarEventSchema = new mongoose.Schema(
       type: String,
       enum: [
         'calendly', 'google-calendar', 'outlook-calendar', 'apple-calendar',
-        'zoom', 'monday', 'asana', 'trello', 'microsoft-teams', 'slack', 'notion'
+        'zoom', 'monday', 'asana', 'trello', 'microsoft-teams', 'slack', 'notion',
+        'webex', 'jitsi', 'whereby', 'google-meet', 'meeting'
       ],
       required: true
     },

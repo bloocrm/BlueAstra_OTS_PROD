@@ -18,7 +18,7 @@ class CalendarView {
             defaultEventDuration: 60
         };
 
-        this.apiBase = 'http://localhost:5000/api';
+        this.apiBase = (window.API_BASE_URL || '/api');
         this.initializeEventListeners();
         this.loadConnections();
         this.loadSettings();
@@ -131,7 +131,13 @@ class CalendarView {
                         endDate: new Date(event.endDate)
                     };
                     this.events.set(event._id, eventObj);
+                    // Ensure the event's calendar is selected so it renders
+                    if (event.connectionId) this.selectedCalendars.add(event.connectionId);
                 });
+                // Re-render now that events are loaded (constructor render runs before this resolves)
+                this.renderCalendar();
+                this.renderMiniCalendar();
+                this.loadUpcomingEvents();
             }
         } catch (error) {
             console.error('Failed to load events from backend:', error);
@@ -954,7 +960,11 @@ class CalendarView {
     }
 }
 
-// Initialize on page load
+// Initialize on page load — scope to the logged-in user so it pulls their MongoDB events
 document.addEventListener('DOMContentLoaded', () => {
-    window.calendarView = new CalendarView();
+    let userId = 'default-user';
+    try {
+        userId = (JSON.parse(localStorage.getItem('currentUser') || '{}'))._id || 'default-user';
+    } catch (e) { /* keep default */ }
+    window.calendarView = new CalendarView(userId);
 });

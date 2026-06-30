@@ -302,11 +302,12 @@ async function handleStartMeeting(event) {
         });
 
         // Open meeting in new window
-        setTimeout(() => {
+        setTimeout(async () => {
             window.open(meeting.meetingUrl, '_blank');
             closeModal('startMeetingModal');
             loadMeetingRoomFeatures();
             loadRecentMeetings();
+            await saveMeetingToCalendar(meeting);
             renderMeetingsCalendar();
         }, 1000);
     }, 1500);
@@ -509,21 +510,73 @@ function loadRecentMeetings() {
     `).join('');
 }
 
-// Synchronize meetings into the Calendar tab (#calendarContainer)
-function renderMeetingsCalendar() {
+// Persist a meeting to MongoDB as a calendar event (single source of truth)
+async function saveMeetingToCalendar(meeting) {
+    try {
+        const user = getCurrentUser();
+        if (!user || !user._id) return;
+        const start = new Date(meeting.startTime);
+        const end = new Date(start.getTime() + 60 * 60 * 1000);
+        const allowed = ['zoom', 'google-meet', 'microsoft-teams', 'webex', 'jitsi', 'whereby'];
+        const provider = allowed.includes(meeting.provider) ? meeting.provider : 'meeting';
+        await apiRequest('/calendar/events', {
+            method: 'POST',
+            body: {
+                userId: user._id,
+                title: meeting.title || 'Meeting',
+                description: meeting.agenda || '',
+                startDate: start.toISOString(),
+                endDate: end.toISOString(),
+                location: meeting.meetingUrl || '',
+                attendees: meeting.clientEmail ? [{ email: meeting.clientEmail, name: meeting.clientName || '' }] : [],
+                connectionId: 'meeting-room',
+                calendarId: 'meeting-room',
+                provider: provider,
+                color: '#2d6cdf',
+                status: 'confirmed'
+            }
+        });
+    } catch (e) {
+        console.error('Failed to save meeting to calendar:', e.message);
+    }
+}
+
+// Synchronize the Calendar tab (#calendarContainer) from MongoDB
+async function renderMeetingsCalendar() {
     const container = document.getElementById('calendarContainer');
     if (!container) return;
 
     const user = getCurrentUser();
-    const meetings = (Array.isArray(user.meetings) ? user.meetings.slice() : [])
-        .filter(m => m && m.startTime)
+    let events = [];
+    try {
+        if (user && user._id) {
+            const res = await apiRequest(`/calendar/events?userId=${encodeURIComponent(user._id)}`, { method: 'GET' });
+            events = Array.isArray(res.events) ? res.events : [];
+        }
+    } catch (e) {
+        console.error('Failed to load calendar events:', e.message);
+    }
+
+    const meetings = events
+        .filter(e => e && e.startDate)
+        .map(e => ({
+            title: e.title,
+            startTime: e.startDate,
+            provider: e.provider,
+            providerName: e.provider,
+            clientName: (e.attendees && e.attendees[0] && e.attendees[0].name) || '',
+            clientEmail: (e.attendees && e.attendees[0] && e.attendees[0].email) || '',
+            agenda: e.description,
+            meetingUrl: e.location,
+            status: e.status === 'confirmed' ? 'scheduled' : (e.status || 'scheduled')
+        }))
         .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
 
     // Update the sync-status card
     const statusCard = document.getElementById('calendarSyncStatus');
     if (statusCard) {
         statusCard.innerHTML = meetings.length
-            ? `<i class="fas fa-circle" style="color: #2ecc71;"></i> <span>${meetings.length} meeting${meetings.length > 1 ? 's' : ''} synced from Meeting Room</span>`
+            ? `<i class="fas fa-circle" style="color: #2ecc71;"></i> <span>${meetings.length} event${meetings.length > 1 ? 's' : ''} synced from MongoDB</span>`
             : `<i class="fas fa-circle" style="color: var(--text-light);"></i> <span>No meetings scheduled yet</span>`;
     }
 

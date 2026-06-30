@@ -9,6 +9,7 @@ const { ValidationError, NotFoundError } = require('../utils/errors');
 const crypto = require('crypto');
 const WebexMeetingService = require('../services/webexMeetingService');
 const emailService = require('../utils/email-service');
+const CalendarEvent = require('../models/CalendarEvent');
 
 router.use(verifyToken);
 
@@ -434,6 +435,26 @@ router.post('/create-webex', asyncHandler(async (req, res) => {
         .filter(e => e && emailRegex.test(String(e).trim()))
         .map(e => String(e).trim().toLowerCase())
     )];
+
+    // Store the meeting as a calendar event so it appears on the calendar (non-fatal)
+    try {
+      await CalendarEvent.create({
+        userId: req.userId,
+        title: meetingTitle,
+        description: meetingDescription || '',
+        startDate: new Date(startTime),
+        endDate: new Date(new Date(startTime).getTime() + (parseInt(duration) || 60) * 60000),
+        location: webexMeeting.meetingUrl || '',
+        attendees: recipients.map(e => ({ email: e })),
+        connectionId: 'meeting-room',
+        calendarId: 'meeting-room',
+        provider: 'webex',
+        color: '#00A1F3',
+        status: 'confirmed'
+      });
+    } catch (calErr) {
+      console.error('Failed to add Webex meeting to calendar:', calErr.message);
+    }
 
     let invitesSent = 0;
     await Promise.all(recipients.map(async (email) => {
