@@ -20,38 +20,6 @@ const emailProviderList = {
         features: ['Exchange Online', 'Shared mailboxes', 'Rules & filters', 'Archive support'],
         setupLink: 'https://outlook.office.com'
     },
-    'yahoo': {
-        name: 'Yahoo Mail',
-        icon: 'fa-envelope',
-        color: '#7B0099',
-        description: 'Sync emails from Yahoo Mail',
-        features: ['IMAP access', 'Folder sync', 'Contact sync', 'Calendar integration'],
-        setupLink: 'https://mail.yahoo.com'
-    },
-    'protonmail': {
-        name: 'ProtonMail',
-        icon: 'fa-lock',
-        color: '#6D4AFF',
-        description: 'Secure encrypted email access',
-        features: ['End-to-end encryption', 'ProtonVPN', 'Self-destructing emails', 'Zero-access architecture'],
-        setupLink: 'https://protonmail.com'
-    },
-    'tutamail': {
-        name: 'Tutamail',
-        icon: 'fa-shield-alt',
-        color: '#FF6B35',
-        description: 'Private and secure email service',
-        features: ['Encrypted storage', 'Anonymous signup', 'No tracking', 'European hosting'],
-        setupLink: 'https://tutanota.com'
-    },
-    'mailchimp': {
-        name: 'MailChimp',
-        icon: 'fa-envelope-open',
-        color: '#FFE01B',
-        description: 'Email marketing campaigns and automation',
-        features: ['Campaign creation', 'Automation', 'Analytics', 'List management'],
-        setupLink: 'https://mailchimp.com'
-    }
 };
 
 // Load email providers section

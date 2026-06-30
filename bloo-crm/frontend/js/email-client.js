@@ -558,11 +558,7 @@ class EmailClient {
 
         const providers = [
             { name: 'Gmail', icon: '📧', id: 'gmail', type: 'imap' },
-            { name: 'Outlook', icon: '📨', id: 'outlook', type: 'imap' },
-            { name: 'Yahoo', icon: '🔶', id: 'yahoo', type: 'imap' },
-            { name: 'ProtonMail', icon: '🔐', id: 'protonmail', type: 'imap' },
-            { name: 'Tutamail', icon: '📮', id: 'tutamail', type: 'imap' },
-            { name: 'MailChimp', icon: '📬', id: 'mailchimp', type: 'imap' }
+            { name: 'Outlook', icon: '📨', id: 'outlook', type: 'imap' }
         ];
 
         // Email providers section
