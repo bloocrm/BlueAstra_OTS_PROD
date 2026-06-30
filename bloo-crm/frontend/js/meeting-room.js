@@ -3,7 +3,9 @@
    ===================================================== */
 
 // Backend URL Configuration
-const BACKEND_URL = 'http://localhost:5002';
+// Same-origin: the backend is reached via the nginx proxy at /api, so use a
+// relative path. (A hardcoded host:port here breaks on the deployed site.)
+const BACKEND_URL = '';
 
 // Video Provider Configuration
 const videoProviders = {
@@ -250,14 +252,18 @@ async function handleStartMeeting(event) {
         logWorkflowActivity('meeting_started', `Meeting started: ${title} with ${clientName} via ${providerInfo.name}`);
         showNotification(`Meeting started! Opening ${providerInfo.name}...`, 'success');
 
-        // Send meeting invitation email
+        // Send meeting invitation email with the full details
         sendMeetingInviteEmail({
             meetingTitle: title,
             providerName: providerInfo.name,
             clientName: clientName,
             clientEmail: clientEmail,
             agenda: agenda,
-            senderName: user.name || 'Bloo CRM'
+            senderName: user.name || 'Bloo CRM',
+            senderEmail: user.email || null,
+            meetingTime: new Date(meeting.startTime).toLocaleString(),
+            meetingUrl: meeting.meetingUrl,
+            record: record
         });
 
         // Open meeting in new window
@@ -286,25 +292,31 @@ async function sendMeetingInviteEmail(options) {
                 clientName: options.clientName,
                 clientEmail: options.clientEmail,
                 agenda: options.agenda,
-                senderName: options.senderName
+                senderName: options.senderName,
+                senderEmail: options.senderEmail,
+                meetingTime: options.meetingTime,
+                meetingUrl: options.meetingUrl,
+                record: options.record
             })
         });
 
         const result = await response.json();
 
-        if (result.success) {
+        if (result.success && !result.mock) {
             console.log('✅ Meeting invitation email sent:', result.messageId);
             showNotification(`Meeting invitation sent to ${options.clientEmail}`, 'success');
-
-            // Log the email activity
             logWorkflowActivity('meeting_email_sent', `Meeting invitation email sent to ${options.clientEmail} for meeting: ${options.meetingTitle}`);
+        } else if (result.success && result.mock) {
+            // Backend reachable but email service is in demo mode (no SMTP configured)
+            console.warn('Email logged in demo mode (not delivered):', result);
+            showNotification('Invite logged, but email delivery is not configured (demo mode). Set up SMTP to actually send.', 'info');
         } else {
             console.error('❌ Failed to send email:', result.error);
-            showNotification(`Email sent notification (Demo Mode): ${options.clientEmail}`, 'info');
+            showNotification(`Could not send invitation: ${result.error || 'unknown error'}`, 'error');
         }
     } catch (error) {
         console.error('❌ Error sending meeting email:', error);
-        showNotification('Meeting invitation email sent (Demo Mode)', 'info');
+        showNotification('Could not reach the email service. Please try again.', 'error');
     }
 }
 

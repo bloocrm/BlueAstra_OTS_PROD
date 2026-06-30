@@ -100,7 +100,7 @@ class EmailService {
      * Generate HTML email content
      */
     generateMeetingEmailHTML(options) {
-        const { meetingTitle, providerName, clientName, agenda, meetingTime } = options;
+        const { meetingTitle, providerName, clientName, agenda, meetingTime, meetingUrl, record } = options;
 
         return `
             <!DOCTYPE html>
@@ -150,11 +150,13 @@ class EmailService {
                                 <span class="label">Agenda:</span>
                                 <p style="margin: 10px 0; white-space: pre-wrap; background-color: #f5f5f5; padding: 10px; border-radius: 3px;">${agenda}</p>
                             </div>
+                            ${record ? `<div class="detail-row"><span class="label">Recording:</span> <span>This meeting will be recorded.</span></div>` : ''}
                         </div>
 
-                        <p style="text-align: center;">
-                            <a href="#" class="btn">Join Meeting</a>
+                        ${meetingUrl ? `<p style="text-align: center;">
+                            <a href="${meetingUrl}" class="btn">Join Meeting</a>
                         </p>
+                        <p style="text-align:center; font-size:13px; word-break:break-all;">${meetingUrl}</p>` : ''}
 
                         <p>If you have any questions, please don't hesitate to reach out.</p>
 
@@ -175,7 +177,7 @@ class EmailService {
      * Generate plain text email content
      */
     generateMeetingEmailText(options) {
-        const { meetingTitle, providerName, clientName, agenda, meetingTime } = options;
+        const { meetingTitle, providerName, clientName, agenda, meetingTime, meetingUrl, record } = options;
 
         return `
 Meeting Invitation
@@ -186,11 +188,11 @@ You have been invited to join a meeting. Here are the details:
 
 Meeting Title: ${meetingTitle}
 Video Provider: ${providerName}
-Meeting Time: ${meetingTime || new Date().toLocaleString()}
+Meeting Time: ${meetingTime || new Date().toLocaleString()}${record ? '\nRecording: This meeting will be recorded.' : ''}
 
 Agenda:
 ${agenda}
-
+${meetingUrl ? `\nJoin Meeting: ${meetingUrl}\n` : ''}
 If you have any questions, please don't hesitate to reach out.
 
 Best regards,
