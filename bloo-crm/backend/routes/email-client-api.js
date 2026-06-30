@@ -6,6 +6,8 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const Email = require('../models/Email');
+const { verifyToken } = require('../middleware/auth');
 
 // File upload configuration
 const storage = multer.memoryStorage();
@@ -361,6 +363,73 @@ router.get('/email/stats', async (req, res) => {
     } catch (error) {
         console.error('Stats error:', error);
         res.status(500).json({ error: 'Failed to get statistics', message: error.message });
+    }
+});
+
+// =====================================================
+// MONGODB-BACKED EMAIL STORE (authenticated, per user)
+// Downloads from the provider (sent by the frontend after OAuth) are
+// persisted here, and the client reads its inbox from MongoDB.
+// =====================================================
+
+// Store/sync a batch of downloaded emails into MongoDB for the logged-in user
+router.post('/email/store', verifyToken, async (req, res) => {
+    try {
+        const provider = (req.body.provider || 'outlook').toLowerCase();
+        const emails = Array.isArray(req.body.emails) ? req.body.emails : [];
+        let stored = 0;
+
+        for (const e of emails) {
+            if (!e || !e.externalId) continue;
+            try {
+                await Email.findOneAndUpdate(
+                    { userId: req.userId, provider, externalId: String(e.externalId) },
+                    {
+                        userId: req.userId,
+                        provider,
+                        externalId: String(e.externalId),
+                        messageId: `${provider}:${e.externalId}`,
+                        from: { email: e.from || '', name: e.fromName || '' },
+                        to: e.to ? [{ email: e.to }] : [],
+                        subject: e.subject || '(No subject)',
+                        body: e.body || '',
+                        bodyPlain: e.body || '',
+                        receivedDate: e.date ? new Date(e.date) : new Date(),
+                        isRead: !!e.isRead,
+                        folder: 'inbox',
+                        syncedAt: new Date()
+                    },
+                    { upsert: true, new: true, setDefaultsOnInsert: true }
+                );
+                stored++;
+            } catch (err) {
+                console.error('Email upsert error:', err.message);
+            }
+        }
+
+        res.json({ status: 'success', stored });
+    } catch (error) {
+        console.error('Email store error:', error);
+        res.status(500).json({ error: 'Failed to store emails', message: error.message });
+    }
+});
+
+// List the logged-in user's emails from MongoDB
+router.get('/email/list', verifyToken, async (req, res) => {
+    try {
+        const query = { userId: req.userId, deletedAt: null };
+        if (req.query.provider) query.provider = String(req.query.provider).toLowerCase();
+        if (req.query.folder) query.folder = req.query.folder;
+
+        const emails = await Email.find(query)
+            .sort({ receivedDate: -1 })
+            .limit(200)
+            .lean();
+
+        res.json({ status: 'success', count: emails.length, emails });
+    } catch (error) {
+        console.error('Email list error:', error);
+        res.status(500).json({ error: 'Failed to list emails', message: error.message });
     }
 });
 

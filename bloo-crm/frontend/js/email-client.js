@@ -185,7 +185,8 @@ class EmailClient {
     switchAccount(accountId) {
         this.currentAccount = this.connections.find(c => c.id === accountId);
         if (this.currentAccount) {
-            this.loadEmails();
+            // Download from the provider into MongoDB, then display from MongoDB
+            this.syncEmails();
         }
     }
 
@@ -198,63 +199,83 @@ class EmailClient {
         this.loadEmails();
     }
 
+    // Authenticated call to our backend (JWT from the CRM login in localStorage)
+    async apiCall(path, options = {}) {
+        const base = window.API_BASE_URL || '/api';
+        const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+        const token = localStorage.getItem('authToken');
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const resp = await fetch(base + path, {
+            method: options.method || 'GET',
+            headers,
+            body: options.body ? JSON.stringify(options.body) : undefined
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.message || data.error || `Request failed (${resp.status})`);
+        return data;
+    }
+
+    // Display the current account's emails FROM MongoDB
     async loadEmails() {
         const emailList = document.getElementById('emailList');
         if (!this.currentAccount) {
             if (emailList) emailList.innerHTML = '<div class="empty-state"><div class="empty-state-text">Select a connected account.</div></div>';
             return;
         }
-        const sso = this.currentAccount.sso;
         if (emailList) emailList.innerHTML = '<div class="empty-state"><div class="empty-state-text">Loading emails…</div></div>';
-
         try {
-            // Fetch real messages from the provider using the OAuth token
-            const raw = (sso && sso.getSyncedEmails) ? await sso.getSyncedEmails(25) : [];
-            const emails = (raw || []).map(m => this.normalizeEmail(m, this.currentAccount.provider));
-
+            const res = await this.apiCall(`/email/list?provider=${encodeURIComponent(this.currentAccount.provider)}`);
+            const docs = (res && res.emails) || [];
+            const emails = docs.map(d => ({
+                id: d._id,
+                from: (d.from && (d.from.email || d.from.name)) || 'Unknown',
+                to: (d.to && d.to[0] && d.to[0].email) || '',
+                subject: d.subject || '(No subject)',
+                date: d.receivedDate || d.createdAt,
+                body: d.bodyPlain || d.body || '',
+                read: !!d.isRead,
+                attachments: []
+            }));
             this.emails.clear();
             emailList.innerHTML = '';
-
             if (emails.length === 0) {
-                emailList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">No emails found in this mailbox.</div></div>';
+                emailList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">No emails in MongoDB yet — click Sync to download your mailbox.</div></div>';
                 return;
             }
-
             emails.forEach(email => {
                 this.emails.set(email.id, email);
                 emailList.appendChild(this.createEmailListItem(email));
             });
         } catch (error) {
-            console.error('Failed to load emails:', error);
-            emailList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Could not load emails: ${error.message}. Try reconnecting the account.</div></div>`;
+            console.error('Failed to load emails from MongoDB:', error);
+            emailList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Could not load emails: ${error.message}.</div></div>`;
         }
     }
 
-    // Normalize a provider message into the shape the UI expects
-    normalizeEmail(m, provider) {
+    // Map a provider message into the MongoDB store payload
+    toStorePayload(m, provider) {
         if (provider === 'outlook') {
             const addr = m.from && m.from.emailAddress;
             return {
-                id: m.id,
-                from: (addr && (addr.address || addr.name)) || 'Unknown',
+                externalId: m.id,
+                from: (addr && addr.address) || '',
+                fromName: (addr && addr.name) || '',
                 to: (m.toRecipients && m.toRecipients[0] && m.toRecipients[0].emailAddress && m.toRecipients[0].emailAddress.address) || '',
                 subject: m.subject || '(No subject)',
-                date: m.receivedDateTime || m.sentDateTime || new Date().toISOString(),
                 body: m.bodyPreview || (m.body && m.body.content) || '',
-                read: !!m.isRead,
-                attachments: []
+                date: m.receivedDateTime || m.sentDateTime || new Date().toISOString(),
+                isRead: !!m.isRead
             };
         }
-        // Gmail / generic fallback
         return {
-            id: m.id || ('e_' + Math.random().toString(36).slice(2)),
-            from: m.from || m.sender || 'Unknown',
+            externalId: m.id || ('e_' + Math.random().toString(36).slice(2)),
+            from: m.from || '',
+            fromName: '',
             to: m.to || '',
             subject: m.subject || '(No subject)',
-            date: m.date || m.receivedDateTime || m.internalDate || new Date().toISOString(),
             body: m.body || m.snippet || '',
-            read: m.read || false,
-            attachments: []
+            date: m.date || new Date().toISOString(),
+            isRead: m.read || false
         };
     }
 
@@ -569,10 +590,24 @@ class EmailClient {
             this.showToast('❌ No account selected. Connect Outlook or Gmail first (+).', 'error');
             return;
         }
-        this.showToast(`⏳ Syncing ${this.currentAccount.email}…`, 'info');
+        const sso = this.currentAccount.sso;
+        this.showToast(`⏳ Downloading ${this.currentAccount.email} into MongoDB…`, 'info');
+        try {
+            // Pull from the provider (Graph/Gmail) using the OAuth token...
+            const raw = (sso && sso.getSyncedEmails) ? await sso.getSyncedEmails(25) : [];
+            const payload = (raw || []).map(m => this.toStorePayload(m, this.currentAccount.provider));
+            // ...and persist them to MongoDB
+            const res = await this.apiCall('/email/store', {
+                method: 'POST',
+                body: { provider: this.currentAccount.provider, emails: payload }
+            });
+            this.showToast(`✅ Downloaded ${res.stored} email(s) into MongoDB.`, 'success');
+        } catch (error) {
+            console.error('Email download error:', error);
+            this.showToast(`❌ Download failed: ${error.message}`, 'error');
+        }
+        // Display from MongoDB
         await this.loadEmails();
-        const count = this.emails.size;
-        this.showToast(`✅ Synced ${count} email${count === 1 ? '' : 's'} from ${this.currentAccount.email}.`, 'success');
     }
 
     async refreshEmails() {

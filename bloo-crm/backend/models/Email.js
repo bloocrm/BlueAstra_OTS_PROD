@@ -21,7 +21,6 @@ const emailSchema = new mongoose.Schema(
     accountId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'EmailAccount',
-      required: true,
       index: true
     },
     from: {
