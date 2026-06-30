@@ -10,13 +10,20 @@ const emailService = require('../utils/email-service');
 const { verifyToken } = require('../middleware/auth');
 
 // JaaS (Jitsi-as-a-Service) — authenticated meetings with host moderator + guest lobby
+function getJaasPrivateKey() {
+    if (process.env.JAAS_PRIVATE_KEY_PATH) {
+        try { return require('fs').readFileSync(process.env.JAAS_PRIVATE_KEY_PATH, 'utf8'); } catch (e) { return null; }
+    }
+    return process.env.JAAS_PRIVATE_KEY ? process.env.JAAS_PRIVATE_KEY.replace(/\\n/g, '\n') : null;
+}
+
 function jaasConfigured() {
-    return !!(process.env.JAAS_APP_ID && process.env.JAAS_KID && process.env.JAAS_PRIVATE_KEY);
+    return !!(process.env.JAAS_APP_ID && process.env.JAAS_KID && getJaasPrivateKey());
 }
 
 function signJaasToken({ room, name, email, moderator }) {
     const now = Math.floor(Date.now() / 1000);
-    const privateKey = process.env.JAAS_PRIVATE_KEY.replace(/\\n/g, '\n');
+    const privateKey = getJaasPrivateKey();
     return jwt.sign(
         {
             aud: 'jitsi',
