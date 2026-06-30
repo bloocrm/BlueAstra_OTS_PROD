@@ -396,6 +396,13 @@ router.post('/email-store', verifyToken, async (req, res) => {
                         bodyPlain: e.body || '',
                         receivedDate: e.date ? new Date(e.date) : new Date(),
                         isRead: !!e.isRead,
+                        hasAttachments: !!e.hasAttachments,
+                        attachments: Array.isArray(e.attachments) ? e.attachments.map(a => ({
+                            filename: a.filename || a.name || 'attachment',
+                            mimetype: a.mimetype || a.contentType || '',
+                            size: a.size || 0,
+                            attachmentId: a.attachmentId || a.id || ''
+                        })) : [],
                         folder: 'inbox',
                         syncedAt: new Date()
                     },
@@ -411,6 +418,36 @@ router.post('/email-store', verifyToken, async (req, res) => {
     } catch (error) {
         console.error('Email store error:', error);
         res.status(500).json({ error: 'Failed to store emails', message: error.message });
+    }
+});
+
+// Paginated email feed for infinite scroll (30 per page by default)
+router.get('/emails', verifyToken, async (req, res) => {
+    try {
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 30));
+        const skip = (page - 1) * limit;
+
+        const query = { userId: req.userId, deletedAt: null };
+        if (req.query.provider) query.provider = String(req.query.provider).toLowerCase();
+        if (req.query.folder) query.folder = req.query.folder;
+
+        const [emails, total] = await Promise.all([
+            Email.find(query).sort({ receivedDate: -1 }).skip(skip).limit(limit).lean(),
+            Email.countDocuments(query)
+        ]);
+
+        res.json({
+            status: 'success',
+            page,
+            limit,
+            total,
+            hasMore: skip + emails.length < total,
+            emails
+        });
+    } catch (error) {
+        console.error('Email fetch error:', error);
+        res.status(500).json({ error: 'Failed to fetch emails', message: error.message });
     }
 });
 

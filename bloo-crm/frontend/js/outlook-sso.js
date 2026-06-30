@@ -49,13 +49,21 @@ class OutlookSSO extends OAuthBase {
         }
     }
 
-    async getSyncedEmails(maxResults = 10) {
+    async getSyncedEmails(maxResults = 50) {
         try {
             if (!this.isUserLoggedIn()) {
                 throw new Error('User not authenticated');
             }
 
-            const endpoint = `${this.config.apiUrl}/me/mailFolders/Inbox/messages?$top=${maxResults}`;
+            // Pull TEXT only (bodyPreview) + attachment METADATA (no contentBytes,
+            // so nothing — including images — is downloaded automatically).
+            const params = [
+                `$top=${maxResults}`,
+                `$orderby=receivedDateTime desc`,
+                `$select=id,subject,from,toRecipients,receivedDateTime,sentDateTime,bodyPreview,isRead,hasAttachments`,
+                `$expand=attachments($select=id,name,contentType,size)`
+            ].join('&');
+            const endpoint = `${this.config.apiUrl}/me/mailFolders/Inbox/messages?${params}`;
             const response = await this.makeApiCall(endpoint);
 
             if (!response.ok) {

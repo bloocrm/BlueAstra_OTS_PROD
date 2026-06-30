@@ -215,41 +215,96 @@ class EmailClient {
         return data;
     }
 
-    // Display the current account's emails FROM MongoDB
+    // Map a stored MongoDB email doc to the UI shape (text only; attachments are metadata)
+    mapStoredEmail(d) {
+        return {
+            id: d._id,
+            externalId: d.externalId,
+            provider: d.provider,
+            from: (d.from && (d.from.email || d.from.name)) || 'Unknown',
+            to: (d.to && d.to[0] && d.to[0].email) || '',
+            subject: d.subject || '(No subject)',
+            date: d.receivedDate || d.createdAt,
+            body: d.bodyPlain || d.body || '',
+            read: !!d.isRead,
+            hasAttachments: !!d.hasAttachments,
+            attachments: d.attachments || []
+        };
+    }
+
+    // First page: fetch 30 emails from MongoDB and render
     async loadEmails() {
         const emailList = document.getElementById('emailList');
         if (!this.currentAccount) {
             if (emailList) emailList.innerHTML = '<div class="empty-state"><div class="empty-state-text">Select a connected account.</div></div>';
             return;
         }
+        this.page = 1;
+        this.hasMore = false;
+        this.loadingPage = false;
+        this.emails.clear();
         if (emailList) emailList.innerHTML = '<div class="empty-state"><div class="empty-state-text">Loading emails…</div></div>';
+        this.bindInfiniteScroll();
+
         try {
-            const res = await this.apiCall(`/email-list?provider=${encodeURIComponent(this.currentAccount.provider)}`);
+            const res = await this.apiCall(`/emails?provider=${encodeURIComponent(this.currentAccount.provider)}&page=1&limit=30`);
             const docs = (res && res.emails) || [];
-            const emails = docs.map(d => ({
-                id: d._id,
-                from: (d.from && (d.from.email || d.from.name)) || 'Unknown',
-                to: (d.to && d.to[0] && d.to[0].email) || '',
-                subject: d.subject || '(No subject)',
-                date: d.receivedDate || d.createdAt,
-                body: d.bodyPlain || d.body || '',
-                read: !!d.isRead,
-                attachments: []
-            }));
-            this.emails.clear();
+            this.hasMore = !!res.hasMore;
             emailList.innerHTML = '';
-            if (emails.length === 0) {
+            if (docs.length === 0) {
                 emailList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">No emails in MongoDB yet — click Sync to download your mailbox.</div></div>';
                 return;
             }
-            emails.forEach(email => {
-                this.emails.set(email.id, email);
-                emailList.appendChild(this.createEmailListItem(email));
-            });
+            this.appendEmails(docs);
         } catch (error) {
             console.error('Failed to load emails from MongoDB:', error);
             emailList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Could not load emails: ${error.message}.</div></div>`;
         }
+    }
+
+    // Append a batch of emails using a fragment (one reflow → stays responsive for 100s/1000s)
+    appendEmails(docs) {
+        const emailList = document.getElementById('emailList');
+        const frag = document.createDocumentFragment();
+        docs.forEach(d => {
+            const email = this.mapStoredEmail(d);
+            this.emails.set(email.id, email);
+            frag.appendChild(this.createEmailListItem(email));
+        });
+        emailList.appendChild(frag);
+    }
+
+    // Infinite scroll: pull the next 30 from MongoDB
+    async loadMoreEmails() {
+        if (!this.hasMore || this.loadingPage || !this.currentAccount) return;
+        this.loadingPage = true;
+        this.page += 1;
+        try {
+            const res = await this.apiCall(`/emails?provider=${encodeURIComponent(this.currentAccount.provider)}&page=${this.page}&limit=30`);
+            const docs = (res && res.emails) || [];
+            this.hasMore = !!res.hasMore;
+            this.appendEmails(docs);
+        } catch (error) {
+            console.error('Load-more failed:', error);
+            this.page -= 1;
+        } finally {
+            this.loadingPage = false;
+        }
+    }
+
+    bindInfiniteScroll() {
+        if (this._scrollBound) return;
+        const handler = (e) => {
+            const el = e.currentTarget;
+            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 250) {
+                this.loadMoreEmails();
+            }
+        };
+        ['emailList', 'emailListContainer'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('scroll', handler);
+        });
+        this._scrollBound = true;
     }
 
     // Map a provider message into the MongoDB store payload
@@ -264,7 +319,14 @@ class EmailClient {
                 subject: m.subject || '(No subject)',
                 body: m.bodyPreview || (m.body && m.body.content) || '',
                 date: m.receivedDateTime || m.sentDateTime || new Date().toISOString(),
-                isRead: !!m.isRead
+                isRead: !!m.isRead,
+                hasAttachments: !!m.hasAttachments,
+                attachments: (m.attachments || []).map(a => ({
+                    filename: a.name || 'attachment',
+                    mimetype: a.contentType || '',
+                    size: a.size || 0,
+                    attachmentId: a.id || ''
+                }))
             };
         }
         return {
@@ -925,11 +987,44 @@ class EmailClient {
         });
     }
 
-    downloadAttachment(attachment) {
-        const link = document.createElement('a');
-        link.href = attachment.url || '#';
-        link.download = attachment.filename;
-        link.click();
+    // Downloads an attachment's content ONLY when the user clicks it (never automatically)
+    async downloadAttachment(attachment) {
+        const email = this.currentEmail;
+        const sso = this.currentAccount && this.currentAccount.sso;
+        if (!email || !email.externalId || !attachment.attachmentId) {
+            this.showToast('Attachment reference unavailable.', 'error');
+            return;
+        }
+        if (!sso || !sso.accessToken) {
+            this.showToast('Reconnect the account to download attachments.', 'error');
+            return;
+        }
+        try {
+            this.showToast(`⬇️ Downloading ${attachment.filename}…`, 'info');
+            const url = `https://graph.microsoft.com/v1.0/me/messages/${email.externalId}/attachments/${attachment.attachmentId}`;
+            const resp = await fetch(url, { headers: { 'Authorization': `Bearer ${sso.accessToken}` } });
+            if (!resp.ok) throw new Error('Graph error ' + resp.status);
+            const data = await resp.json();
+            if (!data.contentBytes) throw new Error('No downloadable content');
+            const blob = this.b64ToBlob(data.contentBytes, data.contentType || attachment.mimetype || 'application/octet-stream');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = attachment.filename || data.name || 'attachment';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(a.href);
+        } catch (e) {
+            console.error('Attachment download error:', e);
+            this.showToast(`Download failed: ${e.message}`, 'error');
+        }
+    }
+
+    b64ToBlob(b64, type) {
+        const bytes = atob(b64);
+        const arr = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        return new Blob([arr], { type });
     }
 
     truncate(text, length) {
