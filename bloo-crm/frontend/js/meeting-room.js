@@ -307,6 +307,7 @@ async function handleStartMeeting(event) {
             closeModal('startMeetingModal');
             loadMeetingRoomFeatures();
             loadRecentMeetings();
+            renderMeetingsCalendar();
         }, 1000);
     }, 1500);
 }
@@ -508,6 +509,71 @@ function loadRecentMeetings() {
     `).join('');
 }
 
+// Synchronize meetings into the Calendar tab (#calendarContainer)
+function renderMeetingsCalendar() {
+    const container = document.getElementById('calendarContainer');
+    if (!container) return;
+
+    const user = getCurrentUser();
+    const meetings = (Array.isArray(user.meetings) ? user.meetings.slice() : [])
+        .filter(m => m && m.startTime)
+        .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+
+    // Update the sync-status card
+    const statusCard = document.getElementById('calendarSyncStatus');
+    if (statusCard) {
+        statusCard.innerHTML = meetings.length
+            ? `<i class="fas fa-circle" style="color: #2ecc71;"></i> <span>${meetings.length} meeting${meetings.length > 1 ? 's' : ''} synced from Meeting Room</span>`
+            : `<i class="fas fa-circle" style="color: var(--text-light);"></i> <span>No meetings scheduled yet</span>`;
+    }
+
+    if (meetings.length === 0) {
+        container.innerHTML = '<p class="empty-state">No meetings yet. Start a meeting from the Meeting Room and it will appear here on your calendar.</p>';
+        return;
+    }
+
+    // Group by calendar day
+    const groups = {};
+    meetings.forEach(m => {
+        const d = new Date(m.startTime);
+        const key = isNaN(d.getTime()) ? 'Unscheduled'
+            : d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        (groups[key] = groups[key] || []).push(m);
+    });
+
+    let html = '';
+    Object.entries(groups).forEach(([dateLabel, items]) => {
+        html += `<div style="margin-bottom:1.25rem;">
+            <h3 style="font-size:0.95rem;color:var(--primary-blue,#2d6cdf);border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:10px;">
+                <i class="fas fa-calendar-day"></i> ${dateLabel}
+            </h3>`;
+        items.forEach(m => {
+            const t = new Date(m.startTime);
+            const time = isNaN(t.getTime()) ? '' : t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const active = m.status === 'active';
+            html += `
+            <div style="display:flex;gap:12px;padding:12px;border-left:4px solid ${active ? '#2ecc71' : '#2d6cdf'};background:#f8fafc;border-radius:6px;margin-bottom:8px;">
+                <div style="min-width:70px;font-weight:600;color:#444;">${time}</div>
+                <div style="flex:1;">
+                    <div style="font-weight:600;">${m.title || 'Meeting'}
+                        <span class="status-badge ${active ? 'active' : ''}" style="font-size:0.7rem;margin-left:6px;">${(m.status || 'scheduled').toUpperCase()}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:#666;margin-top:4px;display:flex;flex-wrap:wrap;gap:12px;">
+                        <span><i class="fas fa-video"></i> ${m.providerName || m.provider || 'Meeting'}</span>
+                        ${m.clientName ? `<span><i class="fas fa-user"></i> ${m.clientName}</span>` : ''}
+                        ${m.clientEmail ? `<span><i class="fas fa-envelope"></i> ${m.clientEmail}</span>` : ''}
+                    </div>
+                    ${m.agenda ? `<div style="font-size:0.85rem;color:#555;margin-top:6px;">${m.agenda}</div>` : ''}
+                    ${m.meetingUrl ? `<a href="${m.meetingUrl}" target="_blank" class="btn btn-sm btn-primary" style="margin-top:8px;display:inline-block;"><i class="fas fa-external-link-alt"></i> Join</a>` : ''}
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+    });
+
+    container.innerHTML = html;
+}
+
 // End meeting
 function endMeeting(meetingId) {
     if (!confirm('End this meeting and generate AI minutes/summary?')) {
@@ -554,6 +620,7 @@ function endMeeting(meetingId) {
         showNotification('Meeting ended. AI generating minutes and analysis...', 'success');
         loadRecentMeetings();
         loadMeetingRoomFeatures();
+        renderMeetingsCalendar();
     }
 }
 

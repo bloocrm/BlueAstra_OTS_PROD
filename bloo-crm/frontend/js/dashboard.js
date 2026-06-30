@@ -62,6 +62,7 @@ function switchView(viewName) {
     } else if (viewName === 'calendar') {
         initializeSync();
         loadCalendarUpgradeSection();
+        if (typeof renderMeetingsCalendar === 'function') renderMeetingsCalendar();
     } else if (viewName === 'compliance') {
         initializeCompliance();
     } else if (viewName === 'leads') {
