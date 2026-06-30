@@ -176,6 +176,13 @@ const meetingEmailRoutes = require('./routes/meeting-email');
 app.use('/api', meetingEmailRoutes);
 
 // =====================================================
+// MEETING ROOM ROUTES (sessions + Webex)
+// =====================================================
+
+const meetingRoomRoutes = require('./routes/meeting-rooms');
+app.use('/api/meeting-rooms', meetingRoomRoutes);
+
+// =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin
 // (relative /api calls work without a separate reverse proxy).
