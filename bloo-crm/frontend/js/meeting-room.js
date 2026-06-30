@@ -246,6 +246,12 @@ async function handleStartMeeting(event) {
 
     setTimeout(() => {
         const user = getCurrentUser();
+
+        // Generate a REAL, click-to-join meeting link. Jitsi Meet rooms let
+        // recipients join as a guest (just enter a name) OR sign in — no API/account needed.
+        const roomSlug = `BlooCRM-${(title || 'Meeting').replace(/[^a-zA-Z0-9]+/g, '-')}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+        const joinUrl = `https://meet.jit.si/${roomSlug}`;
+
         const meeting = {
             id: 'meeting_' + Date.now(),
             title: title,
@@ -258,7 +264,7 @@ async function handleStartMeeting(event) {
             startTime: new Date().toISOString(),
             endTime: null,
             status: 'active',
-            meetingUrl: `${providerInfo.setupLink}`,
+            meetingUrl: joinUrl,
             minutes: null,
             highlights: null,
             decisions: [],

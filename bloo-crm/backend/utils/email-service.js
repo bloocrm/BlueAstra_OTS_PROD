@@ -174,6 +174,7 @@ class EmailService {
                         ${meetingUrl ? `<p style="text-align: center;">
                             <a href="${meetingUrl}" class="btn">Join Meeting</a>
                         </p>
+                        <p style="text-align:center; font-size:12px; color:#666;">Click to join — you can join as a guest (just enter your name) or sign in.</p>
                         <p style="text-align:center; font-size:13px; word-break:break-all;">${meetingUrl}</p>` : ''}
 
                         <p>If you have any questions, please don't hesitate to reach out.</p>
