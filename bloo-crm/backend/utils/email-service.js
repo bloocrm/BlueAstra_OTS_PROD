@@ -104,7 +104,7 @@ class EmailService {
      * Generate HTML email content
      */
     generateMeetingEmailHTML(options) {
-        const { meetingTitle, providerName, clientName, agenda, meetingTime, meetingUrl, record } = options;
+        const { meetingTitle, providerName, clientName, agenda, meetingTime, meetingUrl, record, meetingPassword, duration } = options;
 
         return `
             <!DOCTYPE html>
@@ -149,6 +149,8 @@ class EmailService {
                                 <span class="label">Meeting Time:</span>
                                 <span>${meetingTime || new Date().toLocaleString()}</span>
                             </div>
+                            ${duration ? `<div class="detail-row"><span class="label">Duration:</span> <span>${duration} minutes</span></div>` : ''}
+                            ${meetingPassword ? `<div class="detail-row"><span class="label">Meeting Password:</span> <span>${meetingPassword}</span></div>` : ''}
 
                             <div class="detail-row">
                                 <span class="label">Agenda:</span>
@@ -181,7 +183,7 @@ class EmailService {
      * Generate plain text email content
      */
     generateMeetingEmailText(options) {
-        const { meetingTitle, providerName, clientName, agenda, meetingTime, meetingUrl, record } = options;
+        const { meetingTitle, providerName, clientName, agenda, meetingTime, meetingUrl, record, meetingPassword, duration } = options;
 
         return `
 Meeting Invitation
@@ -192,7 +194,7 @@ You have been invited to join a meeting. Here are the details:
 
 Meeting Title: ${meetingTitle}
 Video Provider: ${providerName}
-Meeting Time: ${meetingTime || new Date().toLocaleString()}${record ? '\nRecording: This meeting will be recorded.' : ''}
+Meeting Time: ${meetingTime || new Date().toLocaleString()}${duration ? `\nDuration: ${duration} minutes` : ''}${meetingPassword ? `\nMeeting Password: ${meetingPassword}` : ''}${record ? '\nRecording: This meeting will be recorded.' : ''}
 
 Agenda:
 ${agenda}

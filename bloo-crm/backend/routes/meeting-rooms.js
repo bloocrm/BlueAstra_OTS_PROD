@@ -8,6 +8,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
 const { ValidationError, NotFoundError } = require('../utils/errors');
 const crypto = require('crypto');
 const WebexMeetingService = require('../services/webexMeetingService');
+const emailService = require('../utils/email-service');
 
 router.use(verifyToken);
 
@@ -359,10 +360,10 @@ router.post('/create-webex', asyncHandler(async (req, res) => {
   }
 
   try {
-    // Create Webex meeting via API
-    const webexService = new WebexMeetingService();
-
     const user = await User.findById(req.userId);
+
+    const sessionId = crypto.randomBytes(16).toString('hex');
+    const sessionToken = crypto.randomBytes(32).toString('hex');
 
     const webexConfig = {
       title: meetingTitle,
@@ -372,12 +373,28 @@ router.post('/create-webex', asyncHandler(async (req, res) => {
       participantEmails
     };
 
-    const webexMeeting = await webexService.createMeeting(webexConfig);
+    // Try the real Webex API; if WEBEX_API_TOKEN isn't configured (the service
+    // constructor throws) or the API call fails, fall back to an internal
+    // meeting-room link so the flow still works and invites still go out.
+    let webexMeeting;
+    let webexLive = false;
+    try {
+      const webexService = new WebexMeetingService();
+      webexMeeting = await webexService.createMeeting(webexConfig);
+      webexLive = true;
+    } catch (webexErr) {
+      console.warn('Webex API unavailable, using internal meeting link:', webexErr.message);
+      const base = process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`;
+      webexMeeting = {
+        webexMeetingId: null,
+        webexMeetingNumber: null,
+        meetingUrl: `${base}/pages/meeting-room.html?sessionId=${sessionId}&token=${sessionToken}`,
+        joinPassword: Math.random().toString(36).slice(-8),
+        sipAddress: null
+      };
+    }
 
     // Create session in MongoDB
-    const sessionId = crypto.randomBytes(16).toString('hex');
-    const sessionToken = crypto.randomBytes(32).toString('hex');
-
     const sessionData = {
       userId: req.userId,
       sessionId,
@@ -410,18 +427,54 @@ router.post('/create-webex', asyncHandler(async (req, res) => {
     const session = new MeetingRoomSession(sessionData);
     await session.save();
 
+    // Email the meeting invite to the client + all participants (non-fatal)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const recipients = [...new Set(
+      [clientEmail, ...(participantEmails || [])]
+        .filter(e => e && emailRegex.test(String(e).trim()))
+        .map(e => String(e).trim().toLowerCase())
+    )];
+
+    let invitesSent = 0;
+    await Promise.all(recipients.map(async (email) => {
+      try {
+        const result = await emailService.sendMeetingInvite({
+          meetingTitle,
+          providerName: 'Cisco Webex',
+          clientName: email.split('@')[0],
+          clientEmail: email,
+          agenda: meetingDescription || `Meeting: ${meetingTitle}`,
+          senderEmail: user.email,
+          senderName: user.name || 'Bloo CRM',
+          meetingTime: new Date(startTime).toLocaleString(),
+          meetingUrl: webexMeeting.meetingUrl,
+          meetingPassword: webexMeeting.joinPassword || null,
+          duration,
+          record: true
+        });
+        if (result && result.success && !result.mock) invitesSent++;
+      } catch (mailErr) {
+        console.error(`Failed to email invite to ${email}:`, mailErr.message);
+      }
+    }));
+
     return successResponse(
       res,
       {
         success: true,
         sessionId: session.sessionId,
         meetingTitle: meetingTitle,
+        webexLive,
         webexMeetingId: webexMeeting.webexMeetingId,
         webexMeetingNumber: webexMeeting.webexMeetingNumber,
         meetingUrl: webexMeeting.meetingUrl,
         joinPassword: webexMeeting.joinPassword,
         sipAddress: webexMeeting.sipAddress,
-        message: 'Webex meeting created successfully'
+        invitesSent,
+        invitesAttempted: recipients.length,
+        message: webexLive
+          ? 'Webex meeting created successfully'
+          : 'Meeting created with an internal link (set WEBEX_API_TOKEN for a real Webex meeting)'
       },
       'Webex meeting created successfully',
       201
