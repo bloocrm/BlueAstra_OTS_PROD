@@ -91,10 +91,12 @@
 .nav-item i {
     font-size: 1.25rem;
     width: 1.5rem;
+    color: #cc0000; /* icons/symbols stay red */
 }
 
 .nav-item span {
     flex: 1;
+    color: #000; /* nav text/letters in black */
 }
 
 .sidebar-footer {
