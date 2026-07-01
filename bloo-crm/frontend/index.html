@@ -242,16 +242,15 @@
                     <!-- Analytics KPI cards -->
                     <div class="dashboard-grid" id="analyticsKpis" style="margin-top:6px;"></div>
 
-                    <!-- Charts row 1: donut + bar -->
+                    <!-- Charts row 1: conversion donut + employee status donut -->
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
                         <div class="chart-container"><h3><i class="fas fa-chart-pie"></i> Lead → Client Conversion</h3><canvas id="chartConversion" height="220"></canvas></div>
-                        <div class="chart-container"><h3><i class="fas fa-chart-bar"></i> Activity Feed — Meetings by Month</h3><canvas id="chartActivity" height="220"></canvas></div>
+                        <div class="chart-container"><h3><i class="fas fa-users"></i> Employees by Status</h3><canvas id="chartEmployees" height="220"></canvas></div>
                     </div>
 
-                    <!-- Charts row 2: scatter + employee status donut -->
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
-                        <div class="chart-container"><h3><i class="fas fa-braille"></i> Calendar Meeting Metrics (duration vs date)</h3><canvas id="chartScatter" height="220"></canvas></div>
-                        <div class="chart-container"><h3><i class="fas fa-users"></i> Employees by Status</h3><canvas id="chartEmployees" height="220"></canvas></div>
+                    <!-- Charts row 2: scatter (calendar meeting metrics) -->
+                    <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;">
+                        <div class="chart-container"><h3><i class="fas fa-braille"></i> Calendar Meeting Metrics (duration vs date)</h3><canvas id="chartScatter" height="200"></canvas></div>
                     </div>
 
                     <!-- Lists row: defaulters + pending + news -->

@@ -19,7 +19,6 @@ async function loadAnalyticsDashboard() {
     }
     renderKpis(data.kpis || {});
     renderConversionDonut(data.leadFunnel || {}, data.kpis || {});
-    renderActivityBar(data.meetingsByMonth || {});
     renderScatter(data.meetingScatter || []);
     renderEmployeeDonut(data.employeesByStatus || {});
     renderDefaulters(data.defaulters || []);
@@ -61,21 +60,6 @@ function renderConversionDonut(funnel, k) {
                 title: { display: true, text: `${k.conversionRate || 0}% of leads converted` }
             }
         }
-    });
-}
-
-function renderActivityBar(byMonth) {
-    const ctx = document.getElementById('chartActivity');
-    if (!ctx) return;
-    destroyChart('activity');
-    const labels = Object.keys(byMonth).sort();
-    window.__charts.activity = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels.length ? labels : ['No data'],
-            datasets: [{ label: 'Meetings', data: labels.map(l => byMonth[l]), backgroundColor: '#2d6cdf', borderRadius: 4 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
     });
 }
 
