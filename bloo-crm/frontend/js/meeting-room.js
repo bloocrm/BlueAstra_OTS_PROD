@@ -341,6 +341,7 @@ async function handleStartMeeting(event) {
             loadMeetingRoomFeatures();
             loadRecentMeetings();
             await saveMeetingToCalendar(meeting);
+            await saveMeetingRecord(meeting);
             renderMeetingsCalendar();
         }, 1000);
     }, 1500);
@@ -1238,4 +1239,141 @@ function initializeMeetingRoom() {
     loadVideoProviders();
     loadMeetingRoomFeatures();
     loadRecentMeetings();
+}
+
+// =====================================================
+// MEETING RECORDS (MongoDB): save, search, view, download
+// =====================================================
+
+async function meetingApi(path, options = {}) {
+    const token = localStorage.getItem('authToken');
+    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const resp = await fetch(`${window.API_BASE_URL || '/api'}${path}`, {
+        method: options.method || 'GET',
+        headers,
+        body: options.body ? JSON.stringify(options.body) : undefined
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(data.message || data.error || 'Request failed');
+    return data;
+}
+
+// Persist a meeting record (with generated Meeting ID + minutes) to MongoDB
+async function saveMeetingRecord(meeting) {
+    try {
+        const d = await meetingApi('/meetings', {
+            method: 'POST',
+            body: {
+                title: meeting.title, agenda: meeting.agenda,
+                provider: meeting.provider, providerName: meeting.providerName,
+                clientName: meeting.clientName, clientEmail: meeting.clientEmail,
+                startTime: meeting.startTime, status: meeting.status,
+                meetingUrl: meeting.meetingUrl, guestUrl: meeting.guestUrl
+            }
+        });
+        if (d.meeting && d.meeting.meetingId) {
+            meeting.meetingId = d.meeting.meetingId;
+            const user = getCurrentUser();
+            const m = (user.meetings || []).find(x => x.id === meeting.id);
+            if (m) { m.meetingId = d.meeting.meetingId; saveCurrentUser(user); }
+            showNotification(`Meeting saved — ID ${d.meeting.meetingId}`, 'success');
+        }
+        return d.meeting;
+    } catch (e) {
+        console.warn('Failed to save meeting record:', e.message);
+        return null;
+    }
+}
+
+async function searchMeetingRecords() {
+    const container = document.getElementById('meetingSearchResults');
+    if (!container) return;
+    const q = (document.getElementById('meetingSearchInput')?.value || '').trim();
+    container.innerHTML = '<p class="empty-state">Searching…</p>';
+    try {
+        const d = await meetingApi(`/meetings?search=${encodeURIComponent(q)}`);
+        renderMeetingResults(d.meetings || []);
+    } catch (e) {
+        container.innerHTML = `<p class="empty-state">Could not search meetings: ${e.message}</p>`;
+    }
+}
+
+function renderMeetingResults(meetings) {
+    const container = document.getElementById('meetingSearchResults');
+    if (!container) return;
+    if (!meetings.length) {
+        container.innerHTML = '<p class="empty-state">No meetings found.</p>';
+        return;
+    }
+    container.innerHTML = meetings.map(m => `
+        <div class="meeting-card" style="cursor:pointer;" onclick="viewMeetingRecord('${m.meetingId}')">
+            <div class="meeting-header">
+                <div class="meeting-info">
+                    <h4>${m.title || 'Meeting'}</h4>
+                    <p class="meeting-client"><i class="fas fa-id-badge"></i> ${m.meetingId}</p>
+                </div>
+                <div class="meeting-status"><span class="status-badge ${m.status || ''}">${(m.status || 'ended').toUpperCase()}</span></div>
+            </div>
+            <div class="meeting-details">
+                ${m.clientName ? `<p><i class="fas fa-user"></i> ${m.clientName}</p>` : ''}
+                <p><i class="fas fa-calendar-alt"></i> ${m.startTime ? new Date(m.startTime).toLocaleString() : ''}</p>
+                <p><i class="fas fa-video"></i> ${m.providerName || m.provider || 'Meeting'}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function viewMeetingRecord(meetingId) {
+    try {
+        const d = await meetingApi(`/meetings/${encodeURIComponent(meetingId)}`);
+        const m = d.meeting;
+        if (!m) return;
+        const hasTranscript = m.transcript && m.transcript.trim().length > 0;
+        window.__meetingCache = window.__meetingCache || {};
+        window.__meetingCache[m.meetingId] = m;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'modal active';
+        overlay.style.display = 'flex';
+        overlay.innerHTML = `
+            <div class="modal-content" style="max-width:640px;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-file-lines"></i> ${(m.title || 'Meeting').replace(/</g, '&lt;')}
+                        <span style="font-size:0.65em;color:#888;">${m.meetingId}</span></h2>
+                    <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+                <div style="padding:0 4px;">
+                    <p><strong>Date:</strong> ${m.startTime ? new Date(m.startTime).toLocaleString() : '—'}</p>
+                    <p><strong>Client:</strong> ${(m.clientName || '—')} ${m.clientEmail ? `(${m.clientEmail})` : ''}</p>
+                    <p><strong>Provider:</strong> ${m.providerName || m.provider || '—'}</p>
+                    <h4 style="margin-top:12px;">Minutes</h4>
+                    <pre style="white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:6px;max-height:220px;overflow:auto;">${(m.minutes || '(no minutes)').replace(/</g, '&lt;')}</pre>
+                    <h4 style="margin-top:12px;">Transcript</h4>
+                    <p style="color:#666;font-size:0.9em;">${hasTranscript ? 'Transcript available — download below.' : 'No transcript yet (recording/transcription pipeline pending).'}</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="downloadMeetingText('${m.meetingId}','minutes')"><i class="fas fa-download"></i> Download Minutes</button>
+                    <button class="btn btn-primary" onclick="downloadMeetingText('${m.meetingId}','transcript')" ${hasTranscript ? '' : 'disabled'}><i class="fas fa-download"></i> Download Transcript</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+    } catch (e) {
+        showNotification(`Could not open meeting: ${e.message}`, 'error');
+    }
+}
+
+function downloadMeetingText(meetingId, field) {
+    const m = (window.__meetingCache || {})[meetingId];
+    if (!m) return;
+    const text = (field === 'transcript' ? m.transcript : m.minutes) || '';
+    if (!text.trim()) { showNotification(`No ${field} available for this meeting.`, 'error'); return; }
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${meetingId}-${field}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
 }

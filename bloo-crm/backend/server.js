@@ -192,6 +192,10 @@ app.use('/api', meetingEmailRoutes);
 const meetingRoomRoutes = require('./routes/meeting-rooms');
 app.use('/api/meeting-rooms', meetingRoomRoutes);
 
+// Meeting records (minutes, transcript, search)
+const meetingRecordRoutes = require('./routes/meetings');
+app.use('/api/meetings', meetingRecordRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin
