@@ -65,6 +65,8 @@ function switchView(viewName) {
         if (typeof renderMeetingsCalendar === 'function') renderMeetingsCalendar();
     } else if (viewName === 'compliance') {
         initializeCompliance();
+    } else if (viewName === 'grievance') {
+        if (typeof loadGrievances === 'function') loadGrievances();
     } else if (viewName === 'leads') {
         loadLeadsList();
     } else if (viewName === 'communications') {

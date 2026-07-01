@@ -200,6 +200,10 @@ app.use('/api/meetings', meetingRecordRoutes);
 const jaasWebhookRoutes = require('./routes/jaas-webhook');
 app.use('/api', jaasWebhookRoutes);
 
+// Grievances (complaints / support)
+const grievanceRoutes = require('./routes/grievances');
+app.use('/api/grievances', grievanceRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin
