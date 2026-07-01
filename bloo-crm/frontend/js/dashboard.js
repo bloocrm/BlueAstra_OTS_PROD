@@ -99,6 +99,7 @@ function switchView(viewName) {
     } else if (viewName === 'workflow') {
         loadWorkflowActivities();
         initializeAIWorkflow();
+        if (typeof loadWorkflowTasks === 'function') loadWorkflowTasks();
     } else if (viewName === 'meetingRoom') {
         initializeMeetingRoom();
     }

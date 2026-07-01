@@ -724,17 +724,46 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                 <div id="workflow" class="view">
                     <div class="workflow-header">
                         <h3>Contact Workflow & Audit Log</h3>
-                        <div class="workflow-filter">
-                            <select id="workflowFilter" onchange="filterWorkflow()">
-                                <option value="">All Activities</option>
-                                <option value="contact">Contact Activities</option>
-                                <option value="update">Updates</option>
-                                <option value="conversion">Conversions</option>
-                            </select>
+                        <div style="display:flex;gap:10px;align-items:center;">
+                            <button class="btn btn-primary" onclick="openTaskModal()"><i class="fas fa-user-tag"></i> Assign Task to Employee</button>
+                            <div class="workflow-filter">
+                                <select id="workflowFilter" onchange="filterWorkflow()">
+                                    <option value="">All Activities</option>
+                                    <option value="contact">Contact Activities</option>
+                                    <option value="update">Updates</option>
+                                    <option value="conversion">Conversions</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Assigned workflow tasks (tied to employees; email routes to backup if on leave) -->
+                    <div class="chart-container" style="margin-bottom:16px;">
+                        <h3><i class="fas fa-tasks"></i> Assigned Tasks
+                            <span id="taskCounts" style="font-size:0.7em;color:#888;font-weight:normal;"></span></h3>
+                        <div id="taskList" class="activity-list"><p class="empty-state">No tasks assigned yet.</p></div>
+                    </div>
+
                     <div id="workflowList" class="workflow-timeline">
                         <p class="empty-state">No workflow activities yet.</p>
+                    </div>
+
+                    <!-- Assign Task Modal -->
+                    <div id="taskModal" class="modal">
+                        <div class="modal-content" style="max-width:500px;">
+                            <div class="modal-header"><h2><i class="fas fa-user-tag"></i> Assign Task to Employee</h2><button class="close-btn" onclick="closeTaskModal()">&times;</button></div>
+                            <form onsubmit="submitTask(event)">
+                                <div class="form-group"><label>Task Title <span style="color:#E74C3C;">*</span></label><input type="text" id="taskTitle" required></div>
+                                <div class="form-group"><label>Assign to Employee <span style="color:#E74C3C;">*</span></label><input type="text" id="taskEmployee" required placeholder="Employee name (must match a record)"></div>
+                                <div class="form-group"><label>Due Date</label><input type="date" id="taskDue"></div>
+                                <div class="form-group"><label>Description</label><textarea id="taskDesc" rows="3"></textarea></div>
+                                <p style="color:#888;font-size:0.85em;"><i class="fas fa-info-circle"></i> If the employee is on leave, the email is sent to their backup automatically.</p>
+                                <div class="modal-actions">
+                                    <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Assign & Notify</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
                     <!-- AI-Powered Workflow Features Section -->
@@ -954,10 +983,10 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             </div>
                             <div class="form-row">
                                 <div class="form-group"><label>Job Title</label><input type="text" id="empJobTitle"></div>
-                                <div class="form-group"><label>Manager (approver)</label><input type="text" id="empManager"></div>
+                                <div class="form-group"><label>Manager / Boss (approver)</label><input type="text" id="empManager" placeholder="This employee's boss"></div>
                             </div>
                             <div class="form-row">
-                                <div class="form-group"><label>Backup Employee (delegate)</label><input type="text" id="empBackup" placeholder="Approves when this person is on leave"></div>
+                                <div class="form-group"><label>Alternate / Backup Employee</label><input type="text" id="empBackup" placeholder="Covers & gets emails when on leave"></div>
                                 <div class="form-group"></div>
                             </div>
                             <div class="form-row">
@@ -2403,6 +2432,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/performance.js"></script>
     <script src="js/onboarding.js"></script>
     <script src="js/approvals.js"></script>
+    <script src="js/workflow-tasks.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="js/analytics-dashboard.js"></script>
     <script src="js/meeting-room.js"></script>

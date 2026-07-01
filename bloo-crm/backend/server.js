@@ -232,6 +232,10 @@ app.use('/api/onboarding', onboardingRoutes);
 const approvalRoutes = require('./routes/approvals');
 app.use('/api/approvals', approvalRoutes);
 
+// Workflow tasks (assign to employee; email routes to backup if on leave)
+const workflowTaskRoutes = require('./routes/workflow-tasks');
+app.use('/api/workflow-tasks', workflowTaskRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin
