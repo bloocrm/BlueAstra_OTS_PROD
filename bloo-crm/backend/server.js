@@ -224,6 +224,14 @@ app.use('/api/leaves', leaveRoutes);
 const performanceRoutes = require('./routes/performance');
 app.use('/api/performance', performanceRoutes);
 
+// Onboarding (new-hire checklist + welcome email)
+const onboardingRoutes = require('./routes/onboarding');
+app.use('/api/onboarding', onboardingRoutes);
+
+// Approvals (expense/purchase/travel/hiring/promotion/policy-exception)
+const approvalRoutes = require('./routes/approvals');
+app.use('/api/approvals', approvalRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin

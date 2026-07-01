@@ -43,6 +43,8 @@ function switchView(viewName) {
         policies: 'Company Policies',
         leaves: 'Leave Applications',
         performance: 'Performance Management',
+        onboarding: 'Onboarding',
+        approvals: 'Approvals',
         pricing: 'Pricing & Payments',
         workflow: 'Workflow & Audit Log',
         'ai-insights': 'AI Insights'
@@ -83,6 +85,10 @@ function switchView(viewName) {
         if (typeof loadHrDashboard === 'function') loadHrDashboard();
     } else if (viewName === 'performance') {
         if (typeof loadPerformance === 'function') loadPerformance();
+    } else if (viewName === 'onboarding') {
+        if (typeof loadOnboarding === 'function') loadOnboarding();
+    } else if (viewName === 'approvals') {
+        if (typeof loadApprovals === 'function') loadApprovals();
     } else if (viewName === 'leads') {
         loadLeadsList();
     } else if (viewName === 'communications') {

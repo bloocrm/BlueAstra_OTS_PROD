@@ -898,6 +898,8 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         <div class="stat-card" style="cursor:pointer;" onclick="switchView('leaves')"><div class="stat-icon orange-bg"><i class="fas fa-plane-departure"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Leave</h3><p>Apply & approvals</p></div></div>
                         <div class="stat-card" style="cursor:pointer;" onclick="switchView('policies')"><div class="stat-icon aqua-bg"><i class="fas fa-book"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Policies</h3><p>Create & publish</p></div></div>
                         <div class="stat-card" style="cursor:pointer;" onclick="switchView('performance')"><div class="stat-icon blue-bg"><i class="fas fa-chart-line"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Performance</h3><p>Goals, reviews, KPIs</p></div></div>
+                        <div class="stat-card" style="cursor:pointer;" onclick="switchView('onboarding')"><div class="stat-icon aqua-bg"><i class="fas fa-user-plus"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Onboarding</h3><p>New-hire checklist</p></div></div>
+                        <div class="stat-card" style="cursor:pointer;" onclick="switchView('approvals')"><div class="stat-icon orange-bg"><i class="fas fa-check-double"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Approvals</h3><p>Expense, travel, hiring…</p></div></div>
                     </div>
                 </div>
 
@@ -909,6 +911,8 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         <button class="btn btn-sm btn-secondary" onclick="switchView('leaves')">Leave</button>
                         <button class="btn btn-sm btn-secondary" onclick="switchView('policies')">Policies</button>
                         <button class="btn btn-sm btn-secondary" onclick="switchView('performance')">Performance</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('onboarding')">Onboarding</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('approvals')">Approvals</button>
                     </div>
                     <div class="view-header">
                         <h3><i class="fas fa-id-badge"></i> Employee Information</h3>
@@ -994,6 +998,8 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         <button class="btn btn-sm btn-secondary" onclick="switchView('leaves')">Leave</button>
                         <button class="btn btn-sm btn-primary" onclick="switchView('policies')">Policies</button>
                         <button class="btn btn-sm btn-secondary" onclick="switchView('performance')">Performance</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('onboarding')">Onboarding</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('approvals')">Approvals</button>
                     </div>
                     <div class="view-header">
                         <h3><i class="fas fa-book"></i> Company Policies</h3>
@@ -1045,6 +1051,8 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         <button class="btn btn-sm btn-primary" onclick="switchView('leaves')">Leave</button>
                         <button class="btn btn-sm btn-secondary" onclick="switchView('policies')">Policies</button>
                         <button class="btn btn-sm btn-secondary" onclick="switchView('performance')">Performance</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('onboarding')">Onboarding</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('approvals')">Approvals</button>
                     </div>
                     <div class="view-header">
                         <h3><i class="fas fa-plane-departure"></i> Leave Applications</h3>
@@ -1102,6 +1110,8 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         <button class="btn btn-sm btn-secondary" onclick="switchView('leaves')">Leave</button>
                         <button class="btn btn-sm btn-secondary" onclick="switchView('policies')">Policies</button>
                         <button class="btn btn-sm btn-primary" onclick="switchView('performance')">Performance</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('onboarding')">Onboarding</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('approvals')">Approvals</button>
                     </div>
                     <div class="view-header">
                         <h3><i class="fas fa-chart-line"></i> Performance Management</h3>
@@ -1166,6 +1176,100 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             <div class="modal-actions">
                                 <button type="button" class="btn btn-secondary" onclick="closePerfModal()">Cancel</button>
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Onboarding View -->
+                <div id="onboarding" class="view">
+                    <div class="hr-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('hr')">← Overview</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('employees')">Employees</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('leaves')">Leave</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('policies')">Policies</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('performance')">Performance</button>
+                        <button class="btn btn-sm btn-primary" onclick="switchView('onboarding')">Onboarding</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('approvals')">Approvals</button>
+                    </div>
+                    <div class="view-header">
+                        <h3><i class="fas fa-user-plus"></i> Onboarding</h3>
+                        <button type="button" class="btn btn-primary" onclick="openOnbModal()"><i class="fas fa-plus"></i> Start Onboarding</button>
+                    </div>
+                    <div class="dashboard-grid">
+                        <div class="stat-card"><div class="stat-icon orange-bg"><i class="fas fa-spinner"></i></div><div class="stat-content"><h3 id="onbInProgress">0</h3><p>In Progress</p></div></div>
+                        <div class="stat-card"><div class="stat-icon aqua-bg"><i class="fas fa-check-circle"></i></div><div class="stat-content"><h3 id="onbCompleted">0</h3><p>Completed</p></div></div>
+                        <div class="stat-card"><div class="stat-icon blue-bg"><i class="fas fa-users"></i></div><div class="stat-content"><h3 id="onbTotal">0</h3><p>Total New Hires</p></div></div>
+                    </div>
+                    <div id="onboardingList" class="activity-list" style="margin-top:12px;"><p class="empty-state">No onboarding in progress. Click "Start Onboarding".</p></div>
+                </div>
+
+                <!-- Start Onboarding Modal -->
+                <div id="onbModal" class="modal">
+                    <div class="modal-content" style="max-width:500px;">
+                        <div class="modal-header"><h2><i class="fas fa-user-plus"></i> Start Onboarding</h2><button class="close-btn" onclick="closeOnbModal()">&times;</button></div>
+                        <form onsubmit="submitOnb(event)">
+                            <div class="form-group"><label>Employee Name <span style="color:#E74C3C;">*</span></label><input type="text" id="onbEmployee" required></div>
+                            <div class="form-group"><label>Employee Email (for welcome email)</label><input type="email" id="onbEmail"></div>
+                            <div class="form-group"><label>Start Date</label><input type="date" id="onbStart"></div>
+                            <p style="color:#888;font-size:0.85em;">A default checklist is created: orientation, training, welcome email, paperwork, equipment, email creation.</p>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeOnbModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-play"></i> Start</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Approvals View -->
+                <div id="approvals" class="view">
+                    <div class="hr-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('hr')">← Overview</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('employees')">Employees</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('leaves')">Leave</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('policies')">Policies</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('performance')">Performance</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('onboarding')">Onboarding</button>
+                        <button class="btn btn-sm btn-primary" onclick="switchView('approvals')">Approvals</button>
+                    </div>
+                    <div class="view-header">
+                        <h3><i class="fas fa-check-double"></i> Approvals</h3>
+                        <button type="button" class="btn btn-primary" onclick="openApprovalModal()"><i class="fas fa-plus"></i> New Request</button>
+                    </div>
+                    <div class="dashboard-grid">
+                        <div class="stat-card"><div class="stat-icon orange-bg"><i class="fas fa-hourglass-half"></i></div><div class="stat-content"><h3 id="aprPending">0</h3><p>Pending</p></div></div>
+                        <div class="stat-card"><div class="stat-icon aqua-bg"><i class="fas fa-check-circle"></i></div><div class="stat-content"><h3 id="aprApproved">0</h3><p>Approved</p></div></div>
+                        <div class="stat-card"><div class="stat-icon orange-bg"><i class="fas fa-times-circle"></i></div><div class="stat-content"><h3 id="aprRejected">0</h3><p>Rejected</p></div></div>
+                        <div class="stat-card"><div class="stat-icon blue-bg"><i class="fas fa-random"></i></div><div class="stat-content"><h3 id="aprDelegated">0</h3><p>Delegated</p></div></div>
+                    </div>
+                    <div style="margin:12px 0;">
+                        <input type="text" id="approvalSearch" placeholder="Search by title, requester, approver, or ID…"
+                               style="width:100%;max-width:440px;padding:10px;border:1px solid #ddd;border-radius:6px;"
+                               onkeyup="if(event.key==='Enter')loadApprovals()">
+                    </div>
+                    <div id="approvalList" class="activity-list"><p class="empty-state">No approval requests yet. Click "New Request".</p></div>
+                </div>
+
+                <!-- New Approval Modal -->
+                <div id="approvalModal" class="modal">
+                    <div class="modal-content" style="max-width:520px;">
+                        <div class="modal-header"><h2><i class="fas fa-check-double"></i> New Approval Request</h2><button class="close-btn" onclick="closeApprovalModal()">&times;</button></div>
+                        <form onsubmit="submitApproval(event)">
+                            <div class="form-row">
+                                <div class="form-group"><label>Type</label>
+                                    <select id="aprType"><option value="expense">Expense</option><option value="purchase">Purchase</option><option value="travel">Travel</option><option value="hiring">Hiring</option><option value="promotion">Promotion</option><option value="policy-exception">Policy Exception</option></select>
+                                </div>
+                                <div class="form-group"><label>Amount (optional)</label><input type="number" id="aprAmount" step="0.01"></div>
+                            </div>
+                            <div class="form-group"><label>Title <span style="color:#E74C3C;">*</span></label><input type="text" id="aprTitle" required placeholder="e.g. Client dinner reimbursement"></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Requested By</label><input type="text" id="aprRequestedBy"></div>
+                                <div class="form-group"><label>Manager (approver)</label><input type="text" id="aprManager"></div>
+                            </div>
+                            <div class="form-group"><label>Details</label><textarea id="aprDetails" rows="3"></textarea></div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeApprovalModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit</button>
                             </div>
                         </form>
                     </div>
@@ -2297,6 +2401,8 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/policies.js"></script>
     <script src="js/leaves.js"></script>
     <script src="js/performance.js"></script>
+    <script src="js/onboarding.js"></script>
+    <script src="js/approvals.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="js/analytics-dashboard.js"></script>
     <script src="js/meeting-room.js"></script>
