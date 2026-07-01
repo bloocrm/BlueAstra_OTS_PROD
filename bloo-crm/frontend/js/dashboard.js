@@ -38,9 +38,11 @@ function switchView(viewName) {
         leads: 'Leads',
         communications: 'Communications',
         grievance: 'Grievance & Support',
+        hr: 'Employee Dashboard',
         employees: 'Employee Information',
         policies: 'Company Policies',
         leaves: 'Leave Applications',
+        performance: 'Performance Management',
         pricing: 'Pricing & Payments',
         workflow: 'Workflow & Audit Log',
         'ai-insights': 'AI Insights'
@@ -77,6 +79,10 @@ function switchView(viewName) {
         if (typeof loadPolicies === 'function') loadPolicies();
     } else if (viewName === 'leaves') {
         if (typeof loadLeaves === 'function') loadLeaves();
+    } else if (viewName === 'hr') {
+        if (typeof loadHrDashboard === 'function') loadHrDashboard();
+    } else if (viewName === 'performance') {
+        if (typeof loadPerformance === 'function') loadPerformance();
     } else if (viewName === 'leads') {
         loadLeadsList();
     } else if (viewName === 'communications') {

@@ -220,6 +220,10 @@ app.use('/api/analytics', analyticsRoutes);
 const leaveRoutes = require('./routes/leaves');
 app.use('/api/leaves', leaveRoutes);
 
+// Performance (goals, KPIs, reviews, feedback)
+const performanceRoutes = require('./routes/performance');
+app.use('/api/performance', performanceRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin

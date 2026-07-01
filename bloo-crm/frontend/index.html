@@ -159,14 +159,8 @@
                 <a href="#" onclick="switchView('grievance')" class="nav-item" data-view="grievance">
                     <i class="fas fa-flag"></i> <span>Grievance</span>
                 </a>
-                <a href="#" onclick="switchView('employees')" class="nav-item" data-view="employees">
-                    <i class="fas fa-id-badge"></i> <span>Employees</span>
-                </a>
-                <a href="#" onclick="switchView('policies')" class="nav-item" data-view="policies">
-                    <i class="fas fa-book"></i> <span>Policies</span>
-                </a>
-                <a href="#" onclick="switchView('leaves')" class="nav-item" data-view="leaves">
-                    <i class="fas fa-plane-departure"></i> <span>Leave</span>
+                <a href="#" onclick="switchView('hr')" class="nav-item" data-view="hr">
+                    <i class="fas fa-users-cog"></i> <span>Employee Dashboard</span>
                 </a>
                 <a href="#" onclick="switchView('pricing')" class="nav-item" data-view="pricing">
                     <i class="fas fa-dollar-sign"></i> <span>Pricing & Payments</span>
@@ -894,8 +888,28 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                     </div>
                 </div>
 
+                <!-- Employee Dashboard (HR hub) -->
+                <div id="hr" class="view">
+                    <div class="view-header"><h3><i class="fas fa-users-cog"></i> Employee Dashboard</h3></div>
+                    <div class="dashboard-grid" id="hrStats"></div>
+                    <h4 style="margin:18px 0 8px;">Sections</h4>
+                    <div class="dashboard-grid">
+                        <div class="stat-card" style="cursor:pointer;" onclick="switchView('employees')"><div class="stat-icon blue-bg"><i class="fas fa-id-badge"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Employees</h3><p>Records & PII</p></div></div>
+                        <div class="stat-card" style="cursor:pointer;" onclick="switchView('leaves')"><div class="stat-icon orange-bg"><i class="fas fa-plane-departure"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Leave</h3><p>Apply & approvals</p></div></div>
+                        <div class="stat-card" style="cursor:pointer;" onclick="switchView('policies')"><div class="stat-icon aqua-bg"><i class="fas fa-book"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Policies</h3><p>Create & publish</p></div></div>
+                        <div class="stat-card" style="cursor:pointer;" onclick="switchView('performance')"><div class="stat-icon blue-bg"><i class="fas fa-chart-line"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Performance</h3><p>Goals, reviews, KPIs</p></div></div>
+                    </div>
+                </div>
+
                 <!-- Employee Information View -->
                 <div id="employees" class="view">
+                    <div class="hr-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('hr')">← Overview</button>
+                        <button class="btn btn-sm btn-primary" onclick="switchView('employees')">Employees</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('leaves')">Leave</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('policies')">Policies</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('performance')">Performance</button>
+                    </div>
                     <div class="view-header">
                         <h3><i class="fas fa-id-badge"></i> Employee Information</h3>
                         <button type="button" class="btn btn-primary" onclick="openEmployeeModal()">
@@ -974,6 +988,13 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
 
                 <!-- Company Policies View -->
                 <div id="policies" class="view">
+                    <div class="hr-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('hr')">← Overview</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('employees')">Employees</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('leaves')">Leave</button>
+                        <button class="btn btn-sm btn-primary" onclick="switchView('policies')">Policies</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('performance')">Performance</button>
+                    </div>
                     <div class="view-header">
                         <h3><i class="fas fa-book"></i> Company Policies</h3>
                         <button type="button" class="btn btn-primary" onclick="openPolicyModal()">
@@ -1018,6 +1039,13 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
 
                 <!-- Leave Applications View -->
                 <div id="leaves" class="view">
+                    <div class="hr-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('hr')">← Overview</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('employees')">Employees</button>
+                        <button class="btn btn-sm btn-primary" onclick="switchView('leaves')">Leave</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('policies')">Policies</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('performance')">Performance</button>
+                    </div>
                     <div class="view-header">
                         <h3><i class="fas fa-plane-departure"></i> Leave Applications</h3>
                         <button type="button" class="btn btn-primary" onclick="openLeaveModal()">
@@ -1061,6 +1089,83 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             <div class="modal-actions">
                                 <button type="button" class="btn btn-secondary" onclick="closeLeaveModal()">Cancel</button>
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Performance Management View -->
+                <div id="performance" class="view">
+                    <div class="hr-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('hr')">← Overview</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('employees')">Employees</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('leaves')">Leave</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('policies')">Policies</button>
+                        <button class="btn btn-sm btn-primary" onclick="switchView('performance')">Performance</button>
+                    </div>
+                    <div class="view-header">
+                        <h3><i class="fas fa-chart-line"></i> Performance Management</h3>
+                        <button type="button" class="btn btn-primary" onclick="openPerfModal()">
+                            <i class="fas fa-plus"></i> Add Record
+                        </button>
+                    </div>
+                    <div class="dashboard-grid">
+                        <div class="stat-card"><div class="stat-icon blue-bg"><i class="fas fa-bullseye"></i></div><div class="stat-content"><h3 id="perfGoals">0</h3><p>Goals & KPIs</p></div></div>
+                        <div class="stat-card"><div class="stat-icon aqua-bg"><i class="fas fa-star"></i></div><div class="stat-content"><h3 id="perfReviews">0</h3><p>Reviews</p></div></div>
+                        <div class="stat-card"><div class="stat-icon orange-bg"><i class="fas fa-comments"></i></div><div class="stat-content"><h3 id="perfFeedback">0</h3><p>Feedback</p></div></div>
+                        <div class="stat-card"><div class="stat-icon blue-bg"><i class="fas fa-list"></i></div><div class="stat-content"><h3 id="perfTotal">0</h3><p>Total Records</p></div></div>
+                    </div>
+                    <div style="margin:12px 0;">
+                        <input type="text" id="perfSearch" placeholder="Search by employee, title, period, or ID…"
+                               style="width:100%;max-width:440px;padding:10px;border:1px solid #ddd;border-radius:6px;"
+                               onkeyup="if(event.key==='Enter')loadPerformance()">
+                    </div>
+                    <div id="perfList" class="activity-list">
+                        <p class="empty-state">No performance records yet. Click "Add Record".</p>
+                    </div>
+                </div>
+
+                <!-- Add Performance Record Modal -->
+                <div id="perfModal" class="modal">
+                    <div class="modal-content" style="max-width:560px;">
+                        <div class="modal-header">
+                            <h2><i class="fas fa-chart-line"></i> Add Performance Record</h2>
+                            <button class="close-btn" onclick="closePerfModal()">&times;</button>
+                        </div>
+                        <form onsubmit="submitPerf(event)">
+                            <div class="form-row">
+                                <div class="form-group"><label>Employee <span style="color:#E74C3C;">*</span></label><input type="text" id="perfEmployee" required></div>
+                                <div class="form-group"><label>Type</label>
+                                    <select id="perfType">
+                                        <option value="goal">Goal / KPI</option>
+                                        <option value="annual-review">Annual Review</option>
+                                        <option value="quarterly-review">Quarterly Review</option>
+                                        <option value="manager-feedback">Manager Feedback</option>
+                                        <option value="peer-feedback">Peer Feedback</option>
+                                        <option value="promotion">Promotion</option>
+                                        <option value="compensation">Compensation Review</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Title</label><input type="text" id="perfTitle" placeholder="e.g. Q3 Sales Target"></div>
+                                <div class="form-group"><label>Period</label><input type="text" id="perfPeriod" placeholder="e.g. Q3 2026"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Reviewer</label><input type="text" id="perfReviewer"></div>
+                                <div class="form-group"><label>Rating (1-5)</label><input type="number" id="perfRating" min="1" max="5" step="1"></div>
+                            </div>
+                            <div class="form-group"><label>KPI (name / target / actual)</label>
+                                <div style="display:flex;gap:8px;">
+                                    <input type="text" id="perfKpiName" placeholder="KPI name" style="flex:2;">
+                                    <input type="text" id="perfKpiTarget" placeholder="Target" style="flex:1;">
+                                    <input type="text" id="perfKpiActual" placeholder="Actual" style="flex:1;">
+                                </div>
+                            </div>
+                            <div class="form-group"><label>Notes</label><textarea id="perfNotes" rows="3"></textarea></div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closePerfModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
                             </div>
                         </form>
                     </div>
@@ -2191,6 +2296,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/employees.js"></script>
     <script src="js/policies.js"></script>
     <script src="js/leaves.js"></script>
+    <script src="js/performance.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="js/analytics-dashboard.js"></script>
     <script src="js/meeting-room.js"></script>
