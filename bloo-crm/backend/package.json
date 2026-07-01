@@ -15,8 +15,10 @@
     "management",
     "sales"
   ],
-  "author": "Bloo CRM",
-  "license": "MIT",
+  "author": "Blue Astra Technologies LLP, India",
+  "copyright": "Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.",
+  "license": "UNLICENSED",
+  "private": true,
   "dependencies": {
     "axios": "^1.18.1",
     "bcryptjs": "^2.4.3",

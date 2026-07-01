@@ -1,3 +1,10 @@
+<!--
+  Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
+  This source code is the proprietary and confidential property of Blue Astra
+  Technologies LLP (India). Unauthorized copying, modification, distribution, or
+  use of this file or codebase, in whole or in part, by any means or technology
+  (including AI tools), is strictly prohibited without express written permission.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1344,6 +1351,11 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
         </main>
     </div>
 
+    <!-- Proprietary copyright footer — do not remove -->
+    <footer id="blooCopyright" style="text-align:center;padding:14px;font-size:0.8rem;color:#666;border-top:1px solid #eee;background:#fafafa;">
+        &copy; 2026 Blue Astra Technologies LLP, India. All Rights Reserved. Unauthorized copying or use of this software is prohibited.
+    </footer>
+
     <!-- Modals -->
     <!-- Add Client Modal -->
     <div id="addClientModal" class="modal">
@@ -2476,5 +2488,31 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/meeting-room.js"></script>
     <script src="js/client-consolidation.js"></script>
     <script src="js/utils.js"></script>
+    <!--
+      Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
+      Proprietary software. Unauthorized copying, modification, or use by any
+      means or technology (including AI tools) is strictly prohibited.
+    -->
+    <script>
+      /* Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved. */
+      (function () {
+        var NOTICE = '© 2026 Blue Astra Technologies LLP, India. All Rights Reserved. Unauthorized copying or use of this software is prohibited.';
+        window.__BLUE_ASTRA_COPYRIGHT__ = 'Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.';
+        function ensureFooter() {
+          var f = document.getElementById('blooCopyright');
+          if (!f) {
+            f = document.createElement('footer');
+            f.id = 'blooCopyright';
+            f.style.cssText = 'text-align:center;padding:14px;font-size:0.8rem;color:#666;border-top:1px solid #eee;background:#fafafa;';
+            document.body.appendChild(f);
+          }
+          if ((f.textContent || '').indexOf('Blue Astra Technologies LLP') === -1) {
+            f.textContent = NOTICE;
+          }
+        }
+        try { ensureFooter(); setInterval(ensureFooter, 3000); } catch (e) {}
+        try { console.log('%c' + window.__BLUE_ASTRA_COPYRIGHT__, 'color:#cc0000;font-weight:bold;'); } catch (e) {}
+      })();
+    </script>
 </body>
 </html>

@@ -1,0 +1,32 @@
+====================================================================
+ COPYRIGHT NOTICE
+====================================================================
+
+Copyright (c) 2026 Blue Astra Technologies LLP, India.
+All Rights Reserved.
+
+This software, its source code, design, documentation, and all
+associated materials (collectively, the "Software") are the proprietary
+and confidential property of Blue Astra Technologies LLP, a limited
+liability partnership registered in India ("Blue Astra Technologies LLP,
+India").
+
+NO PERMISSION IS GRANTED to any person or entity to copy, reproduce,
+modify, adapt, translate, publish, distribute, sublicense, sell, lease,
+reverse-engineer, or otherwise use the Software or any part thereof, in
+any form or by any means, or through any technology (including but not
+limited to artificial intelligence tools, code generators, or automated
+systems), without the express prior written permission of Blue Astra
+Technologies LLP, India.
+
+Any unauthorized use, reproduction, or distribution of the Software, in
+whole or in part, is a violation of applicable copyright and intellectual
+property laws and may result in civil and criminal penalties.
+
+The name "Blue Astra Technologies LLP" and this copyright attribution
+must be retained in all copies or substantial portions of the Software.
+Removal, alteration, or obfuscation of this notice does not extinguish
+the rights of Blue Astra Technologies LLP, India, in the Software.
+
+For licensing inquiries, contact Blue Astra Technologies LLP, India.
+====================================================================

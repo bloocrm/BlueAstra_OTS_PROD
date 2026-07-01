@@ -1,4 +1,9 @@
 {
+  "name": "blueastra-ots-prod",
+  "author": "Blue Astra Technologies LLP, India",
+  "copyright": "Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.",
+  "license": "UNLICENSED",
+  "private": true,
   "devDependencies": {
     "xlsx": "^0.18.5"
   },

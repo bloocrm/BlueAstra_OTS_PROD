@@ -1,3 +1,10 @@
+/*
+  Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
+  This source code is the proprietary and confidential property of Blue Astra
+  Technologies LLP (India). Unauthorized copying, modification, distribution, or
+  use of this file or codebase, in whole or in part, by any means or technology
+  (including AI tools), is strictly prohibited without express written permission.
+*/
 /* =====================================================
    BLOO CRM BACKEND - EXPRESS SERVER
    ===================================================== */
@@ -80,10 +87,12 @@ app.get('/health', (req, res) => {
 
 // API version endpoint
 app.get('/api/version', (req, res) => {
-  res.json({ 
+  res.json({
     version: '1.0.0',
     name: 'Bloo CRM',
-    api: 'v1'
+    api: 'v1',
+    copyright: 'Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.',
+    proprietary: 'Unauthorized copying, modification, or use by any means or technology (including AI tools) is strictly prohibited.'
   });
 });
 
@@ -291,7 +300,10 @@ app.listen(PORT, () => {
     ✓ Server running on port ${PORT}
     ✓ Environment: ${process.env.NODE_ENV || 'development'}
     ✓ API Version: 1.0.0
-    
+
+    Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
+    Proprietary software — unauthorized copying or use is prohibited.
+
     API Endpoints:
     • GET  /health
     • GET  /api/version
