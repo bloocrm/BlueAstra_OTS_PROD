@@ -1,5 +1,7 @@
 /* =====================================================
-   MEETING RECORDS API (minutes, transcript, search)
+   MEETING RECORDS API (minutes, transcript, summary, recording)
+   All routes are authenticated and scoped to req.userId, so a user
+   can only see/extract their OWN meetings.
    ===================================================== */
 
 const express = require('express');
@@ -29,8 +31,23 @@ function buildMinutes(b, host) {
   ].join('\n');
 }
 
-// POST /api/meetings — create a meeting record
-router.post('/', async (req, res) => {
+function summarize(transcript) {
+  const text = (transcript || '').trim();
+  if (!text) return '';
+  const clean = text.replace(/\s+/g, ' ');
+  return clean.length > 600 ? clean.slice(0, 600) + '…' : clean;
+}
+
+// Find a meeting by MTG- id or Mongo _id, scoped to the owner (access control)
+async function findOwned(userId, id) {
+  if (/^[0-9a-fA-F]{24}$/.test(id)) {
+    return Meeting.findOne({ userId, $or: [{ meetingId: id }, { _id: id }] });
+  }
+  return Meeting.findOne({ userId, meetingId: id });
+}
+
+// --- CREATE ---------------------------------------------------------------
+async function createMeeting(req, res) {
   try {
     const b = req.body || {};
     const attendees = [];
@@ -40,6 +57,7 @@ router.post('/', async (req, res) => {
     const meeting = await Meeting.create({
       userId: req.userId,
       title: b.title || 'Meeting',
+      advisorName: b.advisorName || req.userName || req.userEmail,
       agenda: b.agenda || '',
       provider: b.provider,
       providerName: b.providerName,
@@ -54,15 +72,44 @@ router.post('/', async (req, res) => {
       transcript: b.transcript || '',
       recordingUrl: b.recordingUrl || ''
     });
-
     res.status(201).json({ status: 'success', meeting });
   } catch (error) {
     console.error('Meeting create error:', error);
     res.status(500).json({ error: 'Failed to save meeting', message: error.message });
   }
+}
+router.post('/', createMeeting);
+router.post('/create', createMeeting);
+
+// --- END (save transcript, duration, summary) -----------------------------
+router.post('/end', async (req, res) => {
+  try {
+    const { meetingId, transcript, durationMinutes, summary, recordingUrl } = req.body || {};
+    if (!meetingId) return res.status(400).json({ error: 'meetingId is required' });
+
+    const meeting = await findOwned(req.userId, meetingId);
+    if (!meeting) return res.status(404).json({ error: 'Meeting not found' });
+
+    meeting.status = 'ended';
+    meeting.endTime = new Date();
+    if (typeof transcript === 'string' && transcript.trim()) meeting.transcript = transcript.trim();
+    if (recordingUrl) meeting.recordingUrl = recordingUrl;
+    meeting.summary = (summary && summary.trim()) || summarize(meeting.transcript);
+    if (durationMinutes != null) {
+      meeting.durationMinutes = parseInt(durationMinutes) || undefined;
+    } else if (meeting.startTime) {
+      meeting.durationMinutes = Math.max(1, Math.round((meeting.endTime - meeting.startTime) / 60000));
+    }
+    await meeting.save();
+
+    res.json({ status: 'success', meeting });
+  } catch (error) {
+    console.error('Meeting end error:', error);
+    res.status(500).json({ error: 'Failed to end meeting', message: error.message });
+  }
 });
 
-// GET /api/meetings?search=... — list / search meetings (lightweight, no minutes/transcript)
+// --- LIST / SEARCH (own meetings only) ------------------------------------
 router.get('/', async (req, res) => {
   try {
     const query = { userId: req.userId };
@@ -78,20 +125,50 @@ router.get('/', async (req, res) => {
       .lean();
     res.json({ status: 'success', count: meetings.length, meetings });
   } catch (error) {
-    console.error('Meeting list error:', error);
     res.status(500).json({ error: 'Failed to list meetings', message: error.message });
   }
 });
 
-// GET /api/meetings/:meetingId — full meeting (with minutes + transcript)
-router.get('/:meetingId', async (req, res) => {
+// --- GET ONE --------------------------------------------------------------
+router.get('/:id', async (req, res) => {
   try {
-    const meeting = await Meeting.findOne({ userId: req.userId, meetingId: req.params.meetingId }).lean();
+    const meeting = await findOwned(req.userId, req.params.id);
     if (!meeting) return res.status(404).json({ error: 'Meeting not found' });
     res.json({ status: 'success', meeting });
   } catch (error) {
-    console.error('Meeting get error:', error);
     res.status(500).json({ error: 'Failed to get meeting', message: error.message });
+  }
+});
+
+// --- TRANSCRIPT / SUMMARY / RECORDING -------------------------------------
+router.get('/:id/transcript', async (req, res) => {
+  const m = await findOwned(req.userId, req.params.id);
+  if (!m) return res.status(404).json({ error: 'Meeting not found' });
+  res.json({ status: 'success', meetingId: m.meetingId, transcript: m.transcript || '' });
+});
+
+router.get('/:id/summary', async (req, res) => {
+  const m = await findOwned(req.userId, req.params.id);
+  if (!m) return res.status(404).json({ error: 'Meeting not found' });
+  res.json({ status: 'success', meetingId: m.meetingId, summary: m.summary || summarize(m.transcript) });
+});
+
+router.get('/:id/recording', async (req, res) => {
+  const m = await findOwned(req.userId, req.params.id);
+  if (!m) return res.status(404).json({ error: 'Meeting not found' });
+  if (!m.recordingUrl) return res.status(404).json({ error: 'No recording available for this meeting' });
+  res.json({ status: 'success', meetingId: m.meetingId, recordingUrl: m.recordingUrl });
+});
+
+// --- DELETE (own only) ----------------------------------------------------
+router.delete('/:id', async (req, res) => {
+  try {
+    const m = await findOwned(req.userId, req.params.id);
+    if (!m) return res.status(404).json({ error: 'Meeting not found' });
+    await Meeting.deleteOne({ _id: m._id, userId: req.userId });
+    res.json({ status: 'success', message: 'Meeting deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete meeting', message: error.message });
   }
 });
 

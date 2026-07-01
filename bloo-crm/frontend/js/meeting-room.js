@@ -342,6 +342,7 @@ async function handleStartMeeting(event) {
             loadRecentMeetings();
             await saveMeetingToCalendar(meeting);
             await saveMeetingRecord(meeting);
+            if (meeting.meetingId) startLiveTranscription(meeting.meetingId);
             renderMeetingsCalendar();
         }, 1000);
     }, 1500);
@@ -671,6 +672,16 @@ function endMeeting(meetingId) {
     const meeting = user.meetings?.find(m => m.id === meetingId);
 
     if (meeting) {
+        // Stop live transcription and persist it to the MongoDB meeting record
+        const trans = stopLiveTranscription();
+        if (meeting.meetingId) {
+            meetingApi('/meetings/end', {
+                method: 'POST',
+                body: { meetingId: meeting.meetingId, transcript: trans.transcript, durationMinutes: trans.durationMinutes }
+            }).then(() => showNotification('Meeting ended — transcript saved to MongoDB.', 'success'))
+              .catch(e => console.warn('Failed to save transcript:', e.message));
+        }
+
         meeting.status = 'completed';
         meeting.endTime = new Date().toISOString();
 
@@ -1344,13 +1355,18 @@ async function viewMeetingRecord(meetingId) {
                     <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
                 </div>
                 <div style="padding:0 4px;">
-                    <p><strong>Date:</strong> ${m.startTime ? new Date(m.startTime).toLocaleString() : '—'}</p>
-                    <p><strong>Client:</strong> ${(m.clientName || '—')} ${m.clientEmail ? `(${m.clientEmail})` : ''}</p>
-                    <p><strong>Provider:</strong> ${m.providerName || m.provider || '—'}</p>
-                    <h4 style="margin-top:12px;">Minutes</h4>
-                    <pre style="white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:6px;max-height:220px;overflow:auto;">${(m.minutes || '(no minutes)').replace(/</g, '&lt;')}</pre>
-                    <h4 style="margin-top:12px;">Transcript</h4>
-                    <p style="color:#666;font-size:0.9em;">${hasTranscript ? 'Transcript available — download below.' : 'No transcript yet (recording/transcription pipeline pending).'}</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+                        <div><div style="color:#888;font-size:0.8em;">Advisor</div><div style="font-weight:600;">${(m.advisorName || '—')}</div></div>
+                        <div><div style="color:#888;font-size:0.8em;">Client</div><div style="font-weight:600;">${(m.clientName || '—')}</div></div>
+                        <div><div style="color:#888;font-size:0.8em;">Meeting Date</div><div>${m.startTime ? new Date(m.startTime).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}</div></div>
+                        <div><div style="color:#888;font-size:0.8em;">Duration</div><div>${m.durationMinutes ? m.durationMinutes + ' Minutes' : '—'}</div></div>
+                    </div>
+                    <h4>Video Recording</h4>
+                    ${m.recordingUrl ? `<a href="${m.recordingUrl}" target="_blank" class="btn btn-secondary">▶ Play Recording</a>` : `<p style="color:#666;font-size:0.9em;">No recording available (recording pipeline pending).</p>`}
+                    <h4 style="margin-top:14px;">Summary</h4>
+                    <p style="color:#444;">${(m.summary || '(no summary yet)').replace(/</g, '&lt;')}</p>
+                    <h4 style="margin-top:14px;">Transcript</h4>
+                    <pre style="white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:6px;max-height:240px;overflow:auto;">${hasTranscript ? m.transcript.replace(/</g, '&lt;') : '(no transcript yet)'}</pre>
                 </div>
                 <div class="modal-actions">
                     <button class="btn btn-secondary" onclick="downloadMeetingText('${m.meetingId}','minutes')"><i class="fas fa-download"></i> Download Minutes</button>
@@ -1376,4 +1392,55 @@ function downloadMeetingText(meetingId, field) {
     a.click();
     a.remove();
     URL.revokeObjectURL(a.href);
+}
+
+// =====================================================
+// LIVE SPEECH-TO-TEXT (browser Web Speech API, local microphone)
+// Starts when the meeting starts; the accumulated transcript is saved to
+// MongoDB via POST /api/meetings/end when the meeting is ended.
+// NOTE: browser capture is limited to the local mic (advisor side) and to
+// Chrome/Edge. Full multi-speaker transcription needs the server-side
+// recording pipeline (JaaS recording -> Whisper/Azure/Google/Amazon).
+// =====================================================
+
+function startLiveTranscription(meetingId) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+        console.warn('SpeechRecognition not supported in this browser.');
+        window.__activeTranscription = { meetingId, buffer: '', supported: false, startTime: Date.now() };
+        return;
+    }
+    try {
+        const rec = new SR();
+        rec.continuous = true;
+        rec.interimResults = false;
+        rec.lang = 'en-US';
+        const state = { meetingId, buffer: '', recognition: rec, supported: true, startTime: Date.now(), stopped: false };
+        rec.onresult = (e) => {
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+                if (e.results[i].isFinal) {
+                    state.buffer += (state.buffer ? '\n' : '') + e.results[i][0].transcript.trim();
+                }
+            }
+        };
+        rec.onerror = (e) => console.warn('SpeechRecognition error:', e.error);
+        rec.onend = () => { if (!state.stopped) { try { rec.start(); } catch (_) {} } };
+        rec.start();
+        window.__activeTranscription = state;
+        showNotification('🎙️ Live transcription started (your microphone).', 'info');
+    } catch (e) {
+        console.warn('Could not start transcription:', e.message);
+        window.__activeTranscription = { meetingId, buffer: '', supported: false, startTime: Date.now() };
+    }
+}
+
+function stopLiveTranscription() {
+    const s = window.__activeTranscription;
+    if (!s) return { meetingId: null, transcript: '', durationMinutes: 0 };
+    s.stopped = true;
+    try { if (s.recognition) s.recognition.stop(); } catch (_) {}
+    const durationMinutes = Math.max(1, Math.round((Date.now() - s.startTime) / 60000));
+    const result = { meetingId: s.meetingId, transcript: s.buffer || '', durationMinutes };
+    window.__activeTranscription = null;
+    return result;
 }

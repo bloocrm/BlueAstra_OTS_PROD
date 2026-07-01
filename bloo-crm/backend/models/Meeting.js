@@ -19,6 +19,7 @@ const meetingSchema = new mongoose.Schema(
       default: generateMeetingId
     },
     title: { type: String, default: 'Meeting', trim: true, index: true },
+    advisorName: String,
     agenda: String,
     provider: String,
     providerName: String,
@@ -27,11 +28,13 @@ const meetingSchema = new mongoose.Schema(
     attendees: [String],
     startTime: { type: Date, index: true },
     endTime: Date,
+    durationMinutes: Number,
     status: { type: String, default: 'active' },
     meetingUrl: String,   // host (moderator) link
     guestUrl: String,     // guest (lobby) link
     minutes: String,      // meeting minutes text
-    transcript: String,   // written transcript (populated once the recording pipeline is wired)
+    transcript: String,   // written transcript (speech-to-text)
+    summary: String,      // short summary of the transcript
     recordingUrl: String  // link to the compressed recording (S3/GridFS) once available
   },
   { timestamps: true }
