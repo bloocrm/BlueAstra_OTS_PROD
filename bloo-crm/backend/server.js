@@ -249,6 +249,10 @@ app.use('/api/workflow-tasks', workflowTaskRoutes);
 const vendorRoutes = require('./routes/vendors');
 app.use('/api/vendors', vendorRoutes);
 
+// AI Insights (assistant, duplicate detection/merge, email analysis, drafting)
+const aiRoutes = require('./routes/ai');
+app.use('/api/ai', aiRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin

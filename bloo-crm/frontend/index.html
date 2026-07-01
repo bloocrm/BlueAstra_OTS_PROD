@@ -844,6 +844,52 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             <i class="fas fa-magic"></i> Generate Insights
                         </button>
                     </div>
+
+                    <!-- AI Assistant -->
+                    <div class="chart-container" style="margin-bottom:16px;">
+                        <h3><i class="fas fa-robot"></i> AI Assistant — ask about the CRM or get guidance</h3>
+                        <div id="aiChatLog" style="max-height:220px;overflow:auto;background:#f8fafc;border-radius:6px;padding:10px;margin:8px 0;font-size:0.9rem;"></div>
+                        <div style="display:flex;gap:8px;">
+                            <input type="text" id="aiChatInput" placeholder="e.g. My Outlook emails aren't syncing…" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;" onkeyup="if(event.key==='Enter')aiSendChat()">
+                            <button class="btn btn-primary" onclick="aiSendChat()"><i class="fas fa-paper-plane"></i> Ask</button>
+                        </div>
+                    </div>
+
+                    <!-- Duplicate Detection -->
+                    <div class="chart-container" style="margin-bottom:16px;">
+                        <h3><i class="fas fa-clone"></i> Duplicate Lead Detection & Merge</h3>
+                        <button class="btn btn-secondary" onclick="aiScanDuplicates()"><i class="fas fa-search"></i> Scan for Duplicates</button>
+                        <div id="aiDupResults" style="margin-top:10px;"></div>
+                    </div>
+
+                    <!-- Email Analyzer -->
+                    <div class="chart-container" style="margin-bottom:16px;">
+                        <h3><i class="fas fa-envelope-open-text"></i> Email Intent & Sentiment Analyzer</h3>
+                        <textarea id="aiEmailText" rows="4" placeholder="Paste an email, e.g. &quot;Let's reconnect after Q4 ends.&quot;" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;"></textarea>
+                        <button class="btn btn-primary" style="margin-top:8px;" onclick="aiAnalyzeEmail()"><i class="fas fa-brain"></i> Analyze</button>
+                        <div id="aiEmailResult" style="margin-top:10px;"></div>
+                    </div>
+
+                    <!-- Follow-up Drafter -->
+                    <div class="chart-container" style="margin-bottom:16px;">
+                        <h3><i class="fas fa-pen-fancy"></i> AI Follow-up Email Drafter</h3>
+                        <div class="form-row">
+                            <div class="form-group"><label>Client Name</label><input type="text" id="aiDraftName"></div>
+                            <div class="form-group"><label>Industry</label><input type="text" id="aiDraftIndustry"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Age</label><input type="text" id="aiDraftAge"></div>
+                            <div class="form-group"><label>Investment Interests</label><input type="text" id="aiDraftInterests"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Portfolio</label><input type="text" id="aiDraftPortfolio"></div>
+                            <div class="form-group"><label>Previous Meetings</label><input type="text" id="aiDraftMeetings"></div>
+                        </div>
+                        <div class="form-group"><label>Prior Conversations</label><textarea id="aiDraftPrior" rows="2"></textarea></div>
+                        <div class="form-group"><label>Goal of this email</label><input type="text" id="aiDraftGoal" placeholder="e.g. schedule a Q1 portfolio review"></div>
+                        <button class="btn btn-primary" onclick="aiDraftEmail()"><i class="fas fa-magic"></i> Draft Email</button>
+                        <div id="aiDraftResult" style="margin-top:10px;"></div>
+                    </div>
                     <div id="aiInsightsContainer" class="ai-insights">
                         <div class="ai-card">
                             <div class="ai-icon">
@@ -2581,6 +2627,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/workflow-tasks.js"></script>
     <script src="js/help.js"></script>
     <script src="js/vendors.js"></script>
+    <script src="js/ai-tools.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="js/analytics-dashboard.js"></script>
     <script src="js/meeting-room.js"></script>
