@@ -165,6 +165,9 @@
                 <a href="#" onclick="switchView('policies')" class="nav-item" data-view="policies">
                     <i class="fas fa-book"></i> <span>Policies</span>
                 </a>
+                <a href="#" onclick="switchView('leaves')" class="nav-item" data-view="leaves">
+                    <i class="fas fa-plane-departure"></i> <span>Leave</span>
+                </a>
                 <a href="#" onclick="switchView('pricing')" class="nav-item" data-view="pricing">
                     <i class="fas fa-dollar-sign"></i> <span>Pricing & Payments</span>
                 </a>
@@ -933,7 +936,11 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             </div>
                             <div class="form-row">
                                 <div class="form-group"><label>Job Title</label><input type="text" id="empJobTitle"></div>
-                                <div class="form-group"><label>Manager</label><input type="text" id="empManager"></div>
+                                <div class="form-group"><label>Manager (approver)</label><input type="text" id="empManager"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Backup Employee (delegate)</label><input type="text" id="empBackup" placeholder="Approves when this person is on leave"></div>
+                                <div class="form-group"></div>
                             </div>
                             <div class="form-row">
                                 <div class="form-group"><label>Date of Joining</label><input type="date" id="empDateOfJoining"></div>
@@ -1004,6 +1011,56 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             <div class="modal-actions">
                                 <button type="button" class="btn btn-secondary" onclick="closePolicyModal()">Cancel</button>
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Leave Applications View -->
+                <div id="leaves" class="view">
+                    <div class="view-header">
+                        <h3><i class="fas fa-plane-departure"></i> Leave Applications</h3>
+                        <button type="button" class="btn btn-primary" onclick="openLeaveModal()">
+                            <i class="fas fa-plus"></i> Apply for Leave
+                        </button>
+                    </div>
+                    <div class="dashboard-grid">
+                        <div class="stat-card"><div class="stat-icon orange-bg"><i class="fas fa-hourglass-half"></i></div><div class="stat-content"><h3 id="leavePending">0</h3><p>Pending Approval</p></div></div>
+                        <div class="stat-card"><div class="stat-icon aqua-bg"><i class="fas fa-check-circle"></i></div><div class="stat-content"><h3 id="leaveApproved">0</h3><p>Approved</p></div></div>
+                        <div class="stat-card"><div class="stat-icon orange-bg"><i class="fas fa-times-circle"></i></div><div class="stat-content"><h3 id="leaveRejected">0</h3><p>Rejected</p></div></div>
+                        <div class="stat-card"><div class="stat-icon blue-bg"><i class="fas fa-random"></i></div><div class="stat-content"><h3 id="leaveDelegated">0</h3><p>Delegated to Backup</p></div></div>
+                    </div>
+                    <div style="margin:12px 0;">
+                        <input type="text" id="leaveSearch" placeholder="Search by employee, manager, or Leave ID…"
+                               style="width:100%;max-width:440px;padding:10px;border:1px solid #ddd;border-radius:6px;"
+                               onkeyup="if(event.key==='Enter')loadLeaves()">
+                    </div>
+                    <div id="leaveList" class="activity-list">
+                        <p class="empty-state">No leave applications yet. Click "Apply for Leave" to file one.</p>
+                    </div>
+                </div>
+
+                <!-- Apply for Leave Modal -->
+                <div id="leaveModal" class="modal">
+                    <div class="modal-content" style="max-width:520px;">
+                        <div class="modal-header">
+                            <h2><i class="fas fa-plane-departure"></i> Apply for Leave</h2>
+                            <button class="close-btn" onclick="closeLeaveModal()">&times;</button>
+                        </div>
+                        <form onsubmit="submitLeave(event)">
+                            <div class="form-group"><label>Employee Name <span style="color:#E74C3C;">*</span></label><input type="text" id="leaveEmployee" required placeholder="Applicant name"></div>
+                            <div class="form-group"><label>Manager (approver)</label><input type="text" id="leaveManager" placeholder="Leave blank to use the employee's manager on record"></div>
+                            <div class="form-group"><label>Leave Type</label>
+                                <select id="leaveType"><option>Annual</option><option>Sick</option><option>Casual</option><option>Maternity/Paternity</option><option>Unpaid</option><option>Other</option></select>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Start Date</label><input type="date" id="leaveStart"></div>
+                                <div class="form-group"><label>End Date</label><input type="date" id="leaveEnd"></div>
+                            </div>
+                            <div class="form-group"><label>Reason</label><textarea id="leaveReason" rows="2"></textarea></div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeLeaveModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit</button>
                             </div>
                         </form>
                     </div>
@@ -2133,6 +2190,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/grievances.js"></script>
     <script src="js/employees.js"></script>
     <script src="js/policies.js"></script>
+    <script src="js/leaves.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="js/analytics-dashboard.js"></script>
     <script src="js/meeting-room.js"></script>

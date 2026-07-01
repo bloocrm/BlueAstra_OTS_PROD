@@ -216,6 +216,10 @@ app.use('/api/policies', policyRoutes);
 const analyticsRoutes = require('./routes/analytics');
 app.use('/api/analytics', analyticsRoutes);
 
+// Leave applications (apply + manager approval + backup delegation)
+const leaveRoutes = require('./routes/leaves');
+app.use('/api/leaves', leaveRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin

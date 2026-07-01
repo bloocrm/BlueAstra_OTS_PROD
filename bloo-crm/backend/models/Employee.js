@@ -28,7 +28,8 @@ const employeeSchema = new mongoose.Schema(
     phone: { type: String, trim: true },
     department: { type: String, trim: true, index: true },
     jobTitle: String,
-    manager: String,
+    manager: String,          // approver for this employee's requests
+    backupEmployee: String,   // delegate if this employee (as approver) is unavailable
     dateOfJoining: Date,
     status: { type: String, enum: ['active', 'on-leave', 'terminated'], default: 'active', index: true },
 

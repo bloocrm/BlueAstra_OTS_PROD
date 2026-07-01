@@ -19,7 +19,7 @@ function safeDecrypt(v) {
 router.use(verifyToken);
 
 const ALLOWED = [
-  'name', 'email', 'phone', 'department', 'jobTitle', 'manager', 'dateOfJoining',
+  'name', 'email', 'phone', 'department', 'jobTitle', 'manager', 'backupEmployee', 'dateOfJoining',
   'status', 'ssn', 'dateOfBirth', 'bankAccount', 'address', 'emergencyContact', 'notes'
 ];
 

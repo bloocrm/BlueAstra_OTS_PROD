@@ -40,6 +40,7 @@ function switchView(viewName) {
         grievance: 'Grievance & Support',
         employees: 'Employee Information',
         policies: 'Company Policies',
+        leaves: 'Leave Applications',
         pricing: 'Pricing & Payments',
         workflow: 'Workflow & Audit Log',
         'ai-insights': 'AI Insights'
@@ -74,6 +75,8 @@ function switchView(viewName) {
         if (typeof loadEmployees === 'function') loadEmployees();
     } else if (viewName === 'policies') {
         if (typeof loadPolicies === 'function') loadPolicies();
+    } else if (viewName === 'leaves') {
+        if (typeof loadLeaves === 'function') loadLeaves();
     } else if (viewName === 'leads') {
         loadLeadsList();
     } else if (viewName === 'communications') {

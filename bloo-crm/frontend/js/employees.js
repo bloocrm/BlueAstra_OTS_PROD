@@ -26,6 +26,7 @@ async function submitEmployee(event) {
         department: val('empDepartment'),
         jobTitle: val('empJobTitle'),
         manager: val('empManager'),
+        backupEmployee: val('empBackup'),
         dateOfJoining: val('empDateOfJoining') || undefined,
         status: val('empStatus') || 'active',
         ssn: val('empSSN') || undefined,
