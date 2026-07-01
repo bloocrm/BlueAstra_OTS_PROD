@@ -196,6 +196,10 @@ app.use('/api/meeting-rooms', meetingRoomRoutes);
 const meetingRecordRoutes = require('./routes/meetings');
 app.use('/api/meetings', meetingRecordRoutes);
 
+// JaaS webhook (recording -> transcript)
+const jaasWebhookRoutes = require('./routes/jaas-webhook');
+app.use('/api', jaasWebhookRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin

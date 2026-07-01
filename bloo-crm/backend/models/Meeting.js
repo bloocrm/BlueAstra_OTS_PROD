@@ -30,6 +30,7 @@ const meetingSchema = new mongoose.Schema(
     endTime: Date,
     durationMinutes: Number,
     status: { type: String, default: 'active' },
+    room: { type: String, index: true },  // meeting room slug (matches JaaS webhook fqn)
     meetingUrl: String,   // host (moderator) link
     guestUrl: String,     // guest (lobby) link
     minutes: String,      // meeting minutes text

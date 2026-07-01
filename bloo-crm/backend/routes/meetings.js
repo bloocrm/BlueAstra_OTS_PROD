@@ -8,8 +8,17 @@ const express = require('express');
 const router = express.Router();
 const Meeting = require('../models/Meeting');
 const { verifyToken } = require('../middleware/auth');
+const { transcribeUrl } = require('../services/transcription-service');
 
 router.use(verifyToken);
+
+// Extract the room slug from a meeting URL (JaaS or public Jitsi)
+function roomFromUrl(url) {
+  try {
+    const u = new URL(url);
+    return u.pathname.split('/').filter(Boolean).pop() || '';
+  } catch (_) { return ''; }
+}
 
 function buildMinutes(b, host) {
   const attendees = [];
@@ -66,6 +75,7 @@ async function createMeeting(req, res) {
       attendees: [...new Set(attendees.filter(Boolean))],
       startTime: b.startTime ? new Date(b.startTime) : new Date(),
       status: b.status || 'active',
+      room: b.room || roomFromUrl(b.meetingUrl),
       meetingUrl: b.meetingUrl,
       guestUrl: b.guestUrl,
       minutes: b.minutes || buildMinutes(b, req.userName || req.userEmail),
@@ -158,6 +168,27 @@ router.get('/:id/recording', async (req, res) => {
   if (!m) return res.status(404).json({ error: 'Meeting not found' });
   if (!m.recordingUrl) return res.status(404).json({ error: 'No recording available for this meeting' });
   res.json({ status: 'success', meetingId: m.meetingId, recordingUrl: m.recordingUrl });
+});
+
+// --- TRANSCRIBE a recording with Whisper (manual / on-demand) -------------
+router.post('/:id/transcribe', async (req, res) => {
+  try {
+    const m = await findOwned(req.userId, req.params.id);
+    if (!m) return res.status(404).json({ error: 'Meeting not found' });
+    const url = (req.body && req.body.recordingUrl) || m.recordingUrl;
+    if (!url) return res.status(400).json({ error: 'No recording URL to transcribe' });
+
+    const transcript = await transcribeUrl(url);
+    m.transcript = transcript;
+    m.summary = summarize(transcript);
+    if (req.body && req.body.recordingUrl) m.recordingUrl = req.body.recordingUrl;
+    await m.save();
+
+    res.json({ status: 'success', meetingId: m.meetingId, transcriptLength: transcript.length });
+  } catch (error) {
+    console.error('Transcribe error:', error);
+    res.status(500).json({ error: 'Transcription failed', message: error.message });
+  }
 });
 
 // --- DELETE (own only) ----------------------------------------------------
