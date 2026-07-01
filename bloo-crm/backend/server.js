@@ -204,6 +204,10 @@ app.use('/api', jaasWebhookRoutes);
 const grievanceRoutes = require('./routes/grievances');
 app.use('/api/grievances', grievanceRoutes);
 
+// Employees (HR)
+const employeeRoutes = require('./routes/employees');
+app.use('/api/employees', employeeRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin

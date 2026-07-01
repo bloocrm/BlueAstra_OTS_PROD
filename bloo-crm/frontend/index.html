@@ -159,6 +159,9 @@
                 <a href="#" onclick="switchView('grievance')" class="nav-item" data-view="grievance">
                     <i class="fas fa-flag"></i> <span>Grievance</span>
                 </a>
+                <a href="#" onclick="switchView('employees')" class="nav-item" data-view="employees">
+                    <i class="fas fa-id-badge"></i> <span>Employees</span>
+                </a>
                 <a href="#" onclick="switchView('pricing')" class="nav-item" data-view="pricing">
                     <i class="fas fa-dollar-sign"></i> <span>Pricing & Payments</span>
                 </a>
@@ -858,6 +861,80 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             <div class="modal-actions">
                                 <button type="button" class="btn btn-secondary" onclick="closeGrievanceModal()">Cancel</button>
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Employee Information View -->
+                <div id="employees" class="view">
+                    <div class="view-header">
+                        <h3><i class="fas fa-id-badge"></i> Employee Information</h3>
+                        <button type="button" class="btn btn-primary" onclick="openEmployeeModal()">
+                            <i class="fas fa-user-plus"></i> Add Employee
+                        </button>
+                    </div>
+                    <div class="dashboard-grid">
+                        <div class="stat-card"><div class="stat-icon blue-bg"><i class="fas fa-users"></i></div><div class="stat-content"><h3 id="empTotal">0</h3><p>Total Employees</p></div></div>
+                        <div class="stat-card"><div class="stat-icon aqua-bg"><i class="fas fa-user-check"></i></div><div class="stat-content"><h3 id="empActive">0</h3><p>Active</p></div></div>
+                        <div class="stat-card"><div class="stat-icon orange-bg"><i class="fas fa-plane-departure"></i></div><div class="stat-content"><h3 id="empOnLeave">0</h3><p>On Leave</p></div></div>
+                        <div class="stat-card"><div class="stat-icon blue-bg"><i class="fas fa-sitemap"></i></div><div class="stat-content"><h3 id="empDepartments">0</h3><p>Departments</p></div></div>
+                    </div>
+                    <div style="margin:12px 0;">
+                        <input type="text" id="employeeSearch" placeholder="Search by name, email, department, or Employee ID…"
+                               style="width:100%;max-width:440px;padding:10px;border:1px solid #ddd;border-radius:6px;"
+                               onkeyup="if(event.key==='Enter')loadEmployees()">
+                    </div>
+                    <div id="employeeList" class="clients-grid">
+                        <p class="empty-state">No employees yet. Click "Add Employee" to add one.</p>
+                    </div>
+                </div>
+
+                <!-- Add Employee Modal -->
+                <div id="employeeModal" class="modal">
+                    <div class="modal-content" style="max-width:640px;">
+                        <div class="modal-header">
+                            <h2><i class="fas fa-user-plus"></i> Add Employee</h2>
+                            <button class="close-btn" onclick="closeEmployeeModal()">&times;</button>
+                        </div>
+                        <form onsubmit="submitEmployee(event)">
+                            <div class="form-row">
+                                <div class="form-group"><label>Full Name <span style="color:#E74C3C;">*</span></label><input type="text" id="empName" required></div>
+                                <div class="form-group"><label>Email</label><input type="email" id="empEmail"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Phone</label><input type="text" id="empPhone"></div>
+                                <div class="form-group"><label>Department</label><input type="text" id="empDepartment"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Job Title</label><input type="text" id="empJobTitle"></div>
+                                <div class="form-group"><label>Manager</label><input type="text" id="empManager"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Date of Joining</label><input type="date" id="empDateOfJoining"></div>
+                                <div class="form-group"><label>Status</label>
+                                    <select id="empStatus"><option value="active">Active</option><option value="on-leave">On Leave</option><option value="terminated">Terminated</option></select>
+                                </div>
+                            </div>
+                            <hr><p style="color:#888;font-size:0.85em;"><i class="fas fa-lock"></i> PII below is encrypted at rest in MongoDB.</p>
+                            <div class="form-row">
+                                <div class="form-group"><label>SSN</label><input type="text" id="empSSN" placeholder="XXX-XX-XXXX"></div>
+                                <div class="form-group"><label>Date of Birth</label><input type="date" id="empDOB"></div>
+                            </div>
+                            <div class="form-group"><label>Bank Account</label><input type="text" id="empBankAccount"></div>
+                            <hr>
+                            <div class="form-row">
+                                <div class="form-group"><label>Street</label><input type="text" id="empStreet"></div>
+                                <div class="form-group"><label>City</label><input type="text" id="empCity"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>State</label><input type="text" id="empState"></div>
+                                <div class="form-group"><label>Zip Code</label><input type="text" id="empZip"></div>
+                            </div>
+                            <div class="form-group"><label>Notes</label><textarea id="empNotes" rows="2"></textarea></div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeEmployeeModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Employee</button>
                             </div>
                         </form>
                     </div>
@@ -1985,6 +2062,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/email-management.js"></script>
     <script src="js/compliance.js"></script>
     <script src="js/grievances.js"></script>
+    <script src="js/employees.js"></script>
     <script src="js/meeting-room.js"></script>
     <script src="js/client-consolidation.js"></script>
     <script src="js/utils.js"></script>

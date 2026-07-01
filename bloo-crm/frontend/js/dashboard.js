@@ -38,6 +38,7 @@ function switchView(viewName) {
         leads: 'Leads',
         communications: 'Communications',
         grievance: 'Grievance & Support',
+        employees: 'Employee Information',
         pricing: 'Pricing & Payments',
         workflow: 'Workflow & Audit Log',
         'ai-insights': 'AI Insights'
@@ -67,6 +68,8 @@ function switchView(viewName) {
         initializeCompliance();
     } else if (viewName === 'grievance') {
         if (typeof loadGrievances === 'function') loadGrievances();
+    } else if (viewName === 'employees') {
+        if (typeof loadEmployees === 'function') loadEmployees();
     } else if (viewName === 'leads') {
         loadLeadsList();
     } else if (viewName === 'communications') {
