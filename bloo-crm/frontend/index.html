@@ -166,6 +166,9 @@
                 <a href="#" onclick="switchView('grievance')" class="nav-item" data-view="grievance">
                     <i class="fas fa-flag"></i> <span>Grievance</span>
                 </a>
+                <a href="#" onclick="switchView('vendors')" class="nav-item" data-view="vendors">
+                    <i class="fas fa-truck-loading"></i> <span>Vendor Dashboard</span>
+                </a>
                 <a href="#" onclick="switchView('help')" class="nav-item" data-view="help">
                     <i class="fas fa-life-ring"></i> <span>Help & Knowledge Base</span>
                 </a>
@@ -959,6 +962,100 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                     </div>
 
                     <p id="helpNoResults" class="empty-state" style="display:none;">No articles or FAQs match your search. Try different keywords, or call 1-800-CALL-BLOO-CRM.</p>
+                </div>
+
+                <!-- Vendor Dashboard View -->
+                <div id="vendors" class="view">
+                    <div class="view-header">
+                        <h3><i class="fas fa-truck-loading"></i> Vendor Dashboard</h3>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-secondary" onclick="openVendorDocModal()"><i class="fas fa-upload"></i> Upload Document</button>
+                            <button class="btn btn-primary" onclick="openVendorModal()"><i class="fas fa-plus"></i> Add Vendor</button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid" id="vendorKpis"></div>
+
+                    <!-- Per-quarter revenue pie charts -->
+                    <h4 style="margin:18px 0 8px;">Revenue by Vendor — per Quarter (from Blue Astra Technologies)</h4>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;">
+                        <div class="chart-container"><h3 style="font-size:0.95rem;">Q1</h3><canvas id="vendorPieQ1" height="180"></canvas></div>
+                        <div class="chart-container"><h3 style="font-size:0.95rem;">Q2</h3><canvas id="vendorPieQ2" height="180"></canvas></div>
+                        <div class="chart-container"><h3 style="font-size:0.95rem;">Q3</h3><canvas id="vendorPieQ3" height="180"></canvas></div>
+                        <div class="chart-container"><h3 style="font-size:0.95rem;">Q4</h3><canvas id="vendorPieQ4" height="180"></canvas></div>
+                    </div>
+
+                    <!-- KPI/KRI Performance & Risk Index -->
+                    <div class="chart-container" style="margin-top:16px;">
+                        <h3><i class="fas fa-tachometer-alt"></i> Vendor Performance (KPI) & Risk (KRI) Index</h3>
+                        <div id="vendorIndexList"></div>
+                    </div>
+
+                    <!-- Vendor list -->
+                    <div class="chart-container" style="margin-top:16px;">
+                        <h3><i class="fas fa-list"></i> Vendors</h3>
+                        <input type="text" id="vendorSearch" placeholder="Search vendors…" onkeyup="if(event.key==='Enter')loadVendorDashboard()" style="width:100%;max-width:400px;padding:9px;border:1px solid #ddd;border-radius:6px;margin-bottom:10px;">
+                        <div id="vendorList" class="activity-list"></div>
+                    </div>
+
+                    <!-- Documents -->
+                    <div class="chart-container" style="margin-top:16px;">
+                        <h3><i class="fas fa-folder-open"></i> Vendor Documents</h3>
+                        <div id="vendorDocList" class="activity-list"></div>
+                    </div>
+                </div>
+
+                <!-- Add Vendor Modal -->
+                <div id="vendorModal" class="modal">
+                    <div class="modal-content" style="max-width:640px;">
+                        <div class="modal-header"><h2 id="vendorModalTitle"><i class="fas fa-truck-loading"></i> Add Vendor</h2><button class="close-btn" onclick="closeVendorModal()">&times;</button></div>
+                        <form onsubmit="submitVendor(event)">
+                            <input type="hidden" id="vendorEditId">
+                            <div class="form-row">
+                                <div class="form-group"><label>Vendor Name <span style="color:#E74C3C;">*</span></label><input type="text" id="venName" required></div>
+                                <div class="form-group"><label>Category</label><input type="text" id="venCategory" placeholder="e.g. IT Services"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Contact Name</label><input type="text" id="venContactName"></div>
+                                <div class="form-group"><label>Contact Email</label><input type="email" id="venContactEmail"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Contact Phone</label><input type="text" id="venContactPhone"></div>
+                                <div class="form-group"><label>Status</label><select id="venStatus"><option value="active">Active</option><option value="on-hold">On Hold</option><option value="inactive">Inactive</option></select></div>
+                            </div>
+                            <hr><label style="font-weight:600;">Revenue from Blue Astra (per quarter)</label>
+                            <div class="form-row"><div class="form-group"><label>Q1</label><input type="number" id="venRevQ1" step="any"></div><div class="form-group"><label>Q2</label><input type="number" id="venRevQ2" step="any"></div></div>
+                            <div class="form-row"><div class="form-group"><label>Q3</label><input type="number" id="venRevQ3" step="any"></div><div class="form-group"><label>Q4</label><input type="number" id="venRevQ4" step="any"></div></div>
+                            <hr><label style="font-weight:600;">Performance score — KPI (0-100, per quarter)</label>
+                            <div class="form-row"><div class="form-group"><label>Q1</label><input type="number" id="venPerfQ1" min="0" max="100"></div><div class="form-group"><label>Q2</label><input type="number" id="venPerfQ2" min="0" max="100"></div></div>
+                            <div class="form-row"><div class="form-group"><label>Q3</label><input type="number" id="venPerfQ3" min="0" max="100"></div><div class="form-group"><label>Q4</label><input type="number" id="venPerfQ4" min="0" max="100"></div></div>
+                            <hr><label style="font-weight:600;">Risk index — KRI (0-100, higher = riskier, per quarter)</label>
+                            <div class="form-row"><div class="form-group"><label>Q1</label><input type="number" id="venRiskQ1" min="0" max="100"></div><div class="form-group"><label>Q2</label><input type="number" id="venRiskQ2" min="0" max="100"></div></div>
+                            <div class="form-row"><div class="form-group"><label>Q3</label><input type="number" id="venRiskQ3" min="0" max="100"></div><div class="form-group"><label>Q4</label><input type="number" id="venRiskQ4" min="0" max="100"></div></div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeVendorModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Vendor</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Upload Vendor Document Modal -->
+                <div id="vendorDocModal" class="modal">
+                    <div class="modal-content" style="max-width:520px;">
+                        <div class="modal-header"><h2><i class="fas fa-upload"></i> Upload Vendor Document</h2><button class="close-btn" onclick="closeVendorDocModal()">&times;</button></div>
+                        <form onsubmit="submitVendorDoc(event)">
+                            <div class="form-group"><label>Vendor</label><select id="docVendor"></select></div>
+                            <div class="form-group"><label>Document Type</label><select id="docType"></select></div>
+                            <div class="form-group"><label>File (PDF, Excel, Word) <span style="color:#E74C3C;">*</span></label>
+                                <input type="file" id="docFile" required accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                            </div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeVendorDocModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Upload</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- Employee Dashboard (HR hub) -->
@@ -2483,6 +2580,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/approvals.js"></script>
     <script src="js/workflow-tasks.js"></script>
     <script src="js/help.js"></script>
+    <script src="js/vendors.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="js/analytics-dashboard.js"></script>
     <script src="js/meeting-room.js"></script>

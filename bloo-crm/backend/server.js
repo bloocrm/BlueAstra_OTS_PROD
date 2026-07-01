@@ -245,6 +245,10 @@ app.use('/api/approvals', approvalRoutes);
 const workflowTaskRoutes = require('./routes/workflow-tasks');
 app.use('/api/workflow-tasks', workflowTaskRoutes);
 
+// Vendors (vendor dashboard, quarterly revenue/KPI/KRI, documents)
+const vendorRoutes = require('./routes/vendors');
+app.use('/api/vendors', vendorRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin
@@ -253,6 +257,8 @@ app.use('/api/workflow-tasks', workflowTaskRoutes);
 
 // Serve uploaded meeting recordings (browser-recorded audio) for playback
 app.use('/recordings', express.static(path.join(__dirname, 'uploads', 'recordings')));
+// Serve uploaded vendor documents
+app.use('/vendor-docs', express.static(path.join(__dirname, 'uploads', 'vendor-docs')));
 
 const frontendPath = path.join(__dirname, '..', 'frontend');
 app.use(express.static(frontendPath));
