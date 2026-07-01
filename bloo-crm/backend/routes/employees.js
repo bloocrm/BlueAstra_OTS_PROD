@@ -6,6 +6,15 @@ const express = require('express');
 const router = express.Router();
 const Employee = require('../models/Employee');
 const { verifyToken } = require('../middleware/auth');
+const { decrypt } = require('../utils/encryption');
+
+function safeDecrypt(v) {
+  if (!v) return '';
+  // Ciphertext is "ivHex:tagHex:dataHex"; if it doesn't match, it's already plaintext.
+  const looksEncrypted = /^[0-9a-f]+:[0-9a-f]+:[0-9a-f]+$/i.test(v);
+  if (!looksEncrypted) return v;
+  try { return decrypt(v); } catch (e) { return v; }
+}
 
 router.use(verifyToken);
 
@@ -75,10 +84,12 @@ router.get('/:employeeId', async (req, res) => {
 // GET /api/employees/:employeeId/pii — decrypted PII (explicit, audited access)
 router.get('/:employeeId/pii', async (req, res) => {
   try {
+    // .lean() returns a plain object with the raw ciphertext (no setter re-encryption);
+    // decrypt explicitly here.
     const e = await Employee.findOne({ userId: req.userId, employeeId: req.params.employeeId })
-      .select('+ssn +dateOfBirth +bankAccount');
+      .select('+ssn +dateOfBirth +bankAccount').lean();
     if (!e) return res.status(404).json({ error: 'Employee not found' });
-    res.json({ status: 'success', pii: { ssn: e.ssn || '', dateOfBirth: e.dateOfBirth || '', bankAccount: e.bankAccount || '' } });
+    res.json({ status: 'success', pii: { ssn: safeDecrypt(e.ssn), dateOfBirth: safeDecrypt(e.dateOfBirth), bankAccount: safeDecrypt(e.bankAccount) } });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get PII', message: error.message });
   }
