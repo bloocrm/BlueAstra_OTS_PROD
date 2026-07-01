@@ -92,57 +92,79 @@ async function deleteClient(clientId) {
     _clientsCache = _clientsCache.filter(c => c.id !== clientId);
 }
 
-// Get all leads for current user
-function getLeads() {
-    const user = getCurrentUser();
-    return user.leads || [];
+/* =====================================================
+   LEADS — persisted in MongoDB via /api/leads (cache-backed,
+   mirroring the client approach so the sync UI keeps working).
+   ===================================================== */
+
+let _leadsCache = [];
+
+function clearLeadsCache() { _leadsCache = []; }
+
+// Map a server Lead doc into the flat shape the UI expects
+function mapServerLead(doc) {
+    const custom = doc.customFields || {};
+    return {
+        ...custom,
+        _id: doc._id,
+        id: doc._id,
+        name: doc.name,
+        email: doc.email,
+        phone: doc.phone,
+        company: doc.company,
+        status: doc.status,
+        source: doc.source,
+        notes: doc.notes,
+        createdAt: doc.createdAt,
+        lastModified: doc.updatedAt
+    };
 }
 
-// Add lead
-function addLead(leadData) {
-    const user = getCurrentUser();
-    
-    const lead = {
-        id: Date.now().toString(),
-        ...leadData,
-        createdAt: new Date().toISOString(),
-        lastModified: new Date().toISOString()
+// Build the payload: core fields top-level, extras in customFields
+function buildLeadPayload(data) {
+    const { name, email, phone, company, status, source, notes, _id, id, createdAt, lastModified, ...rest } = data;
+    return {
+        name, email, phone, company,
+        status: status || 'new',
+        source, notes,
+        customFields: rest
     };
-    
-    if (!user.leads) {
-        user.leads = [];
-    }
-    
-    user.leads.push(lead);
-    saveCurrentUser(user);
-    
+}
+
+// Synchronous accessor used throughout the UI — returns the cached list
+function getLeads() { return _leadsCache; }
+
+// Load this user's leads from MongoDB into the cache
+async function loadLeadsFromServer() {
+    const result = await apiRequest('/leads?page=1&limit=1000', { method: 'GET' });
+    const list = Array.isArray(result.data) ? result.data : [];
+    _leadsCache = list.map(mapServerLead);
+    return _leadsCache;
+}
+
+// Create a lead in MongoDB
+async function addLead(leadData) {
+    const result = await apiRequest('/leads', { method: 'POST', body: buildLeadPayload(leadData) });
+    const lead = mapServerLead(result.data);
+    _leadsCache.unshift(lead);
     return lead;
 }
 
-// Update lead
-function updateLead(leadId, leadData) {
-    const user = getCurrentUser();
-    
-    const leadIndex = user.leads.findIndex(l => l.id === leadId);
-    if (leadIndex !== -1) {
-        user.leads[leadIndex] = {
-            ...user.leads[leadIndex],
-            ...leadData,
-            lastModified: new Date().toISOString()
-        };
-        saveCurrentUser(user);
-        return user.leads[leadIndex];
-    }
-    
-    return null;
+// Update a lead in MongoDB (merge with cached record for partial updates)
+async function updateLead(leadId, leadData) {
+    const existing = _leadsCache.find(l => l.id === leadId) || {};
+    const merged = { ...existing, ...leadData };
+    const result = await apiRequest(`/leads/${leadId}`, { method: 'PUT', body: buildLeadPayload(merged) });
+    const lead = mapServerLead(result.data);
+    const idx = _leadsCache.findIndex(l => l.id === leadId);
+    if (idx !== -1) _leadsCache[idx] = lead; else _leadsCache.push(lead);
+    return lead;
 }
 
-// Delete lead
-function deleteLead(leadId) {
-    const user = getCurrentUser();
-    
-    user.leads = user.leads.filter(l => l.id !== leadId);
-    saveCurrentUser(user);
+// Soft-delete a lead in MongoDB
+async function deleteLead(leadId) {
+    await apiRequest(`/leads/${leadId}`, { method: 'DELETE' });
+    _leadsCache = _leadsCache.filter(l => l.id !== leadId);
 }
 
 // Get all communications

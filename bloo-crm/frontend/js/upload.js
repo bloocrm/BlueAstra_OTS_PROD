@@ -208,7 +208,7 @@ async function processImportedData(data, type, statusDiv, fileInput) {
         } else if (type === 'lead') {
             validation = validateLeadData(data);
             if (validation.valid) {
-                importedCount = importLeadData(data);
+                importedCount = await importLeadData(data);
                 skippedCount = data.length - importedCount;
             }
         }
@@ -410,21 +410,16 @@ async function importClientData(data) {
 }
 
 // Import lead data
-function importLeadData(data) {
+async function importLeadData(data) {
     const existingLeads = getLeads();
     let importedCount = 0;
 
-    data.forEach(row => {
-        // Check for duplicates
+    for (const row of data) {
         const isDuplicate = existingLeads.some(lead =>
-            lead.email.toLowerCase() === row.email.toLowerCase()
+            (lead.email || '').toLowerCase() === (row.email || '').toLowerCase()
         );
+        if (isDuplicate) continue;
 
-        if (isDuplicate) {
-            return; // Skip duplicate
-        }
-
-        // Create lead object
         const leadData = {
             name: row.name || '',
             email: row.email || '',
@@ -435,10 +430,14 @@ function importLeadData(data) {
             notes: row.notes || ''
         };
 
-        addLead(leadData);
-        logWorkflowActivity('bulk_import', `Lead imported: ${leadData.name}`);
-        importedCount++;
-    });
+        try {
+            await addLead(leadData);
+            logWorkflowActivity('bulk_import', `Lead imported: ${leadData.name}`);
+            importedCount++;
+        } catch (error) {
+            console.error('Bulk lead import failed for', leadData.email, error);
+        }
+    }
 
     return importedCount;
 }

@@ -18,7 +18,7 @@ async function loadAnalyticsDashboard() {
         return;
     }
     renderKpis(data.kpis || {});
-    renderConversionDonut(data.clientFunnel || {}, data.kpis || {});
+    renderConversionDonut(data.leadFunnel || {}, data.kpis || {});
     renderActivityBar(data.meetingsByMonth || {});
     renderScatter(data.meetingScatter || []);
     renderEmployeeDonut(data.employeesByStatus || {});
@@ -46,10 +46,10 @@ function renderConversionDonut(funnel, k) {
     window.__charts.conversion = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Converted (Active)', 'Prospects', 'Inactive', 'Archived'],
+            labels: ['Converted', 'Negotiating', 'Interested', 'Qualified', 'New', 'Lost'],
             datasets: [{
-                data: [funnel.active || 0, funnel.prospect || 0, funnel.inactive || 0, funnel.archived || 0],
-                backgroundColor: ['#2ecc71', '#2d6cdf', '#f39c12', '#95a5a6'],
+                data: [funnel.converted || 0, funnel.negotiating || 0, funnel.interested || 0, funnel.qualified || 0, funnel.new || 0, funnel.lost || 0],
+                backgroundColor: ['#2ecc71', '#8e44ad', '#2d6cdf', '#00bcd4', '#f39c12', '#e74c3c'],
                 borderWidth: 2, borderColor: '#fff'
             }]
         },
@@ -58,7 +58,7 @@ function renderConversionDonut(funnel, k) {
             plugins: {
                 legend: { position: 'bottom' },
                 tooltip: { callbacks: { label: c => `${c.label}: ${c.parsed}` } },
-                title: { display: true, text: `${k.conversionRate || 0}% converted` }
+                title: { display: true, text: `${k.conversionRate || 0}% of leads converted` }
             }
         }
     });

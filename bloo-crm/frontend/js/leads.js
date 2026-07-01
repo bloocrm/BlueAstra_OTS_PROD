@@ -3,9 +3,9 @@
    ===================================================== */
 
 // Handle add lead form submission
-function handleAddLead(event) {
+async function handleAddLead(event) {
     event.preventDefault();
-    
+
     const leadData = {
         name: document.getElementById('leadName').value,
         email: document.getElementById('leadEmail').value,
@@ -15,22 +15,18 @@ function handleAddLead(event) {
         source: document.getElementById('leadSource').value,
         notes: document.getElementById('leadNotes').value
     };
-    
-    // Add lead to storage
-    const lead = addLead(leadData);
-    
-    // Log workflow activity
-    logWorkflowActivity('lead_added', `New lead added: ${leadData.name} - Status: ${leadData.status}`);
-    
-    // Show success message
-    showNotification(`Lead ${leadData.name} added successfully!`, 'success');
-    
-    // Close modal and reload leads
-    closeModal('addLeadModal');
-    loadLeadsList();
-    
-    // Update dashboard stats
-    loadDashboardStats();
+
+    try {
+        // Add lead to MongoDB
+        await addLead(leadData);
+        logWorkflowActivity('lead_added', `New lead added: ${leadData.name} - Status: ${leadData.status}`);
+        showNotification(`Lead ${leadData.name} added successfully!`, 'success');
+        closeModal('addLeadModal');
+        loadLeadsList();
+        loadDashboardStats();
+    } catch (error) {
+        showNotification(error.message || 'Failed to add lead', 'error');
+    }
 }
 
 // Load leads list
@@ -193,9 +189,9 @@ function editLead(leadId) {
     const newForm = form.cloneNode(true);
     form.parentNode.replaceChild(newForm, form);
     
-    newForm.onsubmit = (event) => {
+    newForm.onsubmit = async (event) => {
         event.preventDefault();
-        
+
         const oldStatus = lead.status;
         const leadData = {
             name: document.getElementById('leadName').value,
@@ -207,8 +203,13 @@ function editLead(leadId) {
             notes: document.getElementById('leadNotes').value
         };
         
-        updateLead(leadId, leadData);
-        
+        try {
+            await updateLead(leadId, leadData);
+        } catch (error) {
+            showNotification(error.message || 'Failed to update lead', 'error');
+            return;
+        }
+
         // Log if status changed
         if (oldStatus !== leadData.status) {
             logWorkflowActivity('lead_status_changed', 
@@ -251,19 +252,22 @@ function editLead(leadId) {
 }
 
 // Delete lead with confirmation
-function deleteLeadConfirm(leadId) {
+async function deleteLeadConfirm(leadId) {
     const leads = getLeads();
     const lead = leads.find(l => l.id === leadId);
-    
+
     if (!lead) return;
-    
+
     if (confirm(`Are you sure you want to delete ${lead.name}?`)) {
-        deleteLead(leadId);
-        logWorkflowActivity('lead_deleted', `Lead deleted: ${lead.name}`);
-        
-        showNotification(`${lead.name} deleted!`, 'success');
-        loadLeadsList();
-        loadDashboardStats();
+        try {
+            await deleteLead(leadId);
+            logWorkflowActivity('lead_deleted', `Lead deleted: ${lead.name}`);
+            showNotification(`${lead.name} deleted!`, 'success');
+            loadLeadsList();
+            loadDashboardStats();
+        } catch (error) {
+            showNotification(error.message || 'Failed to delete lead', 'error');
+        }
     }
 }
 

@@ -6,6 +6,7 @@ const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/auth');
 const Client = require('../models/Client');
+const Lead = require('../models/Lead');
 const Meeting = require('../models/Meeting');
 const Employee = require('../models/Employee');
 const Policy = require('../models/Policy');
@@ -17,20 +18,27 @@ router.get('/dashboard', async (req, res) => {
   try {
     const uid = req.userId;
 
-    const [clients, meetings, employees, policies, grievances] = await Promise.all([
+    const [clients, leads, meetings, employees, policies, grievances] = await Promise.all([
       Client.find({ userId: uid, deletedAt: null }).select('status createdAt name').lean(),
+      Lead.find({ userId: uid, deletedAt: null }).select('status createdAt name').lean(),
       Meeting.find({ userId: uid }).select('startTime durationMinutes status title clientName').sort({ startTime: -1 }).limit(200).lean(),
       Employee.find({ userId: uid }).select('name status department').lean(),
       Policy.find({ userId: uid }).select('title category status version lastPublishedAt updatedAt').sort({ updatedAt: -1 }).limit(10).lean(),
       Grievance.find({ userId: uid }).select('grievanceId name problemType section status createdAt').sort({ createdAt: -1 }).lean()
     ]);
 
-    // --- Client / conversion funnel (donut) ---
-    const clientByStatus = { active: 0, prospect: 0, inactive: 0, archived: 0 };
-    clients.forEach(c => { clientByStatus[c.status] = (clientByStatus[c.status] || 0) + 1; });
-    const converted = clientByStatus.active || 0;
+    // --- Lead → client conversion funnel (donut) ---
+    // Real leads by status; "converted" leads + existing clients drive the KPI.
+    const leadByStatus = { new: 0, qualified: 0, interested: 0, negotiating: 0, converted: 0, lost: 0 };
+    leads.forEach(l => { leadByStatus[l.status] = (leadByStatus[l.status] || 0) + 1; });
+    const totalLeads = leads.length;
+    const convertedLeads = leadByStatus.converted || 0;
     const totalClients = clients.length;
-    const conversionRate = totalClients ? Math.round((converted / totalClients) * 100) : 0;
+    // Conversion rate = converted / (all leads ever). If no leads, fall back to clients present.
+    const conversionRate = totalLeads
+      ? Math.round((convertedLeads / totalLeads) * 100)
+      : (totalClients ? 100 : 0);
+    const openOpportunities = leadByStatus.qualified + leadByStatus.interested + leadByStatus.negotiating;
 
     // --- Meetings over time (bar) + scatter points ---
     const meetingsByMonth = {};
@@ -65,15 +73,16 @@ router.get('/dashboard', async (req, res) => {
       status: 'success',
       kpis: {
         totalClients,
-        converted,
+        totalLeads,
+        converted: convertedLeads,
         conversionRate,
-        prospects: clientByStatus.prospect || 0,
+        prospects: openOpportunities,
         totalMeetings: meetings.length,
         totalEmployees: employees.length,
         openGrievances: pending.length,
         publishedPolicies: policies.filter(p => p.status === 'published').length
       },
-      clientFunnel: clientByStatus,
+      leadFunnel: leadByStatus,
       meetingsByMonth,
       meetingScatter,
       employeesByStatus: empByStatus,

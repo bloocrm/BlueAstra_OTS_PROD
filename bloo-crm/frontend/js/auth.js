@@ -139,13 +139,16 @@ async function showDashboard() {
     // Load user data
     loadUserData();
 
-    // Pull this user's clients from MongoDB into the in-memory cache
+    // Pull this user's clients + leads from MongoDB into the in-memory cache
     if (typeof loadClientsFromServer === 'function') {
         try {
             await loadClientsFromServer();
         } catch (error) {
             showNotification(error.message || 'Failed to load clients from server', 'error');
         }
+    }
+    if (typeof loadLeadsFromServer === 'function') {
+        try { await loadLeadsFromServer(); } catch (error) { console.warn('Failed to load leads:', error.message); }
     }
 
     // Load the dashboard analytics/charts
@@ -173,6 +176,7 @@ function handleLogout() {
         localStorage.removeItem('authToken');
         localStorage.removeItem('currentUser');
         if (typeof clearClientsCache === 'function') clearClientsCache();
+        if (typeof clearLeadsCache === 'function') clearLeadsCache();
         location.reload();
     }
 }
