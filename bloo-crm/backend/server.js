@@ -208,6 +208,10 @@ app.use('/api/grievances', grievanceRoutes);
 const employeeRoutes = require('./routes/employees');
 app.use('/api/employees', employeeRoutes);
 
+// Policies (create/update + publish to all employees)
+const policyRoutes = require('./routes/policies');
+app.use('/api/policies', policyRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin

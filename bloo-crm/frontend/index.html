@@ -162,6 +162,9 @@
                 <a href="#" onclick="switchView('employees')" class="nav-item" data-view="employees">
                     <i class="fas fa-id-badge"></i> <span>Employees</span>
                 </a>
+                <a href="#" onclick="switchView('policies')" class="nav-item" data-view="policies">
+                    <i class="fas fa-book"></i> <span>Policies</span>
+                </a>
                 <a href="#" onclick="switchView('pricing')" class="nav-item" data-view="pricing">
                     <i class="fas fa-dollar-sign"></i> <span>Pricing & Payments</span>
                 </a>
@@ -935,6 +938,50 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             <div class="modal-actions">
                                 <button type="button" class="btn btn-secondary" onclick="closeEmployeeModal()">Cancel</button>
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Employee</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Company Policies View -->
+                <div id="policies" class="view">
+                    <div class="view-header">
+                        <h3><i class="fas fa-book"></i> Company Policies</h3>
+                        <button type="button" class="btn btn-primary" onclick="openPolicyModal()">
+                            <i class="fas fa-plus"></i> Create Policy
+                        </button>
+                    </div>
+                    <div style="margin:12px 0;">
+                        <input type="text" id="policySearch" placeholder="Search policies…"
+                               style="width:100%;max-width:440px;padding:10px;border:1px solid #ddd;border-radius:6px;"
+                               onkeyup="if(event.key==='Enter')loadPolicies()">
+                    </div>
+                    <div id="policyList" class="activity-list">
+                        <p class="empty-state">No policies yet. Click "Create Policy" to add one.</p>
+                    </div>
+                </div>
+
+                <!-- Create/Edit Policy Modal -->
+                <div id="policyModal" class="modal">
+                    <div class="modal-content" style="max-width:600px;">
+                        <div class="modal-header">
+                            <h2 id="policyModalTitle"><i class="fas fa-book"></i> Create Policy</h2>
+                            <button class="close-btn" onclick="closePolicyModal()">&times;</button>
+                        </div>
+                        <form onsubmit="submitPolicy(event)">
+                            <input type="hidden" id="policyEditId">
+                            <div class="form-group"><label>Title <span style="color:#E74C3C;">*</span></label><input type="text" id="policyTitle" required></div>
+                            <div class="form-group"><label>Category</label>
+                                <select id="policyCategory">
+                                    <option value="">Select…</option>
+                                    <option>HR</option><option>Compliance</option><option>Security</option>
+                                    <option>Leave</option><option>Code of Conduct</option><option>Benefits</option><option>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Policy Content</label><textarea id="policyContent" rows="8" placeholder="Write the policy text…"></textarea></div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closePolicyModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
                             </div>
                         </form>
                     </div>
@@ -2063,6 +2110,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/compliance.js"></script>
     <script src="js/grievances.js"></script>
     <script src="js/employees.js"></script>
+    <script src="js/policies.js"></script>
     <script src="js/meeting-room.js"></script>
     <script src="js/client-consolidation.js"></script>
     <script src="js/utils.js"></script>
