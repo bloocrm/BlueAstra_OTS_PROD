@@ -159,6 +159,9 @@
                 <a href="#" onclick="switchView('grievance')" class="nav-item" data-view="grievance">
                     <i class="fas fa-flag"></i> <span>Grievance</span>
                 </a>
+                <a href="#" onclick="switchView('help')" class="nav-item" data-view="help">
+                    <i class="fas fa-life-ring"></i> <span>Help & Knowledge Base</span>
+                </a>
                 <a href="#" onclick="switchView('hr')" class="nav-item" data-view="hr">
                     <i class="fas fa-users-cog"></i> <span>Employee Dashboard</span>
                 </a>
@@ -914,6 +917,41 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             </div>
                         </form>
                     </div>
+                </div>
+
+                <!-- Help & Knowledge Base View -->
+                <div id="help" class="view">
+                    <div class="view-header"><h3><i class="fas fa-life-ring"></i> Help & Knowledge Base</h3></div>
+
+                    <!-- Customer Care banner -->
+                    <div class="chart-container" style="background:linear-gradient(135deg,#cc0000,#8e0000);color:#fff;margin-bottom:16px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                            <div>
+                                <h3 style="color:#fff;margin:0;"><i class="fas fa-headset"></i> Need to talk to us?</h3>
+                                <p style="margin:6px 0 0;">Our Customer Care team is here to help.</p>
+                            </div>
+                            <a href="tel:18002255266" class="btn" style="background:#fff;color:#cc0000;font-weight:700;font-size:1.05rem;">
+                                <i class="fas fa-phone"></i> 1-800-CALL-BLOO-CRM
+                            </a>
+                        </div>
+                    </div>
+
+                    <div style="margin:12px 0;">
+                        <input type="text" id="helpSearch" placeholder="🔍 Search articles & FAQs…" onkeyup="filterHelp()"
+                               style="width:100%;max-width:520px;padding:12px;border:1px solid #ddd;border-radius:6px;">
+                    </div>
+
+                    <div class="chart-container" style="margin-bottom:16px;">
+                        <h3><i class="fas fa-book-open"></i> Knowledge Articles — Troubleshooting</h3>
+                        <div id="helpArticles"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3><i class="fas fa-question-circle"></i> Frequently Asked Questions</h3>
+                        <div id="helpFaqs"></div>
+                    </div>
+
+                    <p id="helpNoResults" class="empty-state" style="display:none;">No articles or FAQs match your search. Try different keywords, or call 1-800-CALL-BLOO-CRM.</p>
                 </div>
 
                 <!-- Employee Dashboard (HR hub) -->
@@ -2432,6 +2470,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/onboarding.js"></script>
     <script src="js/approvals.js"></script>
     <script src="js/workflow-tasks.js"></script>
+    <script src="js/help.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="js/analytics-dashboard.js"></script>
     <script src="js/meeting-room.js"></script>

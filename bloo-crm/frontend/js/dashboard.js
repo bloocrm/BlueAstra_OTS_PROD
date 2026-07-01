@@ -38,6 +38,7 @@ function switchView(viewName) {
         leads: 'Leads',
         communications: 'Communications',
         grievance: 'Grievance & Support',
+        help: 'Help & Knowledge Base',
         hr: 'Employee Dashboard',
         employees: 'Employee Information',
         policies: 'Company Policies',
@@ -75,6 +76,8 @@ function switchView(viewName) {
         initializeCompliance();
     } else if (viewName === 'grievance') {
         if (typeof loadGrievances === 'function') loadGrievances();
+    } else if (viewName === 'help') {
+        if (typeof loadHelp === 'function') loadHelp();
     } else if (viewName === 'employees') {
         if (typeof loadEmployees === 'function') loadEmployees();
     } else if (viewName === 'policies') {
