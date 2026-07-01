@@ -257,13 +257,13 @@
 
                     <!-- Charts row 1: conversion donut + employee status donut -->
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
-                        <div class="chart-container"><h3><i class="fas fa-chart-pie"></i> Lead → Client Conversion</h3><canvas id="chartConversion" height="220"></canvas></div>
-                        <div class="chart-container"><h3><i class="fas fa-users"></i> Employees by Status</h3><canvas id="chartEmployees" height="220"></canvas></div>
+                        <div class="chart-container"><h3 style="font-size:0.95rem;"><i class="fas fa-chart-pie"></i> Lead → Client Conversion</h3><div style="height:200px;position:relative;"><canvas id="chartConversion"></canvas></div></div>
+                        <div class="chart-container"><h3 style="font-size:0.95rem;"><i class="fas fa-users"></i> Employees by Status</h3><div style="height:200px;position:relative;"><canvas id="chartEmployees"></canvas></div></div>
                     </div>
 
                     <!-- Charts row 2: scatter (calendar meeting metrics) -->
                     <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;">
-                        <div class="chart-container"><h3><i class="fas fa-braille"></i> Calendar Meeting Metrics (duration vs date)</h3><canvas id="chartScatter" height="200"></canvas></div>
+                        <div class="chart-container"><h3 style="font-size:0.95rem;"><i class="fas fa-braille"></i> Calendar Meeting Metrics (duration vs date)</h3><div style="height:200px;position:relative;"><canvas id="chartScatter"></canvas></div></div>
                     </div>
 
                     <!-- Lists row: defaulters + pending + news -->
@@ -977,12 +977,12 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                     <div class="dashboard-grid" id="vendorKpis"></div>
 
                     <!-- Per-quarter revenue pie charts -->
-                    <h4 style="margin:18px 0 8px;">Revenue by Vendor — per Quarter (from Blue Astra Technologies)</h4>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;">
-                        <div class="chart-container"><h3 style="font-size:0.95rem;">Q1</h3><canvas id="vendorPieQ1" height="180"></canvas></div>
-                        <div class="chart-container"><h3 style="font-size:0.95rem;">Q2</h3><canvas id="vendorPieQ2" height="180"></canvas></div>
-                        <div class="chart-container"><h3 style="font-size:0.95rem;">Q3</h3><canvas id="vendorPieQ3" height="180"></canvas></div>
-                        <div class="chart-container"><h3 style="font-size:0.95rem;">Q4</h3><canvas id="vendorPieQ4" height="180"></canvas></div>
+                    <h4 style="margin:14px 0 6px;">Revenue by Vendor — per Quarter (from Blue Astra Technologies)</h4>
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+                        <div class="chart-container" style="padding:10px;"><h3 style="font-size:0.85rem;margin:0 0 4px;">Q1</h3><div style="height:140px;position:relative;"><canvas id="vendorPieQ1"></canvas></div></div>
+                        <div class="chart-container" style="padding:10px;"><h3 style="font-size:0.85rem;margin:0 0 4px;">Q2</h3><div style="height:140px;position:relative;"><canvas id="vendorPieQ2"></canvas></div></div>
+                        <div class="chart-container" style="padding:10px;"><h3 style="font-size:0.85rem;margin:0 0 4px;">Q3</h3><div style="height:140px;position:relative;"><canvas id="vendorPieQ3"></canvas></div></div>
+                        <div class="chart-container" style="padding:10px;"><h3 style="font-size:0.85rem;margin:0 0 4px;">Q4</h3><div style="height:140px;position:relative;"><canvas id="vendorPieQ4"></canvas></div></div>
                     </div>
 
                     <!-- KPI/KRI Performance & Risk Index -->
