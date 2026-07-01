@@ -149,15 +149,22 @@ class EmailClient {
 
         this.populateAccountDropdown();
 
-        if (this.connections.length > 0) {
-            const sel = document.getElementById('accountSelect');
-            if (sel) sel.value = this.connections[0].id;
-            this.switchAccount(this.connections[0].id);
-        } else {
-            const emailList = document.getElementById('emailList');
-            if (emailList) {
-                emailList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔌</div><div class="empty-state-text">No email account connected. Click the + button to connect Outlook or Gmail.</div></div>';
-            }
+        // Pick the provider to show. Prefer a live OAuth connection; otherwise fall
+        // back to whichever provider has stored emails (default outlook), so
+        // previously-downloaded emails ALWAYS show on page load — even if the OAuth
+        // session has expired. They persist in MongoDB until the user deletes them.
+        const sel = document.getElementById('accountSelect');
+        const connected = this.connections[0];
+        const provider = connected ? connected.id : (sel ? sel.value : 'outlook') || 'outlook';
+        if (sel) sel.value = provider;
+
+        // Show stored emails from MongoDB immediately
+        this.currentAccount = connected || { id: provider, provider, email: provider, sso: null };
+        await this.loadEmails();
+
+        // If the account is actually connected, refresh from the provider in the background
+        if (connected && connected.sso) {
+            this.syncEmails();
         }
     }
 
@@ -192,21 +199,20 @@ class EmailClient {
         }
     }
 
-    switchAccount(providerId) {
+    async switchAccount(providerId) {
         const conn = this.connections.find(c => c.id === providerId);
-        if (conn) {
-            this.currentAccount = conn;
-            // Download from the provider into MongoDB, then display from MongoDB
+        // Always display stored emails from MongoDB for the selected provider first
+        this.currentAccount = conn || { id: providerId, provider: providerId, email: providerId, sso: null };
+        await this.loadEmails();
+        // If connected, refresh from the provider in the background; if not, offer to connect
+        if (conn && conn.sso) {
             this.syncEmails();
-        } else {
-            // Selected provider isn't connected yet — start the OAuth connect
-            this.currentAccount = null;
+        } else if (this.emails.size === 0) {
             const name = providerId === 'gmail' ? 'Gmail' : 'Microsoft Outlook';
             const emailList = document.getElementById('emailList');
             if (emailList) {
-                emailList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔌</div><div class="empty-state-text">${name} isn't connected — redirecting to sign in…</div></div>`;
+                emailList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔌</div><div class="empty-state-text">${name} isn't connected and has no stored emails. Click the + button to connect.</div></div>`;
             }
-            if (typeof this.connectProvider === 'function') this.connectProvider(providerId);
         }
     }
 
