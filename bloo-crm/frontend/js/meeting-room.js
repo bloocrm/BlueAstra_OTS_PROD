@@ -342,7 +342,7 @@ async function handleStartMeeting(event) {
             loadRecentMeetings();
             await saveMeetingToCalendar(meeting);
             await saveMeetingRecord(meeting);
-            if (meeting.meetingId) startLiveTranscription(meeting.meetingId);
+            if (meeting.meetingId) startMeetingRecording(meeting.meetingId);
             renderMeetingsCalendar();
         }, 1000);
     }, 1500);
@@ -663,8 +663,8 @@ async function renderMeetingsCalendar() {
 }
 
 // End meeting
-function endMeeting(meetingId) {
-    if (!confirm('End this meeting and generate AI minutes/summary?')) {
+async function endMeeting(meetingId) {
+    if (!confirm('End this meeting and process the recording/transcript?')) {
         return;
     }
 
@@ -672,14 +672,17 @@ function endMeeting(meetingId) {
     const meeting = user.meetings?.find(m => m.id === meetingId);
 
     if (meeting) {
-        // Stop live transcription and persist it to the MongoDB meeting record
-        const trans = stopLiveTranscription();
+        // Stop the browser recording; upload it so the backend stores it + runs Whisper
+        const rec = await stopMeetingRecording();
         if (meeting.meetingId) {
-            meetingApi('/meetings/end', {
-                method: 'POST',
-                body: { meetingId: meeting.meetingId, transcript: trans.transcript, durationMinutes: trans.durationMinutes }
-            }).then(() => showNotification('Meeting ended — transcript saved to MongoDB.', 'success'))
-              .catch(e => console.warn('Failed to save transcript:', e.message));
+            if (rec && rec.blob && rec.blob.size) {
+                uploadMeetingRecording(meeting.meetingId, rec.blob, rec.durationMinutes);
+            } else {
+                meetingApi('/meetings/end', {
+                    method: 'POST',
+                    body: { meetingId: meeting.meetingId, durationMinutes: rec ? rec.durationMinutes : undefined }
+                }).catch(e => console.warn('Failed to end meeting:', e.message));
+            }
         }
 
         meeting.status = 'completed';
@@ -1443,4 +1446,71 @@ function stopLiveTranscription() {
     const result = { meetingId: s.meetingId, transcript: s.buffer || '', durationMinutes };
     window.__activeTranscription = null;
     return result;
+}
+
+// Record the meeting TAB's audio (all participants) if the user shares it, else the
+// local mic. On End Meeting the audio is uploaded and transcribed with Whisper.
+async function startMeetingRecording(meetingId) {
+    let stream = null;
+    // Prefer tab/screen audio — captures ALL speakers (real multi-speaker)
+    try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            const display = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            display.getVideoTracks().forEach(t => t.stop()); // only audio is needed
+            const audio = display.getAudioTracks();
+            if (audio.length) stream = new MediaStream(audio);
+            else display.getTracks().forEach(t => t.stop());
+        }
+    } catch (e) { /* denied / no tab audio → fall back to mic */ }
+    if (!stream) {
+        try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) {}
+    }
+    if (!stream || typeof MediaRecorder === 'undefined') {
+        showNotification('Recording unavailable (permission denied or unsupported).', 'info');
+        window.__meetingRecording = { meetingId, chunks: [], recorder: null, stream: null, startTime: Date.now() };
+        return;
+    }
+    const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+    const recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    recorder.start(2000);
+    window.__meetingRecording = { meetingId, recorder, chunks, stream, startTime: Date.now() };
+    showNotification('🔴 Recording started (for transcription).', 'info');
+}
+
+function stopMeetingRecording() {
+    return new Promise((resolve) => {
+        const r = window.__meetingRecording;
+        window.__meetingRecording = null;
+        if (!r) { resolve(null); return; }
+        const durationMinutes = Math.max(1, Math.round((Date.now() - r.startTime) / 60000));
+        if (!r.recorder) { resolve({ meetingId: r.meetingId, blob: null, durationMinutes }); return; }
+        r.recorder.onstop = () => {
+            try { r.stream.getTracks().forEach(t => t.stop()); } catch (_) {}
+            const blob = new Blob(r.chunks, { type: (r.chunks[0] && r.chunks[0].type) || 'audio/webm' });
+            resolve({ meetingId: r.meetingId, blob, durationMinutes });
+        };
+        try { r.recorder.stop(); } catch (_) { resolve({ meetingId: r.meetingId, blob: null, durationMinutes }); }
+    });
+}
+
+async function uploadMeetingRecording(meetingId, blob, durationMinutes) {
+    try {
+        showNotification('⏳ Uploading recording & transcribing…', 'info');
+        const token = localStorage.getItem('authToken');
+        const form = new FormData();
+        form.append('recording', blob, `${meetingId}.webm`);
+        if (durationMinutes) form.append('durationMinutes', String(durationMinutes));
+        const resp = await fetch(`${window.API_BASE_URL || '/api'}/meetings/${meetingId}/recording`, {
+            method: 'POST',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            body: form
+        });
+        const d = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(d.message || d.error || 'upload failed');
+        showNotification(`✅ Recording saved${d.transcriptLength ? ' & transcribed' : ''}.`, 'success');
+    } catch (e) {
+        showNotification(`Recording upload failed: ${e.message}`, 'error');
+    }
 }

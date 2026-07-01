@@ -13,6 +13,9 @@ keypair.pem
 # ===== Dependencies =====
 node_modules/
 
+# ===== Uploaded meeting recordings =====
+uploads/
+
 # ===== Logs =====
 *.log
 logs/

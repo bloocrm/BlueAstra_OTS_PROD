@@ -6,9 +6,16 @@
 
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 const Meeting = require('../models/Meeting');
 const { verifyToken } = require('../middleware/auth');
-const { transcribeUrl } = require('../services/transcription-service');
+const { transcribeUrl, transcribeFile } = require('../services/transcription-service');
+
+const RECORDINGS_DIR = path.join(__dirname, '..', 'uploads', 'recordings');
+fs.mkdirSync(RECORDINGS_DIR, { recursive: true });
+const recordingUpload = multer({ dest: RECORDINGS_DIR, limits: { fileSize: 300 * 1024 * 1024 } });
 
 router.use(verifyToken);
 
@@ -168,6 +175,50 @@ router.get('/:id/recording', async (req, res) => {
   if (!m) return res.status(404).json({ error: 'Meeting not found' });
   if (!m.recordingUrl) return res.status(404).json({ error: 'No recording available for this meeting' });
   res.json({ status: 'success', meetingId: m.meetingId, recordingUrl: m.recordingUrl });
+});
+
+// --- UPLOAD a browser recording -> store + transcribe (no JaaS needed) -----
+router.post('/:id/recording', recordingUpload.single('recording'), async (req, res) => {
+  let tmpPath;
+  try {
+    const m = await findOwned(req.userId, req.params.id);
+    if (!m) return res.status(404).json({ error: 'Meeting not found' });
+    if (!req.file) return res.status(400).json({ error: 'No recording uploaded' });
+
+    tmpPath = req.file.path;
+    const ext = (req.file.mimetype && req.file.mimetype.includes('mp4')) ? 'mp4' : 'webm';
+    const finalName = `${m.meetingId}-${Date.now()}.${ext}`;
+    const finalPath = path.join(RECORDINGS_DIR, finalName);
+    fs.renameSync(tmpPath, finalPath);
+    tmpPath = finalPath;
+
+    m.recordingUrl = `/recordings/${finalName}`;
+    if (req.body && req.body.durationMinutes) m.durationMinutes = parseInt(req.body.durationMinutes) || m.durationMinutes;
+    m.status = 'ended';
+    m.endTime = new Date();
+    await m.save();
+
+    // Transcribe with Whisper (best-effort — recording is saved regardless)
+    try {
+      const transcript = await transcribeFile(finalPath);
+      m.transcript = transcript;
+      m.summary = summarize(transcript);
+      await m.save();
+    } catch (e) {
+      console.error('Recording transcription failed:', e.message);
+    }
+
+    res.json({
+      status: 'success',
+      meetingId: m.meetingId,
+      recordingUrl: m.recordingUrl,
+      transcriptLength: (m.transcript || '').length
+    });
+  } catch (error) {
+    if (tmpPath) { try { fs.unlinkSync(tmpPath); } catch (_) {} }
+    console.error('Recording upload error:', error);
+    res.status(500).json({ error: 'Failed to process recording', message: error.message });
+  }
 });
 
 // --- TRANSCRIBE a recording with Whisper (manual / on-demand) -------------

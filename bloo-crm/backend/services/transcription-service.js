@@ -46,23 +46,21 @@ async function whisper(filePath) {
   return (await resp.text()).trim();
 }
 
-// Download a recording URL, extract audio, transcribe (multi-speaker audio → text)
-async function transcribeUrl(url) {
+// Transcribe a local media file (audio or video): extract mono audio, chunk if
+// large, run Whisper. Captures every speaker present in the file.
+async function transcribeFile(inputPath) {
   const tmp = os.tmpdir();
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const input = path.join(tmp, `rec-${id}`);
   const audio = path.join(tmp, `aud-${id}.mp3`);
-  const cleanup = [input, audio];
+  const cleanup = [audio];
   try {
-    await downloadTo(url, input);
-    // mono 16kHz 48kbps mp3 — captures every speaker's audio, tiny file
-    await run('ffmpeg', ['-y', '-i', input, '-ac', '1', '-ar', '16000', '-b:a', '48k', audio]);
+    await run('ffmpeg', ['-y', '-i', inputPath, '-ac', '1', '-ar', '16000', '-b:a', '48k', audio]);
 
     if (fs.statSync(audio).size <= MAX_BYTES) {
       return await whisper(audio);
     }
 
-    // Long meeting — split into 20-minute chunks and transcribe each
+    // Long recording — split into 20-minute chunks and transcribe each
     const pattern = path.join(tmp, `chunk-${id}-%03d.mp3`);
     await run('ffmpeg', ['-y', '-i', audio, '-f', 'segment', '-segment_time', '1200', '-c', 'copy', pattern]);
     const chunks = fs.readdirSync(tmp).filter(f => f.startsWith(`chunk-${id}-`)).sort();
@@ -78,4 +76,16 @@ async function transcribeUrl(url) {
   }
 }
 
-module.exports = { transcribeUrl, whisper };
+// Download a recording URL and transcribe it
+async function transcribeUrl(url) {
+  const tmp = os.tmpdir();
+  const input = path.join(tmp, `rec-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`);
+  try {
+    await downloadTo(url, input);
+    return await transcribeFile(input);
+  } finally {
+    try { fs.unlinkSync(input); } catch (_) {}
+  }
+}
+
+module.exports = { transcribeUrl, transcribeFile, whisper };

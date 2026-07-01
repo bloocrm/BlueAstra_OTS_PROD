@@ -206,6 +206,9 @@ app.use('/api', jaasWebhookRoutes);
 // (relative /api calls work without a separate reverse proxy).
 // =====================================================
 
+// Serve uploaded meeting recordings (browser-recorded audio) for playback
+app.use('/recordings', express.static(path.join(__dirname, 'uploads', 'recordings')));
+
 const frontendPath = path.join(__dirname, '..', 'frontend');
 app.use(express.static(frontendPath));
 
