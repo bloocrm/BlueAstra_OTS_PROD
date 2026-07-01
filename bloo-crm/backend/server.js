@@ -212,6 +212,10 @@ app.use('/api/employees', employeeRoutes);
 const policyRoutes = require('./routes/policies');
 app.use('/api/policies', policyRoutes);
 
+// Analytics (dashboard aggregates)
+const analyticsRoutes = require('./routes/analytics');
+app.use('/api/analytics', analyticsRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin

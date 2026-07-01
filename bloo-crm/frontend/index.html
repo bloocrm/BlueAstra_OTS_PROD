@@ -242,7 +242,29 @@
                             </div>
                         </div>
                     </div>
-                    <div class="dashboard-charts">
+                    <!-- Analytics KPI cards -->
+                    <div class="dashboard-grid" id="analyticsKpis" style="margin-top:6px;"></div>
+
+                    <!-- Charts row 1: donut + bar -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                        <div class="chart-container"><h3><i class="fas fa-chart-pie"></i> Lead → Client Conversion</h3><canvas id="chartConversion" height="220"></canvas></div>
+                        <div class="chart-container"><h3><i class="fas fa-chart-bar"></i> Activity Feed — Meetings by Month</h3><canvas id="chartActivity" height="220"></canvas></div>
+                    </div>
+
+                    <!-- Charts row 2: scatter + employee status donut -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                        <div class="chart-container"><h3><i class="fas fa-braille"></i> Calendar Meeting Metrics (duration vs date)</h3><canvas id="chartScatter" height="220"></canvas></div>
+                        <div class="chart-container"><h3><i class="fas fa-users"></i> Employees by Status</h3><canvas id="chartEmployees" height="220"></canvas></div>
+                    </div>
+
+                    <!-- Lists row: defaulters + pending + news -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px;">
+                        <div class="chart-container"><h3><i class="fas fa-user-clock"></i> Employee Defaulters</h3><div id="defaultersList" class="activity-list"></div></div>
+                        <div class="chart-container"><h3><i class="fas fa-hourglass-half"></i> Pending / Clogged Items</h3><div id="pendingList" class="activity-list"></div></div>
+                        <div class="chart-container"><h3><i class="fas fa-bullhorn"></i> Company News & Policy Changes</h3><div id="newsList" class="activity-list"></div></div>
+                    </div>
+
+                    <div class="dashboard-charts" style="margin-top:16px;">
                         <div class="chart-container">
                             <h3>Recent Activities</h3>
                             <div id="recentActivities" class="activity-list">
@@ -2111,6 +2133,8 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/grievances.js"></script>
     <script src="js/employees.js"></script>
     <script src="js/policies.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="js/analytics-dashboard.js"></script>
     <script src="js/meeting-room.js"></script>
     <script src="js/client-consolidation.js"></script>
     <script src="js/utils.js"></script>

@@ -51,6 +51,7 @@ function switchView(viewName) {
     if (viewName === 'dashboard') {
         loadDashboardStats();
         loadRecentActivities();
+        if (typeof loadAnalyticsDashboard === 'function') loadAnalyticsDashboard();
     } else if (viewName === 'uploadSourceData') {
         // No specific loading needed for upload view
         initializeUploadAI();

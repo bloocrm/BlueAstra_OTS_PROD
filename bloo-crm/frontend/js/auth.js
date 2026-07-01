@@ -148,6 +148,9 @@ async function showDashboard() {
         }
     }
 
+    // Load the dashboard analytics/charts
+    if (typeof loadAnalyticsDashboard === 'function') loadAnalyticsDashboard();
+
     // Navigate to a view from the hash if present
     const initialView = window.location.hash.replace('#', '');
     if (initialView) {
