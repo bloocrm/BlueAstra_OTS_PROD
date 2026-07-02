@@ -10,7 +10,10 @@
 let _proType = 'RFI';
 let _proLastGenerated = null;
 
-function loadProposals() { proSetType(_proType); }
+function loadProposals() {
+    proSetType(_proType);
+    if (typeof renderProposalIntegrations === 'function') renderProposalIntegrations();
+}
 
 function proSetType(t) {
     _proType = t;

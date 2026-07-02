@@ -25,8 +25,30 @@ const PM_INTEGRATIONS = [
     { tool: 'sap-successfactors', name: 'SAP SuccessFactors', slug: 'sap' }
 ];
 
+// Proposal / RFP tools (rendered in the Proposals tab)
+const PROPOSAL_INTEGRATIONS = [
+    { tool: 'responsive', name: 'Responsive (RFPIO)', slug: 'rfpio' },
+    { tool: 'loopio', name: 'Loopio', slug: 'loopio' },
+    { tool: 'qorusdocs', name: 'QorusDocs', slug: 'qorusdocs' },
+    { tool: 'pandadoc', name: 'PandaDoc', slug: 'pandadoc' },
+    { tool: 'proposify', name: 'Proposify', slug: 'proposify' },
+    { tool: 'better-proposals', name: 'Better Proposals', slug: 'betterproposals' },
+    { tool: 'getaccept', name: 'GetAccept', slug: 'getaccept' }
+];
+
+// Back-compat wrapper for the Employee Dashboard integrations
 async function renderIntegrations() {
-    const container = document.getElementById('hrIntegrations');
+    return renderIntegrationSet(PM_INTEGRATIONS, 'hrIntegrations', 'integrationsNote', 'Connect your HR & project tools to Bloo CRM.');
+}
+
+// Proposals tab integrations
+async function renderProposalIntegrations() {
+    return renderIntegrationSet(PROPOSAL_INTEGRATIONS, 'proposalIntegrations', 'proposalIntegrationsNote', 'Connect your proposal / RFP tools to Bloo CRM.');
+}
+
+// Generic renderer for a set of integrations into a given container
+async function renderIntegrationSet(list, containerId, noteId, connectedNote) {
+    const container = document.getElementById(containerId);
     if (!container) return;
     let plan = null, connected = {};
     try {
@@ -37,12 +59,12 @@ async function renderIntegrations() {
     if (!plan) { try { plan = (getCurrentUser() || {}).plan; } catch (e) {} }
 
     const isRocket = plan === 'rocket-ai-plus';
-    const note = document.getElementById('integrationsNote');
+    const note = document.getElementById(noteId);
     if (note) note.innerHTML = isRocket
-        ? 'Connect your project tools to Bloo CRM.'
+        ? connectedNote
         : '🔒 These integrations require the <strong>Rocket AI+</strong> plan. <a href="#" onclick="selectPlan(\'rocket-ai-plus\');return false;" style="color:var(--theme-primary);font-weight:600;">Upgrade now</a>.';
 
-    container.innerHTML = PM_INTEGRATIONS.map(it => {
+    container.innerHTML = list.map(it => {
         const conn = connected[it.tool];
         const logo = `<img src="https://cdn.simpleicons.org/${it.slug}" alt="${it.name}" style="width:34px;height:34px;" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'fas fa-plug',style:'font-size:28px;color:var(--theme-primary)'}))">`;
         let action;
