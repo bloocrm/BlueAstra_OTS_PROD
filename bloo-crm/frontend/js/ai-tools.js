@@ -7,6 +7,30 @@
    AI TOOLS — assistant, duplicate detection/merge, email analysis, drafting
    ===================================================== */
 
+// ---- Whole-CRM business insights ----
+async function aiBusinessInsights() {
+    const el = document.getElementById('aiBizResult');
+    el.innerHTML = '<p class="empty-state">Reading your entire CRM and analyzing…</p>';
+    try {
+        const res = await apiRequest('/ai/insights', { method: 'GET' });
+        const i = res.insights || {};
+        const section = (title, icon, items, color) => (items && items.length) ? `
+            <div style="margin-top:10px;">
+                <div style="font-weight:600;color:${color};"><i class="fas ${icon}"></i> ${title}</div>
+                <ul style="margin:4px 0;">${items.map(x => `<li>${escAI(x)}</li>`).join('')}</ul>
+            </div>` : '';
+        el.innerHTML = `
+            <div style="background:#f8fafc;border-radius:8px;padding:14px;">
+                ${i.headline ? `<div style="font-size:1.05rem;font-weight:700;margin-bottom:6px;">💡 ${escAI(i.headline)}</div>` : ''}
+                ${section('Improve Conversion', 'fa-percentage', i.conversionTips, '#2d6cdf')}
+                ${section('Upsell / New Opportunities', 'fa-dollar-sign', i.upsellOpportunities, '#2ecc71')}
+                ${section('Risk Flags', 'fa-exclamation-triangle', i.riskFlags, '#e74c3c')}
+                ${section('Recommended Actions', 'fa-tasks', i.actionItems, '#8e44ad')}
+                <div style="font-size:0.72rem;color:#aaa;margin-top:8px;">${res.source === 'ai' ? 'AI analysis of your live CRM data' : 'Rule-based analysis (enable OpenAI billing for deeper AI)'}</div>
+            </div>`;
+    } catch (e) { el.innerHTML = `<p class="empty-state">Could not generate insights: ${escAI(e.message)}</p>`; }
+}
+
 // ---- Assistant chat ----
 async function aiSendChat() {
     const input = document.getElementById('aiChatInput');

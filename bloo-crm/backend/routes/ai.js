@@ -19,7 +19,70 @@ const Lead = require('../models/Lead');
 const Client = require('../models/Client');
 const { verifyToken } = require('../middleware/auth');
 
+// Optional models — loaded defensively so AI still works if any is absent
+function tryModel(name) { try { return require('../models/' + name); } catch (e) { return null; } }
+const Meeting = tryModel('Meeting');
+const Email = tryModel('Email');
+const Employee = tryModel('Employee');
+const Vendor = tryModel('Vendor');
+const Grievance = tryModel('Grievance');
+const WorkflowTask = tryModel('WorkflowTask');
+const Approval = tryModel('Approval');
+const LeaveApplication = tryModel('LeaveApplication');
+
 router.use(verifyToken);
+
+// ---------- Whole-CRM context snapshot (compact, token-efficient) ----------
+async function buildCrmContext(userId) {
+  const safe = async (p) => { try { return await p; } catch (e) { return null; } };
+  const countBy = (arr, key) => arr.reduce((o, x) => { const k = x[key] || 'unknown'; o[k] = (o[k] || 0) + 1; return o; }, {});
+
+  const [clients, leads, meetings, emailCount, employees, vendors, grievances, tasks, approvals, leaves] = await Promise.all([
+    safe(Client.find({ userId, deletedAt: null }).select('status investmentPreference riskProfile name company').limit(1000).lean()) || [],
+    safe(Lead.find({ userId, deletedAt: null }).select('status source company name createdAt').limit(1000).lean()) || [],
+    Meeting ? (safe(Meeting.find({ userId }).select('startTime status clientName').sort({ startTime: -1 }).limit(50).lean()) || []) : [],
+    Email ? (safe(Email.countDocuments({ userId, deletedAt: null })) || 0) : 0,
+    Employee ? (safe(Employee.find({ userId }).select('status department').limit(500).lean()) || []) : [],
+    Vendor ? (safe(Vendor.find({ userId }).select('name status revenue performance risk').limit(200).lean()) || []) : [],
+    Grievance ? (safe(Grievance.find({ userId }).select('status').lean()) || []) : [],
+    WorkflowTask ? (safe(WorkflowTask.find({ userId }).select('status').lean()) || []) : [],
+    Approval ? (safe(Approval.find({ userId }).select('status type').lean()) || []) : [],
+    LeaveApplication ? (safe(LeaveApplication.find({ userId }).select('status').lean()) || []) : []
+  ]);
+
+  const cl = clients || [], ld = leads || [];
+  const leadFunnel = countBy(ld, 'status');
+  const converted = leadFunnel.converted || 0;
+  const conversionRate = ld.length ? Math.round((converted / ld.length) * 100) : 0;
+  const vendorRevenue = (vendors || []).map(v => ({
+    name: v.name,
+    revenue: ['q1', 'q2', 'q3', 'q4'].reduce((s, q) => s + ((v.revenue && v.revenue[q]) || 0), 0),
+    perf: Math.round(['q1', 'q2', 'q3', 'q4'].reduce((s, q) => s + ((v.performance && v.performance[q]) || 0), 0) / 4),
+    risk: Math.round(['q1', 'q2', 'q3', 'q4'].reduce((s, q) => s + ((v.risk && v.risk[q]) || 0), 0) / 4)
+  }));
+
+  const data = {
+    clients: { total: cl.length, byStatus: countBy(cl, 'status'), byInvestmentPreference: countBy(cl, 'investmentPreference'), byRiskProfile: countBy(cl, 'riskProfile') },
+    leads: { total: ld.length, funnel: leadFunnel, conversionRate, bySource: countBy(ld, 'source') },
+    meetings: { total: (meetings || []).length, recent: (meetings || []).slice(0, 5).map(m => ({ title: m.title, client: m.clientName, when: m.startTime })) },
+    emailsStored: emailCount || 0,
+    employees: { total: (employees || []).length, byStatus: countBy(employees || [], 'status') },
+    vendors: { total: (vendors || []).length, topByRevenue: vendorRevenue.sort((a, b) => b.revenue - a.revenue).slice(0, 5) },
+    openGrievances: (grievances || []).filter(g => g.status !== 'resolved').length,
+    openTasks: (tasks || []).filter(t => t.status !== 'done').length,
+    pendingApprovals: (approvals || []).filter(a => a.status === 'pending').length,
+    pendingLeave: (leaves || []).filter(l => l.status === 'pending').length
+  };
+
+  const summary = `CRM snapshot: ${data.clients.total} clients (${JSON.stringify(data.clients.byStatus)}); `
+    + `${data.leads.total} leads, funnel ${JSON.stringify(data.leads.funnel)}, conversion ${conversionRate}%; `
+    + `${data.meetings.total} meetings; ${data.emailsStored} stored emails; `
+    + `${data.employees.total} employees (${JSON.stringify(data.employees.byStatus)}); `
+    + `${data.vendors.total} vendors (top revenue: ${data.vendors.topByRevenue.map(v => v.name + ' $' + v.revenue).join(', ') || 'none'}); `
+    + `${data.openGrievances} open grievances, ${data.openTasks} open tasks, ${data.pendingApprovals} pending approvals.`;
+
+  return { data, summary };
+}
 
 // ---------- OpenAI helper (returns text, or null on any failure) ----------
 async function callOpenAI(messages, { json = false, maxTokens = 500 } = {}) {
@@ -48,8 +111,10 @@ router.post('/chat', async (req, res) => {
   const msg = (req.body && req.body.message || '').toString().trim();
   if (!msg) return res.status(400).json({ error: 'message is required' });
 
-  const system = `You are the Bloo CRM in-app assistant for Blue Astra Technologies. Help users with the CRM (clients, leads, email/Outlook, meetings, calendar, HR/Employee Dashboard, vendors, leave/approvals). Be concise and practical. If the issue is a bug, suggest a hard refresh (Ctrl+Shift+R) and, for urgent help, calling Customer Care at 1-800-CALL-BLOO-CRM.`;
-  const ai = await callOpenAI([{ role: 'system', content: system }, { role: 'user', content: msg }], { maxTokens: 400 });
+  let ctxSummary = '';
+  try { ctxSummary = (await buildCrmContext(req.userId)).summary; } catch (e) {}
+  const system = `You are the Bloo CRM in-app assistant for Blue Astra Technologies. You can see the user's live CRM data and help with clients, leads, email/Outlook, meetings, calendar, HR/Employee Dashboard, vendors, leave/approvals — and give data-grounded advice on conversion and sales opportunities. Be concise and practical. For a bug, suggest a hard refresh (Ctrl+Shift+R); for urgent help, Customer Care at 1-800-CALL-BLOO-CRM.\n\nLIVE CRM DATA: ${ctxSummary}`;
+  const ai = await callOpenAI([{ role: 'system', content: system }, { role: 'user', content: msg }], { maxTokens: 450 });
   if (ai) return res.json({ status: 'success', reply: ai, source: 'ai' });
 
   // Fallback: keyword help
@@ -61,6 +126,42 @@ router.post('/chat', async (req, res) => {
   else if (m.includes('broken') || m.includes('empty') || m.includes('not work')) reply = 'Try a hard refresh: Ctrl+Shift+R. If a section stays empty, contact Customer Care at 1-800-CALL-BLOO-CRM.';
   else reply += 'Ask me about a specific area, or call Customer Care at 1-800-CALL-BLOO-CRM.';
   res.json({ status: 'success', reply, source: 'fallback' });
+});
+
+// ---------- Whole-CRM strategic insights ----------
+router.get('/insights', async (req, res) => {
+  let ctx;
+  try { ctx = await buildCrmContext(req.userId); }
+  catch (e) { return res.status(500).json({ error: 'Failed to read CRM data', message: e.message }); }
+
+  const prompt = `You are a sales & growth strategist analyzing a financial-advisory CRM's live data (JSON below). Blue Astra sells CRM plans (basic, swift-ai-plus, rocket-ai-plus) and advisory services. Return STRICT JSON with keys:
+conversionTips (array of 3-5 concrete, data-driven ways to improve lead->client conversion),
+upsellOpportunities (array of 3-5 specific opportunities to get existing clients to buy more / upgrade plans / new services, referencing the data),
+riskFlags (array of issues to watch, e.g. clogged approvals, risky vendors, disengaged leads),
+actionItems (array of prioritized next actions),
+headline (1 sentence summarizing the biggest opportunity).
+CRM DATA:
+${JSON.stringify(ctx.data)}`;
+
+  const ai = await callOpenAI([{ role: 'system', content: 'You are a precise CRM growth strategist. Output only JSON.' }, { role: 'user', content: prompt }], { json: true, maxTokens: 900 });
+  if (ai) { try { return res.json({ status: 'success', source: 'ai', context: ctx.data, insights: JSON.parse(ai) }); } catch (_) {} }
+
+  // Fallback: rule-based insights from the snapshot
+  const d = ctx.data;
+  const insights = { conversionTips: [], upsellOpportunities: [], riskFlags: [], actionItems: [], headline: '' };
+  const f = d.leads.funnel || {};
+  if ((f.new || 0) > 0) insights.conversionTips.push(`You have ${f.new} new leads not yet qualified — qualify them within 48 hours to lift conversion.`);
+  if ((f.negotiating || 0) > 0) insights.conversionTips.push(`${f.negotiating} leads are negotiating — prioritize these for closing this week.`);
+  if (d.leads.conversionRate < 30 && d.leads.total > 0) insights.conversionTips.push(`Conversion is ${d.leads.conversionRate}%. Add a structured follow-up cadence and log every touchpoint.`);
+  if ((d.clients.byStatus.active || 0) > 0) insights.upsellOpportunities.push(`${d.clients.byStatus.active} active clients — offer a plan upgrade (swift-ai-plus / rocket-ai-plus) or a portfolio review.`);
+  if ((d.clients.byStatus.prospect || 0) > 0) insights.upsellOpportunities.push(`${d.clients.byStatus.prospect} prospects — nurture with targeted content to move them to active.`);
+  if (d.vendors.topByRevenue.some(v => v.risk >= 50)) insights.riskFlags.push('One or more vendors have a high risk index — review contracts/BCP.');
+  if (d.openGrievances > 0) insights.riskFlags.push(`${d.openGrievances} open grievances — resolve to protect retention.`);
+  if (d.pendingApprovals > 0) insights.riskFlags.push(`${d.pendingApprovals} approvals pending — unclog the workflow.`);
+  insights.actionItems.push('Follow up with the highest-intent leads today.');
+  if ((d.clients.byStatus.active || 0) > 0) insights.actionItems.push('Send an upgrade/upsell offer to top active clients.');
+  insights.headline = d.leads.total ? `Focus on your ${(f.negotiating||0)+(f.interested||0)} warm leads and upsell your ${d.clients.byStatus.active||0} active clients.` : 'Add leads and clients to unlock tailored growth insights.';
+  res.json({ status: 'success', source: 'fallback', context: d, insights });
 });
 
 // ---------- Duplicate detection (leads) ----------
