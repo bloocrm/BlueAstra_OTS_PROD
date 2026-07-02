@@ -22,7 +22,11 @@ router.use(verifyToken);
 const TOOLS = ['trello', 'asana', 'monday', 'clickup', 'jira', 'jama', 'notion', 'ms-planner',
   'bamboohr', 'workday', 'zoho-people', 'rippling', 'deel', 'sap-successfactors',
   // Proposal / RFP tools
-  'responsive', 'loopio', 'qorusdocs', 'pandadoc', 'proposify', 'better-proposals', 'getaccept'];
+  'responsive', 'loopio', 'qorusdocs', 'pandadoc', 'proposify', 'better-proposals', 'getaccept',
+  // Vendor management / VMS
+  'sap-fieldglass', 'beeline', 'magnit', 'worksome', 'sap', 'oracle', 'coupa', 'kodiak-hub', 'hicx', 'tealbook', 'graphite-connect',
+  // Procurement / sourcing (Upload Source Data)
+  'sap-ariba', 'jaggaer', 'ivalua', 'gep', 'zycus', 'basware', 'zycus-proactive'];
 const ROCKET = 'rocket-ai-plus';
 
 async function requireRocket(req, res) {

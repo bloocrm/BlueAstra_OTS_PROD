@@ -36,6 +36,33 @@ const PROPOSAL_INTEGRATIONS = [
     { tool: 'getaccept', name: 'GetAccept', slug: 'getaccept' }
 ];
 
+// Vendor management / VMS tools (Vendor Dashboard)
+const VENDOR_INTEGRATIONS = [
+    { tool: 'sap-fieldglass', name: 'SAP Fieldglass', slug: 'sap' },
+    { tool: 'beeline', name: 'Beeline', slug: 'beeline' },
+    { tool: 'magnit', name: 'Magnit', slug: 'magnit' },
+    { tool: 'worksome', name: 'Worksome', slug: 'worksome' },
+    { tool: 'sap', name: 'SAP', slug: 'sap' },
+    { tool: 'oracle', name: 'Oracle', slug: 'oracle' },
+    { tool: 'coupa', name: 'Coupa', slug: 'coupa' },
+    { tool: 'kodiak-hub', name: 'Kodiak Hub', slug: 'kodiakhub' },
+    { tool: 'hicx', name: 'HICX', slug: 'hicx' },
+    { tool: 'tealbook', name: 'TealBook', slug: 'tealbook' },
+    { tool: 'graphite-connect', name: 'Graphite Connect', slug: 'graphite' }
+];
+
+// Procurement / sourcing tools (Upload Source Data)
+const SOURCING_INTEGRATIONS = [
+    { tool: 'sap-ariba', name: 'SAP Ariba', slug: 'sap' },
+    { tool: 'jaggaer', name: 'Jaggaer', slug: 'jaggaer' },
+    { tool: 'ivalua', name: 'Ivalua', slug: 'ivalua' },
+    { tool: 'coupa', name: 'Coupa', slug: 'coupa' },
+    { tool: 'gep', name: 'GEP', slug: 'gep' },
+    { tool: 'zycus', name: 'Zycus', slug: 'zycus' },
+    { tool: 'basware', name: 'Basware', slug: 'basware' },
+    { tool: 'zycus-proactive', name: 'Zycus Proactive', slug: 'zycus' }
+];
+
 // Back-compat wrapper for the Employee Dashboard integrations
 async function renderIntegrations() {
     return renderIntegrationSet(PM_INTEGRATIONS, 'hrIntegrations', 'integrationsNote', 'Connect your HR & project tools to Bloo CRM.');
@@ -44,6 +71,16 @@ async function renderIntegrations() {
 // Proposals tab integrations
 async function renderProposalIntegrations() {
     return renderIntegrationSet(PROPOSAL_INTEGRATIONS, 'proposalIntegrations', 'proposalIntegrationsNote', 'Connect your proposal / RFP tools to Bloo CRM.');
+}
+
+// Vendor Dashboard integrations
+async function renderVendorIntegrations() {
+    return renderIntegrationSet(VENDOR_INTEGRATIONS, 'vendorIntegrations', 'vendorIntegrationsNote', 'Connect your vendor management / VMS platforms to Bloo CRM.');
+}
+
+// Upload Source Data (procurement/sourcing) integrations
+async function renderSourcingIntegrations() {
+    return renderIntegrationSet(SOURCING_INTEGRATIONS, 'sourcingIntegrations', 'sourcingIntegrationsNote', 'Connect your procurement / sourcing platforms to Bloo CRM.');
 }
 
 // Generic renderer for a set of integrations into a given container

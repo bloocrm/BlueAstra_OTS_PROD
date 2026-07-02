@@ -23,6 +23,7 @@ function vDestroy(k) { if (window.__vcharts[k]) { try { window.__vcharts[k].dest
 
 async function loadVendorDashboard() {
     await Promise.all([loadVendors(), loadVendorAnalytics(), loadVendorDocs()]);
+    if (typeof renderVendorIntegrations === 'function') renderVendorIntegrations();
 }
 
 async function loadVendors() {

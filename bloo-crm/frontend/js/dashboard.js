@@ -71,6 +71,7 @@ function switchView(viewName) {
     } else if (viewName === 'uploadSourceData') {
         // No specific loading needed for upload view
         initializeUploadAI();
+        if (typeof renderSourcingIntegrations === 'function') renderSourcingIntegrations();
     } else if (viewName === 'clients') {
         loadClientsList();
     } else if (viewName === 'clientDashboard') {
