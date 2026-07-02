@@ -18,9 +18,8 @@ function handleAddClient(event) {
 
     // Validate file if uploaded
     if (documentFile) {
-        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'image/jpeg', 'image/png', 'image/gif'];
-        if (!allowedTypes.includes(documentFile.type)) {
-            showNotification('Invalid file type. Please upload PDF, Word, Text, Excel, or Image files.', 'error');
+        if (!isAllowedClientDoc(documentFile)) {
+            showNotification('Unsupported file type. Please upload PDF, Word, Excel/CSV/ODS, PowerPoint, text, or image files.', 'error');
             return;
         }
         if (documentFile.size > 10485760) { // 10MB limit
@@ -742,42 +741,128 @@ async function saveClientDetails() {
     }
 }
 
-// Display client documents
+// Broad allow-list for client documents (types + extensions; all images ok)
+function isAllowedClientDoc(file) {
+    if (!file) return false;
+    const t = (file.type || '').toLowerCase();
+    if (t.startsWith('image/')) return true; // images of all types
+    const okTypes = [
+        'application/pdf', 'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.oasis.opendocument.spreadsheet',
+        'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'text/plain', 'text/csv', 'application/rtf', 'text/rtf'
+    ];
+    if (okTypes.includes(t)) return true;
+    // Fallback to extension (some browsers report empty/odd MIME for .csv/.ods/.ppt)
+    const ext = (file.name || '').toLowerCase().split('.').pop();
+    return ['pdf', 'doc', 'docx', 'txt', 'rtf', 'xls', 'xlsx', 'ods', 'csv', 'ppt', 'pptx',
+        'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'tif', 'heic'].includes(ext);
+}
+
+// Read a File to { name, type, data(base64 dataURL), uploadedAt }
+function readClientFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ name: file.name, type: file.type || '', data: reader.result, uploadedAt: new Date().toISOString() });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// Upload one or more documents to the currently-viewed client (broad file types)
+async function uploadClientDocuments() {
+    const clientId = window.currentViewingClientId;
+    const input = document.getElementById('detailDocInput');
+    const files = input && input.files ? Array.from(input.files) : [];
+    if (!clientId || !files.length) return;
+
+    const MAX = 5 * 1024 * 1024; // 5MB per file (embedded storage)
+    const client = getClients().find(c => c.id === clientId) || {};
+    const docs = Array.isArray(client.clientDocs) ? client.clientDocs.slice() : [];
+
+    for (const f of files) {
+        if (!isAllowedClientDoc(f)) { showNotification(`${f.name}: unsupported type, skipped.`, 'error'); continue; }
+        if (f.size > MAX) { showNotification(`${f.name} exceeds 5MB and was skipped.`, 'error'); continue; }
+        try { docs.push(await readClientFile(f)); } catch (e) { showNotification(`Could not read ${f.name}`, 'error'); }
+    }
+    input.value = '';
+
+    try {
+        await updateClient(clientId, { clientDocs: docs });
+        logWorkflowActivity('client_document_uploaded', `Documents uploaded for client`);
+        showNotification('Document(s) uploaded!', 'success');
+        // refresh local cache client then re-render
+        const updated = getClients().find(c => c.id === clientId);
+        displayClientDocuments(clientId);
+    } catch (error) {
+        showNotification(error.message || 'Failed to upload documents', 'error');
+    }
+}
+
+// Display client documents (multi-doc array + legacy single doc)
 function displayClientDocuments(clientId) {
     const clients = getClients();
     const client = clients.find(c => c.id === clientId);
-
-    if (!client) return;
-
     const documentsDiv = document.getElementById('d-documents');
+    if (!client || !documentsDiv) return;
 
-    if (!client.documentName || !client.documentData) {
+    const list = Array.isArray(client.clientDocs) ? client.clientDocs.slice() : [];
+    // Include a legacy single document if present and not already in the list
+    if (client.documentName && client.documentData) {
+        list.unshift({ name: client.documentName, type: client.documentType || '', data: client.documentData, legacy: true });
+    }
+
+    if (!list.length) {
         documentsDiv.innerHTML = '<p style="color: var(--text-light);">No documents uploaded</p>';
         return;
     }
 
-    const fileType = getFileType(client.documentType || client.documentName);
-    const fileIcon = getFileIcon(fileType);
-
-    const documentHTML = `
+    documentsDiv.innerHTML = list.map((doc, i) => {
+        const fileType = getFileType(doc.type || doc.name);
+        const fileIcon = getFileIcon(fileType);
+        return `
         <div class="document-item">
-            <div class="document-icon ${fileType}">
-                <i class="fas fa-${fileIcon}"></i>
-            </div>
-            <div class="document-name">${client.documentName}</div>
+            <div class="document-icon ${fileType}"><i class="fas fa-${fileIcon}"></i></div>
+            <div class="document-name">${escInv(doc.name || 'document')}</div>
             <div class="document-type">${fileType.toUpperCase()} File</div>
             <div class="document-actions">
-                <button class="document-btn document-btn-view" onclick="viewDocument('${clientId}')">
-                    <i class="fas fa-eye"></i> View
-                </button>
-                <button class="document-btn document-btn-download" onclick="downloadDocument('${clientId}')">
-                    <i class="fas fa-download"></i> Download
-                </button>
+                <button class="document-btn document-btn-download" onclick="downloadClientDoc(${i})"><i class="fas fa-download"></i> Download</button>
+                ${doc.legacy ? '' : `<button class="document-btn document-btn-view" onclick="deleteClientDoc(${i})"><i class="fas fa-trash"></i> Delete</button>`}
             </div>
-        </div>
-    `;
+        </div>`;
+    }).join('');
 
-    documentsDiv.innerHTML = documentHTML;
+    // Cache the currently-displayed list for download/delete by index
+    window.__clientDocList = list;
+}
+
+function downloadClientDoc(index) {
+    const doc = (window.__clientDocList || [])[index];
+    if (!doc || !doc.data) { showNotification('Document not available', 'error'); return; }
+    const a = document.createElement('a');
+    a.href = doc.data;
+    a.download = doc.name || 'document';
+    document.body.appendChild(a); a.click(); a.remove();
+}
+
+async function deleteClientDoc(index) {
+    const clientId = window.currentViewingClientId;
+    const client = getClients().find(c => c.id === clientId);
+    if (!client) return;
+    const docs = Array.isArray(client.clientDocs) ? client.clientDocs.slice() : [];
+    // The displayed list may include a legacy doc at position 0; align indices
+    const hasLegacy = !!(client.documentName && client.documentData);
+    const arrIndex = hasLegacy ? index - 1 : index;
+    if (arrIndex < 0) { showNotification('This is the original document and cannot be deleted here.', 'info'); return; }
+    if (!confirm('Delete this document?')) return;
+    docs.splice(arrIndex, 1);
+    try {
+        await updateClient(clientId, { clientDocs: docs });
+        showNotification('Document deleted', 'success');
+        displayClientDocuments(clientId);
+    } catch (e) { showNotification(e.message || 'Failed to delete', 'error'); }
 }
 
 // Get file type from mime type or filename

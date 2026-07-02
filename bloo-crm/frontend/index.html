@@ -1668,7 +1668,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                 <div class="form-row">
                     <div class="form-group">
                         <label>Upload Document</label>
-                        <input type="file" id="clientDocument" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.jpg,.jpeg,.png,.gif">
+                        <input type="file" id="clientDocument" accept=".pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.ods,.csv,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg,.tiff,.heic,image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,text/csv">
                         <small>Accepted formats: PDF, Word, Text, Excel, Image (JPG, PNG, GIF)</small>
                     </div>
                 </div>
@@ -2073,7 +2073,12 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                 <div id="documents-tab" class="detail-tab-content">
                     <div class="detail-section">
                         <h3><i class="fas fa-file-upload"></i> Uploaded Documents</h3>
-                        <div id="d-documents" class="documents-container">
+                        <p style="color:#888;font-size:0.85rem;margin-bottom:8px;">Upload any documents — PDF, Word, Excel (.xls/.xlsx/.ods), CSV, PowerPoint (.ppt/.pptx), text, and images of all types. You can select multiple files.</p>
+                        <input type="file" id="detailDocInput" multiple style="display:none"
+                               accept=".pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.ods,.csv,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg,.tiff,.heic,image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,text/csv"
+                               onchange="uploadClientDocuments()">
+                        <button class="btn btn-primary" onclick="document.getElementById('detailDocInput').click()"><i class="fas fa-upload"></i> Upload Documents</button>
+                        <div id="d-documents" class="documents-container" style="margin-top:12px;">
                             <p style="color: var(--text-light);">No documents uploaded</p>
                         </div>
                     </div>
