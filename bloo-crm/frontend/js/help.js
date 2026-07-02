@@ -75,7 +75,7 @@ function loadHelp() {
         artEl.innerHTML = HELP_ARTICLES.map((a, i) => `
             <div class="help-item" data-text="${escH((a.title + ' ' + a.body).toLowerCase())}" style="border-bottom:1px solid #eee;">
                 <div onclick="toggleHelp('art${i}')" style="cursor:pointer;padding:12px 4px;display:flex;justify-content:space-between;align-items:center;font-weight:600;">
-                    <span><i class="fas fa-book-open" style="color:#cc0000;"></i> ${escH(a.title)}</span>
+                    <span><i class="fas fa-book-open" style="color:var(--theme-primary);"></i> ${escH(a.title)}</span>
                     <i class="fas fa-chevron-down" id="ico-art${i}" style="color:#888;"></i>
                 </div>
                 <div id="art${i}" style="display:none;padding:0 4px 14px;color:#444;white-space:pre-wrap;line-height:1.55;">${escH(a.body)}</div>
@@ -85,7 +85,7 @@ function loadHelp() {
         faqEl.innerHTML = HELP_FAQS.map((f, i) => `
             <div class="help-item" data-text="${escH((f.q + ' ' + f.a).toLowerCase())}" style="border-bottom:1px solid #eee;">
                 <div onclick="toggleHelp('faq${i}')" style="cursor:pointer;padding:12px 4px;display:flex;justify-content:space-between;align-items:center;font-weight:600;">
-                    <span><i class="fas fa-question-circle" style="color:#cc0000;"></i> ${escH(f.q)}</span>
+                    <span><i class="fas fa-question-circle" style="color:var(--theme-primary);"></i> ${escH(f.q)}</span>
                     <i class="fas fa-chevron-down" id="ico-faq${i}" style="color:#888;"></i>
                 </div>
                 <div id="faq${i}" style="display:none;padding:0 4px 14px;color:#444;line-height:1.55;">${escH(f.a)}</div>

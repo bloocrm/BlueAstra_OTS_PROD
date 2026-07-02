@@ -782,8 +782,8 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         <div class="modal-content" style="max-width:500px;">
                             <div class="modal-header"><h2><i class="fas fa-user-tag"></i> Assign Task to Employee</h2><button class="close-btn" onclick="closeTaskModal()">&times;</button></div>
                             <form onsubmit="submitTask(event)">
-                                <div class="form-group"><label>Task Title <span style="color:#E74C3C;">*</span></label><input type="text" id="taskTitle" required></div>
-                                <div class="form-group"><label>Assign to Employee <span style="color:#E74C3C;">*</span></label><input type="text" id="taskEmployee" required placeholder="Employee name (must match a record)"></div>
+                                <div class="form-group"><label>Task Title <span style="color:var(--theme-primary);">*</span></label><input type="text" id="taskTitle" required></div>
+                                <div class="form-group"><label>Assign to Employee <span style="color:var(--theme-primary);">*</span></label><input type="text" id="taskEmployee" required placeholder="Employee name (must match a record)"></div>
                                 <div class="form-group"><label>Due Date</label><input type="date" id="taskDue"></div>
                                 <div class="form-group"><label>Description</label><textarea id="taskDesc" rows="3"></textarea></div>
                                 <p style="color:#888;font-size:0.85em;"><i class="fas fa-info-circle"></i> If the employee is on leave, the email is sent to their backup automatically.</p>
@@ -904,7 +904,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         </div>
                         <form onsubmit="submitGrievance(event)">
                             <div class="form-group">
-                                <label>Name <span style="color:#E74C3C;">*</span></label>
+                                <label>Name <span style="color:var(--theme-primary);">*</span></label>
                                 <input type="text" id="grievanceName" required placeholder="Your name">
                             </div>
                             <div class="form-group">
@@ -952,13 +952,13 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                     <div class="view-header"><h3><i class="fas fa-life-ring"></i> Help & Knowledge Base</h3></div>
 
                     <!-- Customer Care banner -->
-                    <div class="chart-container" style="background:linear-gradient(135deg,#cc0000,#8e0000);color:#fff;margin-bottom:16px;">
+                    <div class="chart-container" style="background:linear-gradient(135deg,var(--theme-primary),var(--theme-primary-dark));color:#fff;margin-bottom:16px;">
                         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
                             <div>
                                 <h3 style="color:#fff;margin:0;"><i class="fas fa-headset"></i> Need to talk to us?</h3>
                                 <p style="margin:6px 0 0;">Our Customer Care team is here to help.</p>
                             </div>
-                            <a href="tel:18002255266" class="btn" style="background:#fff;color:#cc0000;font-weight:700;font-size:1.05rem;">
+                            <a href="tel:18002255266" class="btn" style="background:#fff;color:var(--theme-primary);font-weight:700;font-size:1.05rem;">
                                 <i class="fas fa-phone"></i> 1-800-CALL-BLOO-CRM
                             </a>
                         </div>
@@ -1030,7 +1030,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         <form onsubmit="submitVendor(event)">
                             <input type="hidden" id="vendorEditId">
                             <div class="form-row">
-                                <div class="form-group"><label>Vendor Name <span style="color:#E74C3C;">*</span></label><input type="text" id="venName" required></div>
+                                <div class="form-group"><label>Vendor Name <span style="color:var(--theme-primary);">*</span></label><input type="text" id="venName" required></div>
                                 <div class="form-group"><label>Category</label><input type="text" id="venCategory" placeholder="e.g. IT Services"></div>
                             </div>
                             <div class="form-row">
@@ -1065,7 +1065,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         <form onsubmit="submitVendorDoc(event)">
                             <div class="form-group"><label>Vendor</label><select id="docVendor"></select></div>
                             <div class="form-group"><label>Document Type</label><select id="docType"></select></div>
-                            <div class="form-group"><label>File (PDF, Excel, Word) <span style="color:#E74C3C;">*</span></label>
+                            <div class="form-group"><label>File (PDF, Excel, Word) <span style="color:var(--theme-primary);">*</span></label>
                                 <input type="file" id="docFile" required accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
                             </div>
                             <div class="modal-actions">
@@ -1133,7 +1133,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         </div>
                         <form onsubmit="submitEmployee(event)">
                             <div class="form-row">
-                                <div class="form-group"><label>Full Name <span style="color:#E74C3C;">*</span></label><input type="text" id="empName" required></div>
+                                <div class="form-group"><label>Full Name <span style="color:var(--theme-primary);">*</span></label><input type="text" id="empName" required></div>
                                 <div class="form-group"><label>Email</label><input type="email" id="empEmail"></div>
                             </div>
                             <div class="form-row">
@@ -1214,7 +1214,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         </div>
                         <form onsubmit="submitPolicy(event)">
                             <input type="hidden" id="policyEditId">
-                            <div class="form-group"><label>Title <span style="color:#E74C3C;">*</span></label><input type="text" id="policyTitle" required></div>
+                            <div class="form-group"><label>Title <span style="color:var(--theme-primary);">*</span></label><input type="text" id="policyTitle" required></div>
                             <div class="form-group"><label>Category</label>
                                 <select id="policyCategory">
                                     <option value="">Select…</option>
@@ -1272,7 +1272,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             <button class="close-btn" onclick="closeLeaveModal()">&times;</button>
                         </div>
                         <form onsubmit="submitLeave(event)">
-                            <div class="form-group"><label>Employee Name <span style="color:#E74C3C;">*</span></label><input type="text" id="leaveEmployee" required placeholder="Applicant name"></div>
+                            <div class="form-group"><label>Employee Name <span style="color:var(--theme-primary);">*</span></label><input type="text" id="leaveEmployee" required placeholder="Applicant name"></div>
                             <div class="form-group"><label>Manager (approver)</label><input type="text" id="leaveManager" placeholder="Leave blank to use the employee's manager on record"></div>
                             <div class="form-group"><label>Leave Type</label>
                                 <select id="leaveType"><option>Annual</option><option>Sick</option><option>Casual</option><option>Maternity/Paternity</option><option>Unpaid</option><option>Other</option></select>
@@ -1332,7 +1332,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         </div>
                         <form onsubmit="submitPerf(event)">
                             <div class="form-row">
-                                <div class="form-group"><label>Employee <span style="color:#E74C3C;">*</span></label><input type="text" id="perfEmployee" required></div>
+                                <div class="form-group"><label>Employee <span style="color:var(--theme-primary);">*</span></label><input type="text" id="perfEmployee" required></div>
                                 <div class="form-group"><label>Type</label>
                                     <select id="perfType">
                                         <option value="goal">Goal / KPI</option>
@@ -1397,7 +1397,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                     <div class="modal-content" style="max-width:500px;">
                         <div class="modal-header"><h2><i class="fas fa-user-plus"></i> Start Onboarding</h2><button class="close-btn" onclick="closeOnbModal()">&times;</button></div>
                         <form onsubmit="submitOnb(event)">
-                            <div class="form-group"><label>Employee Name <span style="color:#E74C3C;">*</span></label><input type="text" id="onbEmployee" required></div>
+                            <div class="form-group"><label>Employee Name <span style="color:var(--theme-primary);">*</span></label><input type="text" id="onbEmployee" required></div>
                             <div class="form-group"><label>Employee Email (for welcome email)</label><input type="email" id="onbEmail"></div>
                             <div class="form-group"><label>Start Date</label><input type="date" id="onbStart"></div>
                             <p style="color:#888;font-size:0.85em;">A default checklist is created: orientation, training, welcome email, paperwork, equipment, email creation.</p>
@@ -1449,7 +1449,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                                 </div>
                                 <div class="form-group"><label>Amount (optional)</label><input type="number" id="aprAmount" step="0.01"></div>
                             </div>
-                            <div class="form-group"><label>Title <span style="color:#E74C3C;">*</span></label><input type="text" id="aprTitle" required placeholder="e.g. Client dinner reimbursement"></div>
+                            <div class="form-group"><label>Title <span style="color:var(--theme-primary);">*</span></label><input type="text" id="aprTitle" required placeholder="e.g. Client dinner reimbursement"></div>
                             <div class="form-row">
                                 <div class="form-group"><label>Requested By</label><input type="text" id="aprRequestedBy"></div>
                                 <div class="form-group"><label>Manager (approver)</label><input type="text" id="aprManager"></div>
@@ -2393,7 +2393,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         <input type="text" id="clientName" placeholder="Client name">
                     </div>
                     <div class="form-group">
-                        <label>Client Email <span style="color: #E74C3C; font-weight: bold;">*</span></label>
+                        <label>Client Email <span style="color: var(--theme-primary); font-weight: bold;">*</span></label>
                         <input type="text" id="clientEmail" placeholder="blue2027astra@tutamail.com">
                     </div>
                 </div>
@@ -2630,7 +2630,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
           }
         }
         try { ensureFooter(); setInterval(ensureFooter, 3000); } catch (e) {}
-        try { console.log('%c' + window.__BLUE_ASTRA_COPYRIGHT__, 'color:#cc0000;font-weight:bold;'); } catch (e) {}
+        try { console.log('%c' + window.__BLUE_ASTRA_COPYRIGHT__, 'color:var(--theme-primary);font-weight:bold;'); } catch (e) {}
       })();
     </script>
 </body>
