@@ -63,6 +63,14 @@
             <div class="aa-body" id="aiAssistBody"><p style="color:#888;">Click below to analyze this page.</p></div>`;
         document.body.appendChild(panel);
         panel.querySelector('#aiAssistClose').onclick = () => panel.classList.remove('open');
+
+        // Hide the floating Assist on the AI Insights tab (it has its own panels)
+        setInterval(function () {
+            const ai = document.getElementById('ai-insights');
+            const onAiInsights = ai && ai.classList.contains('active');
+            fab.style.display = onAiInsights ? 'none' : 'flex';
+            if (onAiInsights) panel.classList.remove('open');
+        }, 700);
     }
 
     function section(title, icon, items, color) {

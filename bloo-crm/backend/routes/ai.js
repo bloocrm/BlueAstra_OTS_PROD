@@ -142,17 +142,50 @@ router.post('/assist', async (req, res) => {
   const items = Array.isArray(req.body && req.body.items) ? req.body.items.slice(0, 25) : [];
   const focus = CONTEXT_LABEL[context] || ('the ' + context + ' section');
 
+  // Section-specific guidance so recommendations are confined to THIS tab only
+  const HINTS = {
+    email: 'Identify which emails need a reply and the recommended response angle, note sender intent, and surface sales/upsell openings.',
+    hr: 'This is HR. For newly recruited/added employees, recommend concrete next steps: send the onboarding letter & welcome email, create their ID card, schedule orientation, assign training, allocate equipment, and set up their email. Flag employees on leave and any pending leave/approvals.',
+    employees: 'This is the Employees section. For each recruited employee, recommend next steps: onboarding letter, welcome email, ID card creation, orientation scheduling, training assignment, equipment allocation. Flag missing manager/backup and on-leave staff.',
+    leaves: 'Recommend next steps for pending leave requests (approve/reject, ensure backup coverage).',
+    approvals: 'Recommend how to clear pending approvals and unclog the queue.',
+    performance: 'Recommend next steps for reviews, goals/KPIs, and feedback that are due.',
+    policies: 'Recommend policies to publish or update and who to notify.',
+    vendors: 'Recommend vendor next steps: review low performers / high-risk vendors, chase missing documents (SLA, contracts, BCP/DR), and renewals.',
+    leads: 'Recommend next steps to qualify and convert THESE leads (cadence, prioritization).',
+    clients: 'Recommend next steps to retain and upsell THESE clients.',
+    clientDashboard: 'Recommend next steps to deepen client relationships and spot upsell.',
+    meetingRoom: 'Recommend follow-ups from recent meetings and next meetings to schedule.',
+    calendar: 'Recommend scheduling/follow-up actions from upcoming events.',
+    workflow: 'Recommend how to progress open tasks and assign/delegate where needed.',
+    grievance: 'Recommend how to resolve open grievances quickly.',
+    dashboard: 'Give a brief overview and the top 2-3 actions for today.'
+  };
+  const hint = HINTS[context] || 'Give practical next steps for this section only.';
+
+  // Confine data to the relevant slice for this tab (not the whole CRM)
   let promptData;
   if (context === 'email') {
-    promptData = { inbox: items }; // [{from, subject, snippet}]
+    promptData = { inbox: items };
   } else {
-    try { promptData = (await buildCrmContext(req.userId)).data; } catch (e) { promptData = {}; }
+    let full = {};
+    try { full = (await buildCrmContext(req.userId)).data; } catch (e) {}
+    const slice = {
+      clients: full.clients, clientDashboard: full.clients,
+      leads: full.leads, vendors: full.vendors,
+      hr: { employees: full.employees, pendingLeave: full.pendingLeave, pendingApprovals: full.pendingApprovals },
+      employees: { employees: full.employees },
+      leaves: { pendingLeave: full.pendingLeave },
+      approvals: { pendingApprovals: full.pendingApprovals },
+      workflow: { openTasks: full.openTasks },
+      grievance: { openGrievances: full.openGrievances },
+      meetingRoom: full.meetings, calendar: full.meetings,
+      dashboard: full
+    }[context];
+    promptData = slice || {};
   }
 
-  const emailExtra = context === 'email'
-    ? ' For emails: identify which messages need a reply and the recommended response angle, note the sender intent, and surface sales/upsell openings.'
-    : '';
-  const prompt = `You are an AI sales & productivity assistant embedded in a financial-advisory CRM. The user is currently viewing ${focus}.${emailExtra} Based on the DATA (JSON), return STRICT JSON with keys:
+  const prompt = `You are an AI co-pilot embedded in a financial-advisory CRM. The user is viewing ${focus}. Give recommendations ONLY for this section — do not comment on other parts of the CRM. ${hint} Based on the DATA (JSON), return STRICT JSON with keys:
 insights (array of 2-4 short, specific observations about what's shown here),
 recommendations (array of 2-4 concrete next actions; for emails, who to respond to and the angle),
 salesPitches (array of 1-3 short pitch / upsell ideas),
@@ -163,17 +196,29 @@ ${JSON.stringify(promptData).slice(0, 6000)}`;
   const ai = await callOpenAI([{ role: 'system', content: 'You are a concise, practical CRM co-pilot. Output only JSON.' }, { role: 'user', content: prompt }], { json: true, maxTokens: 700 });
   if (ai) { try { return res.json({ status: 'success', source: 'ai', context, assist: JSON.parse(ai) }); } catch (_) {} }
 
-  // Fallback
-  const assist = { insights: [], recommendations: [], salesPitches: [], todos: [] };
+  // Fallback (section-aware)
+  const assist = { insights: [`Recommendations for ${focus}.`], recommendations: [], salesPitches: [], todos: [] };
   if (context === 'email') {
-    assist.insights.push(`You have ${items.length} emails loaded.`);
     assist.recommendations.push('Reply to the most recent client emails first; acknowledge and propose a next step.');
     assist.salesPitches.push('Where a client shows interest, offer a portfolio review or a plan upgrade.');
     assist.todos.push('Draft replies to unanswered client emails.', 'Log follow-up dates for time-sensitive threads.');
+  } else if (context === 'hr' || context === 'employees') {
+    assist.recommendations.push('For each newly recruited employee: send the onboarding letter and welcome email, and create their ID card.');
+    assist.recommendations.push('Schedule orientation, assign training, and allocate equipment.');
+    assist.todos.push('Send onboarding letters / welcome emails to new hires.', 'Create ID cards for recruited employees.', 'Set the manager and backup on each employee record.');
+  } else if (context === 'leads') {
+    assist.recommendations.push('Qualify new leads within 48 hours and prioritize those in negotiating/interested.');
+    assist.salesPitches.push('Position the plan that best matches each lead\'s stated needs.');
+    assist.todos.push('Follow up with the highest-intent leads today.');
+  } else if (context === 'clients' || context === 'clientDashboard') {
+    assist.recommendations.push('Reach out to active clients for a portfolio review or plan upgrade.');
+    assist.salesPitches.push('Offer premium/rocket-ai-plus features to your most engaged clients.');
+    assist.todos.push('Schedule reviews with top clients.');
+  } else if (context === 'vendors') {
+    assist.recommendations.push('Review high-risk / low-performing vendors and chase any missing documents (SLA, BCP/DR, contracts).');
+    assist.todos.push('Follow up on vendor renewals and pending documents.');
   } else {
-    assist.insights.push(`Viewing ${focus}. Keep records current for the best AI recommendations.`);
     assist.recommendations.push('Act on the highest-priority items in this section today.');
-    assist.salesPitches.push('Identify clients ready for an upsell or a new service.');
     assist.todos.push('Review and update this section.', 'Follow up on anything pending.');
   }
   res.json({ status: 'success', source: 'fallback', context, assist });
