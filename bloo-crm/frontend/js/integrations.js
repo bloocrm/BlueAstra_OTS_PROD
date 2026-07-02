@@ -15,7 +15,14 @@ const PM_INTEGRATIONS = [
     { tool: 'jira', name: 'JIRA', slug: 'jira' },
     { tool: 'jama', name: 'JAMA', slug: 'jamasoftware' },
     { tool: 'notion', name: 'Notion', slug: 'notion' },
-    { tool: 'ms-planner', name: 'Microsoft Planner', slug: 'microsoftplanner' }
+    { tool: 'ms-planner', name: 'Microsoft Planner', slug: 'microsoftplanner' },
+    // HR platforms
+    { tool: 'bamboohr', name: 'BambooHR', slug: 'bamboohr' },
+    { tool: 'workday', name: 'Workday', slug: 'workday' },
+    { tool: 'zoho-people', name: 'Zoho People', slug: 'zoho' },
+    { tool: 'rippling', name: 'Rippling', slug: 'rippling' },
+    { tool: 'deel', name: 'Deel', slug: 'deel' },
+    { tool: 'sap-successfactors', name: 'SAP SuccessFactors', slug: 'sap' }
 ];
 
 async function renderIntegrations() {

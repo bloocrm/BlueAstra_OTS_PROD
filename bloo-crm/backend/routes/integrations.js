@@ -19,7 +19,8 @@ const { verifyToken } = require('../middleware/auth');
 
 router.use(verifyToken);
 
-const TOOLS = ['trello', 'asana', 'monday', 'clickup', 'jira', 'jama', 'notion', 'ms-planner'];
+const TOOLS = ['trello', 'asana', 'monday', 'clickup', 'jira', 'jama', 'notion', 'ms-planner',
+  'bamboohr', 'workday', 'zoho-people', 'rippling', 'deel', 'sap-successfactors'];
 const ROCKET = 'rocket-ai-plus';
 
 async function requireRocket(req, res) {
