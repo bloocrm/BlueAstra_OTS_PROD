@@ -578,4 +578,51 @@ router.get('/subscription-status', verifyToken, async (req, res) => {
   }
 });
 
+// =====================================================
+// STRIPE — hosted Checkout Session
+// Creates a Checkout Session and returns its URL; the client is redirected
+// to Stripe's hosted page for the charge. Requires STRIPE_SECRET_KEY.
+// =====================================================
+router.post('/stripe/checkout', verifyToken, async (req, res) => {
+  try {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) return res.status(503).json({ error: 'Stripe not configured', message: 'STRIPE_SECRET_KEY is not set on the server.' });
+
+    const b = req.body || {};
+    const amount = Number(b.amount);
+    if (!amount || amount <= 0) return res.status(400).json({ error: 'A valid amount is required' });
+    const planName = (b.planName || b.plan || 'Bloo CRM Plan').toString();
+    const currency = (b.currency || process.env.STRIPE_CURRENCY || 'inr').toLowerCase();
+    const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || 'https://bloocrm.com';
+
+    const params = new URLSearchParams();
+    params.append('mode', 'payment');
+    params.append('success_url', `${appUrl}/pages/payment-confirmation.html?status=success&provider=stripe&session_id={CHECKOUT_SESSION_ID}`);
+    params.append('cancel_url', `${appUrl}/index.html#pricing`);
+    params.append('line_items[0][quantity]', '1');
+    params.append('line_items[0][price_data][currency]', currency);
+    params.append('line_items[0][price_data][unit_amount]', String(Math.round(amount * 100)));
+    params.append('line_items[0][price_data][product_data][name]', `${planName} (${b.billingCycle || 'subscription'})`);
+    if (b.email) params.append('customer_email', b.email);
+    params.append('metadata[plan]', (b.plan || '').toString());
+    params.append('metadata[userId]', (req.userId || '').toString());
+    params.append('metadata[billingCycle]', (b.billingCycle || '').toString());
+
+    const resp = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
+    const data = await resp.json();
+    if (!resp.ok) {
+      console.error('Stripe error:', data && data.error);
+      return res.status(502).json({ error: 'Stripe checkout failed', message: (data.error && data.error.message) || 'Stripe API error' });
+    }
+    res.json({ status: 'success', id: data.id, url: data.url });
+  } catch (error) {
+    console.error('Stripe checkout error:', error);
+    res.status(500).json({ error: 'Failed to create Stripe checkout', message: error.message });
+  }
+});
+
 module.exports = router;

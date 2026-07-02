@@ -246,6 +246,32 @@ async function processPayment() {
 
   showLoading(true);
 
+  // --- Stripe: create a hosted Checkout Session and redirect to Stripe ---
+  if (selectedPaymentMethod === 'stripe') {
+    try {
+      const resp = await fetch(`${API_BASE_URL}/payments/stripe/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          plan: selectedPlan,
+          planName: (PLANS[selectedPlan] && PLANS[selectedPlan].name) || selectedPlan,
+          amount: PLANS[selectedPlan][currentBillingCycle],
+          billingCycle: currentBillingCycle,
+          email: document.getElementById('email').value
+        })
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.url) throw new Error(data.message || data.error || 'Could not start Stripe checkout');
+      // Hand off to Stripe's hosted page for the charge
+      window.location.href = data.url;
+      return;
+    } catch (e) {
+      showLoading(false);
+      showError(e.message || 'Stripe checkout failed');
+      return;
+    }
+  }
+
   try {
     const customerDetails = {
       name: document.getElementById('fullName').value,
