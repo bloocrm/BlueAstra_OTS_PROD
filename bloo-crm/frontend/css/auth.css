@@ -14,7 +14,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+    background: linear-gradient(135deg, var(--theme-soft) 0%, #ffffff 100%);
     padding: 1rem;
 }
 
@@ -31,7 +31,7 @@
     max-width: 520px;
     box-shadow: var(--shadow-lg);
     animation: slideUp 0.3s ease;
-    border-top: 6px solid #EF0000;
+    border-top: 6px solid var(--theme-primary);
 }
 
 .auth-form.active {
@@ -45,7 +45,7 @@
 
 .auth-header h1 {
     font-size: 2.5rem;
-    color: #EF0000;
+    color: var(--theme-primary);
     margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
@@ -81,7 +81,7 @@
 .auth-form .form-group input:focus,
 .auth-form .form-group select:focus {
     outline: none;
-    border-color: #EF0000;
+    border-color: var(--theme-primary);
     box-shadow: 0 0 0 3px rgba(239, 0, 0, 0.1);
     background-color: var(--white);
 }
@@ -102,14 +102,14 @@
 }
 
 .auth-toggle a {
-    color: #EF0000;
+    color: var(--theme-primary);
     text-decoration: none;
     font-weight: 600;
     transition: all 0.3s ease;
 }
 
 .auth-toggle a:hover {
-    color: #cc0000;
+    color: var(--theme-primary-dark);
     text-decoration: underline;
 }
 
@@ -153,7 +153,7 @@
 }
 
 .auth-links a {
-    color: #EF0000;
+    color: var(--theme-primary);
     text-decoration: none;
     font-weight: 600;
     transition: all 0.3s ease;
@@ -161,7 +161,7 @@
 }
 
 .auth-links a:hover {
-    color: #cc0000;
+    color: var(--theme-primary-dark);
     text-decoration: underline;
 }
 
@@ -174,7 +174,7 @@
 }
 
 .security-box h3 {
-    color: #EF0000;
+    color: var(--theme-primary);
     margin-bottom: 10px;
     font-size: 1rem;
 }
@@ -206,7 +206,7 @@
 }
 
 .auth-card h4 {
-    color: #EF0000;
+    color: var(--theme-primary);
     margin-bottom: 8px;
     font-size: 1rem;
 }

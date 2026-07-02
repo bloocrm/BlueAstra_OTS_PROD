@@ -12,8 +12,10 @@
         if (VALID.indexOf(t) === -1) t = 'red';
         document.body.setAttribute('data-theme', t);
         localStorage.setItem('crmTheme', t);
-        var sel = document.getElementById('themePicker');
-        if (sel && sel.value !== t) sel.value = t;
+        ['themePicker', 'themePickerLogin'].forEach(function (id) {
+            var sel = document.getElementById(id);
+            if (sel && sel.value !== t) sel.value = t;
+        });
     }
     // Expose globally
     window.setCrmTheme = apply;

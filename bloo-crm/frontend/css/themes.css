@@ -1,13 +1,16 @@
 /*
   Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
   Application-wide color theme layer. Switch via body[data-theme].
+  The base CSS references these variables, so changing the theme recolors the
+  whole UI (all elements that were red).
 */
 
-/* ---- Theme variable sets ---- */
+/* ---- Default (red) so colors resolve even before JS sets data-theme ---- */
 :root,
 body[data-theme="red"] {
   --theme-primary: #E74C3C;
   --theme-primary-dark: #c0392b;
+  --theme-primary-light: #ff6b6b;
   --theme-on-primary: #ffffff;
   --theme-soft: #fff0f0;
   --theme-icon: #E74C3C;
@@ -15,6 +18,7 @@ body[data-theme="red"] {
 body[data-theme="blue"] {
   --theme-primary: #2f5fdb;      /* royal blue */
   --theme-primary-dark: #1e3f9c;
+  --theme-primary-light: #6b8ff0;
   --theme-on-primary: #ffffff;
   --theme-soft: #eef2ff;
   --theme-icon: #2f5fdb;
@@ -22,14 +26,13 @@ body[data-theme="blue"] {
 body[data-theme="black-yellow"] {
   --theme-primary: #1a1a1a;      /* black */
   --theme-primary-dark: #000000;
-  --theme-on-primary: #FFD400;   /* yellow text/icon on black */
+  --theme-primary-light: #FFD400; /* yellow accent */
+  --theme-on-primary: #FFD400;   /* yellow text/icons on black */
   --theme-soft: #fffbe6;
   --theme-icon: #111111;
 }
 
-/* ---- Overrides (use !important to win over hardcoded base colors) ---- */
-
-/* Primary buttons */
+/* ---- Overrides for elements whose colors are not yet variable-driven ---- */
 body[data-theme] .btn-primary,
 body[data-theme] .btn.btn-primary {
   background: var(--theme-primary) !important;
@@ -41,29 +44,28 @@ body[data-theme] .btn-primary:hover { background: var(--theme-primary-dark) !imp
 /* Sidebar nav */
 body[data-theme] .nav-item i { color: var(--theme-icon) !important; }
 body[data-theme] .nav-item.active { border-left-color: var(--theme-primary) !important; background: var(--theme-soft) !important; }
-body[data-theme] .nav-item:hover { color: var(--theme-primary-dark) !important; }
 
-/* Floating AI Assist + panel */
+/* Floating AI Assist */
 body[data-theme] #aiAssistFab { background: var(--theme-primary) !important; color: var(--theme-on-primary) !important; }
 body[data-theme] #aiAssistFab:hover { background: var(--theme-primary-dark) !important; }
 body[data-theme] #aiAssistPanel .aa-head { background: var(--theme-primary) !important; color: var(--theme-on-primary) !important; }
 
-/* Copyright footer accent line stays neutral; leave as-is */
-
-/* Email client accents */
-body[data-theme] .folder-item { color: var(--theme-primary) !important; }
-body[data-theme] .folder-icon { color: var(--theme-icon) !important; }
-body[data-theme] .folder-item.active { border-left-color: var(--theme-primary) !important; }
-body[data-theme] .folder-count { background: var(--theme-primary) !important; color: var(--theme-on-primary) !important; }
-body[data-theme] .email-item:hover { border-left-color: var(--theme-primary) !important; }
-body[data-theme] .email-item.active { border-left-color: var(--theme-primary) !important; }
+/* Ensure readable text on primary-colored fills (esp. black-yellow -> yellow text) */
 body[data-theme] .btn-compose,
-body[data-theme] .btn-sync,
-body[data-theme] .btn-settings,
-body[data-theme] .btn-sync-config,
-body[data-theme] .btn-connect { background: var(--theme-primary) !important; color: var(--theme-on-primary) !important; border-color: var(--theme-primary) !important; }
+body[data-theme] .btn-add-account,
+body[data-theme] .folder-count,
+body[data-theme] .btn-logout,
+body[data-theme] .btn-icon:hover,
+body[data-theme] .btn-settings:hover,
+body[data-theme] .btn-sync:hover,
+body[data-theme] .btn-sync-config:hover {
+  color: var(--theme-on-primary) !important;
+}
+
+/* Copyright footer accent line + text stay neutral */
+#blooCopyright { color: #666 !important; }
 
 /* Theme picker control */
-.theme-picker { margin-top: 10px; }
+.theme-picker { margin-bottom: 4px; }
 .theme-picker label { display:block; font-size:0.75rem; color:#888; margin-bottom:4px; }
 .theme-picker select { width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; }

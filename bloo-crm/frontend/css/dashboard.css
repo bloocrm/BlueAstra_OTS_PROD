@@ -85,12 +85,12 @@
 
 .nav-item:hover {
     background-color: #f5f5f5;
-    color: #cc0000;
+    color: var(--theme-primary-dark);
 }
 
 .nav-item.active {
-    background-color: #fff0f0;
-    color: #cc0000;
+    background-color: var(--theme-soft);
+    color: var(--theme-primary-dark);
     border-left-color: var(--primary-blue);
     font-weight: 600;
 }
@@ -98,7 +98,7 @@
 .nav-item i {
     font-size: 1.25rem;
     width: 1.5rem;
-    color: #cc0000; /* icons/symbols stay red */
+    color: var(--theme-primary-dark); /* icons/symbols stay red */
 }
 
 .nav-item span {
@@ -425,7 +425,7 @@
 }
 
 .btn-delete:hover {
-    background-color: #dc2626;
+    background-color: var(--theme-primary);
 }
 
 /* =====================================================
@@ -806,7 +806,7 @@
 
 .ai-icon {
     font-size: 3rem;
-    background: linear-gradient(135deg, var(--orange), #ff6b00);
+    background: linear-gradient(135deg, var(--orange), var(--theme-primary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1529,7 +1529,7 @@
 }
 
 .document-icon.pdf {
-    color: #dc2626;
+    color: var(--theme-primary);
 }
 
 .document-icon.image {
@@ -1896,7 +1896,7 @@
 
 .email-status.unread {
     background: rgba(239, 68, 68, 0.2);
-    color: #dc2626;
+    color: var(--theme-primary);
 }
 
 .email-status.read {
@@ -2011,7 +2011,7 @@
 }
 
 .event-btn-decline:hover {
-    background: #dc2626;
+    background: var(--theme-primary);
 }
 
 .event-btn-maybe {
@@ -2065,7 +2065,7 @@
 }
 
 .sync-disconnect:hover {
-    background: #dc2626;
+    background: var(--theme-primary);
 }
 
 /* =====================================================
@@ -2372,11 +2372,11 @@
 
 .ai-upgrade-card.rocket-card {
     background: linear-gradient(135deg, rgba(255, 107, 107, 0.02) 0%, rgba(255, 69, 0, 0.02) 100%);
-    border-color: #ff4500;
+    border-color: var(--theme-primary);
 }
 
 .ai-upgrade-card.rocket-card:hover {
-    border-color: #ff6b6b;
+    border-color: var(--theme-primary-light);
     box-shadow: 0 8px 24px rgba(255, 69, 0, 0.15);
 }
 
@@ -2408,7 +2408,7 @@
 }
 
 .rocket-badge {
-    background: linear-gradient(135deg, #ff4500, #ff6b6b);
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-light));
     color: var(--white);
 }
 
@@ -2426,7 +2426,7 @@
 }
 
 .rocket-card .plan-price {
-    color: #ff4500;
+    color: var(--theme-primary);
 }
 
 .plan-description {
@@ -2492,12 +2492,12 @@
     background: rgba(255, 69, 0, 0.05);
     padding: 1rem;
     border-radius: 0.5rem;
-    border-left: 4px solid #ff4500;
+    border-left: 4px solid var(--theme-primary);
 }
 
 .feature-category h5 {
     margin: 0 0 0.75rem 0;
-    color: #ff4500;
+    color: var(--theme-primary);
     font-size: 0.95rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -2519,7 +2519,7 @@
 }
 
 .feature-category li i {
-    color: #ff4500;
+    color: var(--theme-primary);
     font-size: 0.8rem;
 }
 
@@ -2536,18 +2536,18 @@
 }
 
 .rocket-upgrade {
-    background: linear-gradient(135deg, #ff4500, #ff6b6b);
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-light));
 }
 
 .rocket-upgrade:hover {
-    background: linear-gradient(135deg, #ff6b6b, #ff4500);
+    background: linear-gradient(135deg, var(--theme-primary-light), var(--theme-primary));
     transform: scale(1.02);
 }
 
 .enterprise-note {
     text-align: center;
     margin-top: 1rem;
-    color: #ff4500;
+    color: var(--theme-primary);
     font-size: 0.9rem;
     font-weight: 600;
 }
@@ -2562,7 +2562,7 @@
 
 .active-plan-section.rocket-active {
     background: linear-gradient(135deg, rgba(255, 69, 0, 0.05) 0%, rgba(255, 107, 107, 0.05) 100%);
-    border-color: #ff4500;
+    border-color: var(--theme-primary);
 }
 
 .active-plan-badge {
@@ -2577,7 +2577,7 @@
 }
 
 .active-plan-badge.rocket-active-badge {
-    background: linear-gradient(135deg, #ff4500, #ff6b6b);
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-light));
 }
 
 .active-plan-section h3 {
@@ -2602,7 +2602,7 @@
     margin-top: 2rem;
     padding: 2rem;
     background: linear-gradient(135deg, rgba(255, 69, 0, 0.1) 0%, rgba(255, 107, 107, 0.1) 100%);
-    border: 2px dashed #ff4500;
+    border: 2px dashed var(--theme-primary);
     border-radius: 1rem;
 }
 
@@ -2612,7 +2612,7 @@
 
 .rocket-icon {
     font-size: 3rem;
-    color: #ff4500;
+    color: var(--theme-primary);
     margin-bottom: 1rem;
     animation: float 3s ease-in-out infinite;
 }
@@ -2645,13 +2645,13 @@
     background: var(--white);
     padding: 1rem;
     border-radius: 0.5rem;
-    border-left: 4px solid #ff4500;
+    border-left: 4px solid var(--theme-primary);
     color: var(--text-dark);
     font-size: 0.95rem;
 }
 
 .comparison-item strong {
-    color: #ff4500;
+    color: var(--theme-primary);
     display: block;
     margin-bottom: 0.25rem;
 }
@@ -2667,12 +2667,12 @@
     background: var(--white);
     padding: 1.5rem;
     border-radius: 0.75rem;
-    border: 2px solid #ff4500;
+    border: 2px solid var(--theme-primary);
     box-shadow: 0 2px 8px rgba(255, 69, 0, 0.1);
 }
 
 .feature-category-box h4 {
-    color: #ff4500;
+    color: var(--theme-primary);
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
     text-transform: uppercase;
@@ -2697,7 +2697,7 @@
 }
 
 .feature-category-box li i {
-    color: #ff4500;
+    color: var(--theme-primary);
     font-weight: 600;
 }
 
@@ -2792,7 +2792,7 @@
 
 .rocket-burst {
     font-size: 4rem;
-    color: #ff4500;
+    color: var(--theme-primary);
     margin-bottom: 1rem;
     animation: float 3s ease-in-out infinite;
 }
@@ -3054,7 +3054,7 @@
 
 .calendar-icon-big {
     font-size: 4rem;
-    color: #ff4500;
+    color: var(--theme-primary);
     margin-bottom: 1rem;
     animation: pulse 2s ease-in-out infinite;
 }
@@ -3068,7 +3068,7 @@
     font-size: 2rem;
     color: var(--text-dark);
     margin: 0.5rem 0;
-    background: linear-gradient(135deg, #ff4500, #ff6b6b);
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-light));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -3076,7 +3076,7 @@
 
 .calendar-tagline {
     font-size: 1.15rem;
-    color: #ff4500;
+    color: var(--theme-primary);
     font-style: italic;
     margin: 1rem 0 0 0;
 }
@@ -3103,7 +3103,7 @@
 }
 
 .calendar-intro strong {
-    color: #ff4500;
+    color: var(--theme-primary);
 }
 
 .redcrm-features-grid {
@@ -3119,20 +3119,20 @@
     background: var(--white);
     padding: 1.75rem;
     border-radius: 0.75rem;
-    border: 2px solid #ff4500;
+    border: 2px solid var(--theme-primary);
     transition: all 0.3s ease;
     text-align: center;
 }
 
 .redcrm-feature-card:hover {
-    border-color: #ff6b6b;
+    border-color: var(--theme-primary-light);
     box-shadow: 0 12px 32px rgba(255, 69, 0, 0.15);
     transform: translateY(-6px);
 }
 
 .redcrm-icon {
     font-size: 2.5rem;
-    color: #ff4500;
+    color: var(--theme-primary);
     margin-bottom: 1rem;
 }
 
@@ -3181,13 +3181,13 @@
 }
 
 .value-card:hover {
-    border-color: #ff4500;
+    border-color: var(--theme-primary);
     box-shadow: 0 8px 16px rgba(255, 69, 0, 0.1);
 }
 
 .value-card i {
     font-size: 2rem;
-    color: #ff4500;
+    color: var(--theme-primary);
     margin-bottom: 0.75rem;
 }
 
@@ -3204,11 +3204,11 @@
 }
 
 .calendar-cta {
-    background: linear-gradient(135deg, #ff4500, #ff6b6b);
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-light));
 }
 
 .calendar-cta:hover {
-    background: linear-gradient(135deg, #ff6b6b, #ff4500);
+    background: linear-gradient(135deg, var(--theme-primary-light), var(--theme-primary));
 }
 
 .calendar-note {
@@ -3222,7 +3222,7 @@
 
 .calendar-upgrade-section.active .calendar-active-banner {
     background: linear-gradient(135deg, rgba(255, 69, 0, 0.1) 0%, rgba(255, 107, 107, 0.1) 100%);
-    border: 2px solid #ff4500;
+    border: 2px solid var(--theme-primary);
     border-radius: 1rem;
     padding: 2rem;
     text-align: center;
@@ -3231,7 +3231,7 @@
 
 .calendar-success-badge {
     display: inline-block;
-    background: linear-gradient(135deg, #ff4500, #ff6b6b);
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-light));
     color: var(--white);
     padding: 0.75rem 1.5rem;
     border-radius: 2rem;
@@ -3261,14 +3261,14 @@
     background: var(--white);
     padding: 1.5rem;
     border-radius: 0.75rem;
-    border-left: 4px solid #ff4500;
+    border-left: 4px solid var(--theme-primary);
     display: flex;
     gap: 1rem;
 }
 
 .active-redcrm-item i {
     font-size: 1.5rem;
-    color: #ff4500;
+    color: var(--theme-primary);
     min-width: 30px;
 }
 
