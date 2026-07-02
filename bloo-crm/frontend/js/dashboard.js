@@ -46,6 +46,7 @@ function switchView(viewName) {
         communications: 'Communications',
         grievance: 'Grievance & Support',
         help: 'Help & Knowledge Base',
+        knowledge: 'Knowledge Repository',
         vendors: 'Vendor Dashboard',
         hr: 'Employee Dashboard',
         employees: 'Employee Information',
@@ -86,6 +87,8 @@ function switchView(viewName) {
         if (typeof loadGrievances === 'function') loadGrievances();
     } else if (viewName === 'help') {
         if (typeof loadHelp === 'function') loadHelp();
+    } else if (viewName === 'knowledge') {
+        if (typeof loadKnowledge === 'function') loadKnowledge();
     } else if (viewName === 'vendors') {
         if (typeof loadVendorDashboard === 'function') loadVendorDashboard();
     } else if (viewName === 'employees') {

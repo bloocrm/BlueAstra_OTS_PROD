@@ -178,6 +178,9 @@
                 <a href="#" onclick="switchView('vendors')" class="nav-item" data-view="vendors">
                     <i class="fas fa-truck-loading"></i> <span>Vendor Dashboard</span>
                 </a>
+                <a href="#" onclick="switchView('knowledge')" class="nav-item" data-view="knowledge">
+                    <i class="fas fa-brain"></i> <span>Knowledge Repository</span>
+                </a>
                 <a href="#" onclick="switchView('help')" class="nav-item" data-view="help">
                     <i class="fas fa-life-ring"></i> <span>Help & Knowledge Base</span>
                 </a>
@@ -1071,6 +1074,64 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             <div class="modal-actions">
                                 <button type="button" class="btn btn-secondary" onclick="closeVendorDocModal()">Cancel</button>
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Upload</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Knowledge Repository View -->
+                <div id="knowledge" class="view">
+                    <div class="view-header">
+                        <h3><i class="fas fa-brain"></i> Knowledge Repository</h3>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-secondary" onclick="seedKnowledge()"><i class="fas fa-seedling"></i> Load Starter Articles</button>
+                            <button class="btn btn-primary" onclick="openKbModal()"><i class="fas fa-plus"></i> Add Article</button>
+                        </div>
+                    </div>
+
+                    <!-- Ask AI (RAG over the repository) -->
+                    <div class="chart-container" style="margin-bottom:16px;">
+                        <h3><i class="fas fa-robot"></i> Ask the Knowledge Assistant</h3>
+                        <p style="color:#888;font-size:0.85rem;margin:4px 0;">Natural-language questions answered from the knowledge repository, with citations.</p>
+                        <div style="display:flex;gap:8px;">
+                            <input type="text" id="kbAsk" placeholder='e.g. "Best retirement strategies for a 52-year-old business owner?"' style="flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;" onkeyup="if(event.key==='Enter')kbAskAI()">
+                            <button class="btn btn-primary" onclick="kbAskAI()"><i class="fas fa-paper-plane"></i> Ask</button>
+                        </div>
+                        <div id="kbAskResult" style="margin-top:10px;"></div>
+                    </div>
+
+                    <!-- Search / browse -->
+                    <div class="chart-container">
+                        <h3><i class="fas fa-search"></i> Search Articles</h3>
+                        <div style="display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;">
+                            <input type="text" id="kbSearch" placeholder="Search keywords, titles, content…" style="flex:1;min-width:220px;padding:10px;border:1px solid #ddd;border-radius:6px;" onkeyup="if(event.key==='Enter')kbSearch()">
+                            <select id="kbCategory" onchange="kbSearch()" style="padding:10px;border:1px solid #ddd;border-radius:6px;"><option value="">All domains</option></select>
+                            <button class="btn btn-primary" onclick="kbSearch()"><i class="fas fa-search"></i> Search</button>
+                        </div>
+                        <div id="kbResults" class="activity-list"></div>
+                    </div>
+                </div>
+
+                <!-- Add / Edit Article Modal -->
+                <div id="kbModal" class="modal">
+                    <div class="modal-content" style="max-width:640px;">
+                        <div class="modal-header"><h2 id="kbModalTitle"><i class="fas fa-brain"></i> Add Article</h2><button class="close-btn" onclick="closeKbModal()">&times;</button></div>
+                        <form onsubmit="submitKb(event)">
+                            <input type="hidden" id="kbEditId">
+                            <div class="form-row">
+                                <div class="form-group"><label>Category / Domain</label><input type="text" id="kbCat" placeholder="e.g. Wealth Management"></div>
+                                <div class="form-group"><label>Subcategory</label><input type="text" id="kbSub"></div>
+                            </div>
+                            <div class="form-group"><label>Title <span style="color:var(--theme-primary);">*</span></label><input type="text" id="kbTitle" required></div>
+                            <div class="form-group"><label>Summary</label><textarea id="kbSummary" rows="2"></textarea></div>
+                            <div class="form-group"><label>Content</label><textarea id="kbContent" rows="6"></textarea></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Keywords (comma-separated)</label><input type="text" id="kbKeywords"></div>
+                                <div class="form-group"><label>Difficulty</label><select id="kbDifficulty"><option>Beginner</option><option selected>Intermediate</option><option>Advanced</option></select></div>
+                            </div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeKbModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
                             </div>
                         </form>
                     </div>
@@ -2599,6 +2660,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/approvals.js"></script>
     <script src="js/workflow-tasks.js"></script>
     <script src="js/help.js"></script>
+    <script src="js/knowledge.js"></script>
     <script src="js/vendors.js"></script>
     <script src="js/ai-tools.js"></script>
     <script src="js/ai-assist.js"></script>

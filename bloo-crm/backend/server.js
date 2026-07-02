@@ -253,6 +253,10 @@ app.use('/api/vendors', vendorRoutes);
 const aiRoutes = require('./routes/ai');
 app.use('/api/ai', aiRoutes);
 
+// Knowledge repository (searchable KB + RAG AI answering)
+const knowledgeRoutes = require('./routes/knowledge');
+app.use('/api/knowledge', knowledgeRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin
