@@ -16,12 +16,12 @@ body[data-theme="red"] {
   --theme-icon: #E74C3C;
 }
 body[data-theme="blue"] {
-  --theme-primary: #2f5fdb;      /* royal blue */
-  --theme-primary-dark: #1e3f9c;
-  --theme-primary-light: #6b8ff0;
-  --theme-on-primary: #ffffff;
-  --theme-soft: #eef2ff;
-  --theme-icon: #2f5fdb;
+  --theme-primary: #29b6f6;      /* sky blue */
+  --theme-primary-dark: #0288d1;
+  --theme-primary-light: #81d4fa;
+  --theme-on-primary: #ffffff;   /* white */
+  --theme-soft: #e6f6ff;
+  --theme-icon: #29b6f6;
 }
 body[data-theme="black-yellow"] {
   --theme-primary: #1a1a1a;      /* black */
@@ -61,6 +61,12 @@ body[data-theme] .btn-sync:hover,
 body[data-theme] .btn-sync-config:hover {
   color: var(--theme-on-primary) !important;
 }
+
+/* Logout button + Bloo CRM logo follow the theme */
+body[data-theme] .btn-logout { background: var(--theme-primary) !important; color: var(--theme-on-primary) !important; border-color: var(--theme-primary) !important; }
+body[data-theme] .btn-logout:hover { background: var(--theme-primary-dark) !important; }
+body[data-theme] .bloo-text,
+body[data-theme] i.bloo-text { color: var(--theme-primary) !important; }
 
 /* Page title + section headings + their icons follow the theme */
 body[data-theme] #pageTitle { color: var(--theme-primary) !important; }
