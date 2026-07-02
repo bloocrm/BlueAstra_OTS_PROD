@@ -119,7 +119,7 @@ const leadSchema = new mongoose.Schema(
 
 // Indexes
 leadSchema.index({ userId: 1, status: 1 });
-leadSchema.index({ email: 1, userId: 1 }, { unique: true, sparse: true });
+leadSchema.index({ email: 1, userId: 1 }); // non-unique: allow duplicate/empty emails on free-form upload
 leadSchema.index({ score: -1 });
 leadSchema.index({ name: 'text', email: 'text', tags: 'text' });
 
