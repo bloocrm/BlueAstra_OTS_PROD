@@ -68,6 +68,24 @@ body[data-theme] .btn-logout:hover { background: var(--theme-primary-dark) !impo
 body[data-theme] .bloo-text,
 body[data-theme] i.bloo-text { color: var(--theme-primary) !important; }
 
+/* Sidebar logo wordmark "Bloo CRM" + its icon */
+body[data-theme] .sidebar-header h2,
+body[data-theme] .sidebar-header h2 i { color: var(--theme-primary) !important; }
+
+/* Stat / activity icon circles (Vendor, Employee, Workflow, KB, dashboard) */
+body[data-theme] .blue-bg,
+body[data-theme] .aqua-bg,
+body[data-theme] .orange-bg,
+body[data-theme] .green-bg { background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-dark)) !important; }
+body[data-theme] .stat-icon i,
+body[data-theme] .activity-icon i { color: var(--theme-on-primary) !important; }
+
+/* Pricing hero ("Simple, Transparent Pricing") background + text */
+body[data-theme] .pricing-hero { background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-dark)) !important; }
+body[data-theme] .pricing-hero,
+body[data-theme] .pricing-hero h2,
+body[data-theme] .pricing-hero p { color: var(--theme-on-primary) !important; }
+
 /* Page title + section headings + their icons follow the theme */
 body[data-theme] #pageTitle { color: var(--theme-primary) !important; }
 body[data-theme] .view-header h3,

@@ -19,7 +19,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -55,7 +55,7 @@
 
         .otp-icon {
             font-size: 3.5rem;
-            color: #667eea;
+            color: var(--theme-primary);
             margin-bottom: 1rem;
         }
 
@@ -125,12 +125,12 @@
 
         .otp-input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--theme-primary);
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .otp-input.filled {
-            border-color: #667eea;
+            border-color: var(--theme-primary);
             background: rgba(102, 126, 234, 0.05);
         }
 
@@ -163,7 +163,7 @@
         .resend-btn {
             background: none;
             border: none;
-            color: #667eea;
+            color: var(--theme-primary);
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
@@ -171,7 +171,7 @@
         }
 
         .resend-btn:hover:not(:disabled) {
-            color: #764ba2;
+            color: var(--theme-primary-dark);
             text-decoration: underline;
         }
 
@@ -225,7 +225,7 @@
         .btn-verify {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
             color: white;
             border: none;
             border-radius: 0.75rem;
@@ -255,7 +255,7 @@
             display: block;
             text-align: center;
             margin-top: 1.5rem;
-            color: #667eea;
+            color: var(--theme-primary);
             text-decoration: none;
             font-weight: 500;
             font-size: 0.9rem;
@@ -263,7 +263,7 @@
         }
 
         .back-link:hover {
-            color: #764ba2;
+            color: var(--theme-primary-dark);
         }
 
         .loading {
@@ -274,7 +274,7 @@
 
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border-top: 4px solid var(--theme-primary);
             border-radius: 50%;
             width: 40px;
             height: 40px;
