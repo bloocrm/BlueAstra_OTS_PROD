@@ -128,6 +128,57 @@ router.post('/chat', async (req, res) => {
   res.json({ status: 'success', reply, source: 'fallback' });
 });
 
+// ---------- AI Assist (context-aware, per-tab) ----------
+const CONTEXT_LABEL = {
+  dashboard: 'the dashboard', clients: 'the Clients list', clientDashboard: 'the Client Dashboard',
+  leads: 'the Leads list', email: 'the email inbox', calendar: 'the Calendar', meetingRoom: 'the Meeting Room',
+  vendors: 'the Vendor Dashboard', hr: 'the Employee Dashboard', employees: 'the Employees section',
+  leaves: 'Leave applications', approvals: 'Approvals', performance: 'Performance', policies: 'Policies',
+  workflow: 'the Workflow & tasks', grievance: 'Grievances', communications: 'Communications'
+};
+
+router.post('/assist', async (req, res) => {
+  const context = (req.body && req.body.context || 'dashboard').toString();
+  const items = Array.isArray(req.body && req.body.items) ? req.body.items.slice(0, 25) : [];
+  const focus = CONTEXT_LABEL[context] || ('the ' + context + ' section');
+
+  let promptData;
+  if (context === 'email') {
+    promptData = { inbox: items }; // [{from, subject, snippet}]
+  } else {
+    try { promptData = (await buildCrmContext(req.userId)).data; } catch (e) { promptData = {}; }
+  }
+
+  const emailExtra = context === 'email'
+    ? ' For emails: identify which messages need a reply and the recommended response angle, note the sender intent, and surface sales/upsell openings.'
+    : '';
+  const prompt = `You are an AI sales & productivity assistant embedded in a financial-advisory CRM. The user is currently viewing ${focus}.${emailExtra} Based on the DATA (JSON), return STRICT JSON with keys:
+insights (array of 2-4 short, specific observations about what's shown here),
+recommendations (array of 2-4 concrete next actions; for emails, who to respond to and the angle),
+salesPitches (array of 1-3 short pitch / upsell ideas),
+todos (array of 2-5 prioritized to-do items).
+DATA:
+${JSON.stringify(promptData).slice(0, 6000)}`;
+
+  const ai = await callOpenAI([{ role: 'system', content: 'You are a concise, practical CRM co-pilot. Output only JSON.' }, { role: 'user', content: prompt }], { json: true, maxTokens: 700 });
+  if (ai) { try { return res.json({ status: 'success', source: 'ai', context, assist: JSON.parse(ai) }); } catch (_) {} }
+
+  // Fallback
+  const assist = { insights: [], recommendations: [], salesPitches: [], todos: [] };
+  if (context === 'email') {
+    assist.insights.push(`You have ${items.length} emails loaded.`);
+    assist.recommendations.push('Reply to the most recent client emails first; acknowledge and propose a next step.');
+    assist.salesPitches.push('Where a client shows interest, offer a portfolio review or a plan upgrade.');
+    assist.todos.push('Draft replies to unanswered client emails.', 'Log follow-up dates for time-sensitive threads.');
+  } else {
+    assist.insights.push(`Viewing ${focus}. Keep records current for the best AI recommendations.`);
+    assist.recommendations.push('Act on the highest-priority items in this section today.');
+    assist.salesPitches.push('Identify clients ready for an upsell or a new service.');
+    assist.todos.push('Review and update this section.', 'Follow up on anything pending.');
+  }
+  res.json({ status: 'success', source: 'fallback', context, assist });
+});
+
 // ---------- Whole-CRM strategic insights ----------
 router.get('/insights', async (req, res) => {
   let ctx;
