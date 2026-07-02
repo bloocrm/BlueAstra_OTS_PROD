@@ -75,6 +75,37 @@ body[data-theme] .view h3 > i,
 body[data-theme] .view h4 > i,
 body[data-theme] .ai-header h3 { color: var(--theme-primary) !important; }
 
+/* Client list cards, badges & buttons follow the theme */
+body[data-theme] .client-name,
+body[data-theme] .client-box-name,
+body[data-theme] .client-box-id { color: var(--theme-primary) !important; }
+body[data-theme] .client-badge,
+body[data-theme] .badge-blue,
+body[data-theme] .badge-aqua,
+body[data-theme] .badge-orange { background: var(--theme-soft) !important; color: var(--theme-primary) !important; }
+body[data-theme] .btn-edit,
+body[data-theme] .client-box-action .btn { background: var(--theme-primary) !important; color: var(--theme-on-primary) !important; }
+body[data-theme] .btn-edit:hover { background: var(--theme-primary-dark) !important; }
+body[data-theme] .btn-delete { background: var(--theme-primary-dark) !important; color: var(--theme-on-primary) !important; }
+
+/* Pricing & Payment tab follow the theme */
+body[data-theme] .pricing-header h3,
+body[data-theme] .price,
+body[data-theme] .pricing-card.premium { color: var(--theme-primary) !important; }
+body[data-theme] .pricing-card.premium { border-color: var(--theme-primary) !important; }
+body[data-theme] .pricing-card .btn,
+body[data-theme] .btn-meeting-upgrade,
+body[data-theme] .toggle-btn.active { background: var(--theme-primary) !important; color: var(--theme-on-primary) !important; border-color: var(--theme-primary) !important; }
+
+/* Upload Source Data headings/text accents */
+body[data-theme] .upload-section .section-subtitle,
+body[data-theme] .instruction-card h4,
+body[data-theme] .upload-header h3,
+body[data-theme] .upload-section h2,
+body[data-theme] .upload-section h3 { color: var(--theme-primary) !important; }
+body[data-theme] .instruction-card i,
+body[data-theme] .upload-header i { color: var(--theme-primary) !important; }
+
 /* Copyright footer accent line + text stay neutral */
 #blooCopyright { color: #666 !important; }
 
