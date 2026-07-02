@@ -1,0 +1,69 @@
+/*
+  Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
+  Application-wide color theme layer. Switch via body[data-theme].
+*/
+
+/* ---- Theme variable sets ---- */
+:root,
+body[data-theme="red"] {
+  --theme-primary: #E74C3C;
+  --theme-primary-dark: #c0392b;
+  --theme-on-primary: #ffffff;
+  --theme-soft: #fff0f0;
+  --theme-icon: #E74C3C;
+}
+body[data-theme="blue"] {
+  --theme-primary: #2f5fdb;      /* royal blue */
+  --theme-primary-dark: #1e3f9c;
+  --theme-on-primary: #ffffff;
+  --theme-soft: #eef2ff;
+  --theme-icon: #2f5fdb;
+}
+body[data-theme="black-yellow"] {
+  --theme-primary: #1a1a1a;      /* black */
+  --theme-primary-dark: #000000;
+  --theme-on-primary: #FFD400;   /* yellow text/icon on black */
+  --theme-soft: #fffbe6;
+  --theme-icon: #111111;
+}
+
+/* ---- Overrides (use !important to win over hardcoded base colors) ---- */
+
+/* Primary buttons */
+body[data-theme] .btn-primary,
+body[data-theme] .btn.btn-primary {
+  background: var(--theme-primary) !important;
+  color: var(--theme-on-primary) !important;
+  border-color: var(--theme-primary) !important;
+}
+body[data-theme] .btn-primary:hover { background: var(--theme-primary-dark) !important; }
+
+/* Sidebar nav */
+body[data-theme] .nav-item i { color: var(--theme-icon) !important; }
+body[data-theme] .nav-item.active { border-left-color: var(--theme-primary) !important; background: var(--theme-soft) !important; }
+body[data-theme] .nav-item:hover { color: var(--theme-primary-dark) !important; }
+
+/* Floating AI Assist + panel */
+body[data-theme] #aiAssistFab { background: var(--theme-primary) !important; color: var(--theme-on-primary) !important; }
+body[data-theme] #aiAssistFab:hover { background: var(--theme-primary-dark) !important; }
+body[data-theme] #aiAssistPanel .aa-head { background: var(--theme-primary) !important; color: var(--theme-on-primary) !important; }
+
+/* Copyright footer accent line stays neutral; leave as-is */
+
+/* Email client accents */
+body[data-theme] .folder-item { color: var(--theme-primary) !important; }
+body[data-theme] .folder-icon { color: var(--theme-icon) !important; }
+body[data-theme] .folder-item.active { border-left-color: var(--theme-primary) !important; }
+body[data-theme] .folder-count { background: var(--theme-primary) !important; color: var(--theme-on-primary) !important; }
+body[data-theme] .email-item:hover { border-left-color: var(--theme-primary) !important; }
+body[data-theme] .email-item.active { border-left-color: var(--theme-primary) !important; }
+body[data-theme] .btn-compose,
+body[data-theme] .btn-sync,
+body[data-theme] .btn-settings,
+body[data-theme] .btn-sync-config,
+body[data-theme] .btn-connect { background: var(--theme-primary) !important; color: var(--theme-on-primary) !important; border-color: var(--theme-primary) !important; }
+
+/* Theme picker control */
+.theme-picker { margin-top: 10px; }
+.theme-picker label { display:block; font-size:0.75rem; color:#888; margin-bottom:4px; }
+.theme-picker select { width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; }
