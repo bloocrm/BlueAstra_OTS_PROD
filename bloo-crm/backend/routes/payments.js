@@ -625,4 +625,86 @@ router.post('/stripe/checkout', verifyToken, async (req, res) => {
   }
 });
 
+// Verify a completed Stripe Checkout Session and activate the plan
+router.get('/stripe/verify-session', verifyToken, async (req, res) => {
+  try {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) return res.status(503).json({ error: 'Stripe not configured' });
+    const sid = req.query.session_id;
+    if (!sid) return res.status(400).json({ error: 'session_id is required' });
+
+    const resp = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sid)}`, {
+      headers: { Authorization: `Bearer ${key}` }
+    });
+    const s = await resp.json();
+    if (!resp.ok) return res.status(502).json({ error: 'Stripe lookup failed', message: (s.error && s.error.message) });
+
+    const paid = s.payment_status === 'paid' || s.status === 'complete';
+    const plan = s.metadata && s.metadata.plan;
+    const billingCycle = (s.metadata && s.metadata.billingCycle) || 'monthly';
+    let planActivated = false;
+
+    if (paid && plan) {
+      const user = await User.findById(req.userId);
+      if (user) {
+        user.plan = plan;
+        user.planStartDate = new Date();
+        user.planExpiryDate = new Date(Date.now() + (billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000);
+        user.subscriptionStatus = 'active';
+        await user.save();
+        planActivated = true;
+      }
+    }
+    res.json({ status: 'success', paid, plan, billingCycle, amountTotal: s.amount_total, currency: s.currency, planActivated });
+  } catch (error) {
+    console.error('verify-session error:', error);
+    res.status(500).json({ error: 'Verification failed', message: error.message });
+  }
+});
+
+// Stripe webhook (production closed loop). Raw body is set in server.js.
+router.post('/stripe/webhook', async (req, res) => {
+  try {
+    const crypto = require('crypto');
+    const secret = process.env.STRIPE_WEBHOOK_SECRET;
+    const raw = req.body; // Buffer (see server.js raw parser)
+    let event;
+
+    if (secret && Buffer.isBuffer(raw)) {
+      const sig = req.headers['stripe-signature'] || '';
+      const parts = Object.fromEntries(sig.split(',').map(kv => kv.split('=')));
+      const signed = `${parts.t}.${raw.toString('utf8')}`;
+      const expected = crypto.createHmac('sha256', secret).update(signed).digest('hex');
+      if (!parts.v1 || !crypto.timingSafeEqual(Buffer.from(parts.v1), Buffer.from(expected))) {
+        return res.status(400).json({ error: 'Invalid signature' });
+      }
+      event = JSON.parse(raw.toString('utf8'));
+    } else {
+      event = Buffer.isBuffer(raw) ? JSON.parse(raw.toString('utf8')) : raw;
+    }
+
+    if (event && event.type === 'checkout.session.completed') {
+      const s = event.data.object;
+      const uid = s.metadata && s.metadata.userId;
+      const plan = s.metadata && s.metadata.plan;
+      const billingCycle = (s.metadata && s.metadata.billingCycle) || 'monthly';
+      if (uid && plan) {
+        const user = await User.findById(uid);
+        if (user) {
+          user.plan = plan;
+          user.planStartDate = new Date();
+          user.planExpiryDate = new Date(Date.now() + (billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000);
+          user.subscriptionStatus = 'active';
+          await user.save();
+          console.log('Stripe webhook: activated', plan, 'for user', uid);
+        }
+      }
+    }
+    res.json({ received: true });
+  } catch (e) {
+    console.error('Stripe webhook error:', e.message);
+    res.status(400).json({ error: 'Webhook error', message: e.message });
+  }
+});
+
 module.exports = router;

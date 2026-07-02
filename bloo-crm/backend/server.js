@@ -53,6 +53,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
+// Stripe webhook needs the raw body for signature verification — mount before JSON parser
+app.use('/api/payments/stripe/webhook', express.raw({ type: '*/*' }));
+
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
