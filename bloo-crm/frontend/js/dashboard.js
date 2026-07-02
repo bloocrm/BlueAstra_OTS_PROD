@@ -47,6 +47,7 @@ function switchView(viewName) {
         grievance: 'Grievance & Support',
         help: 'Help & Knowledge Base',
         knowledge: 'Knowledge Repository',
+        proposals: 'Proposals — RFI / RFQ / RFP',
         vendors: 'Vendor Dashboard',
         hr: 'Employee Dashboard',
         employees: 'Employee Information',
@@ -89,6 +90,8 @@ function switchView(viewName) {
         if (typeof loadHelp === 'function') loadHelp();
     } else if (viewName === 'knowledge') {
         if (typeof loadKnowledge === 'function') loadKnowledge();
+    } else if (viewName === 'proposals') {
+        if (typeof loadProposals === 'function') loadProposals();
     } else if (viewName === 'vendors') {
         if (typeof loadVendorDashboard === 'function') loadVendorDashboard();
     } else if (viewName === 'employees') {

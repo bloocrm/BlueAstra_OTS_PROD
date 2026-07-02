@@ -181,6 +181,9 @@
                 <a href="#" onclick="switchView('knowledge')" class="nav-item" data-view="knowledge">
                     <i class="fas fa-brain"></i> <span>Knowledge Repository</span>
                 </a>
+                <a href="#" onclick="switchView('proposals')" class="nav-item" data-view="proposals">
+                    <i class="fas fa-file-signature"></i> <span>Proposals (RFI/RFQ/RFP)</span>
+                </a>
                 <a href="#" onclick="switchView('help')" class="nav-item" data-view="help">
                     <i class="fas fa-life-ring"></i> <span>Help & Knowledge Base</span>
                 </a>
@@ -1126,6 +1129,49 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+
+                <!-- Proposals: RFI / RFQ / RFP -->
+                <div id="proposals" class="view">
+                    <div class="view-header"><h3><i class="fas fa-file-signature"></i> Proposals — RFI / RFQ / RFP</h3></div>
+
+                    <div class="hr-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                        <button class="btn btn-sm btn-primary" id="proTabRFI" onclick="proSetType('RFI')">RFI</button>
+                        <button class="btn btn-sm btn-secondary" id="proTabRFQ" onclick="proSetType('RFQ')">RFQ</button>
+                        <button class="btn btn-sm btn-secondary" id="proTabRFP" onclick="proSetType('RFP')">RFP</button>
+                    </div>
+
+                    <!-- What to include (AI knowledge) -->
+                    <div class="chart-container" style="margin-bottom:16px;">
+                        <h3><i class="fas fa-info-circle"></i> <span id="proGuideTitle">What goes into an RFI</span></h3>
+                        <div id="proGuide"><p class="empty-state">Loading guidance…</p></div>
+                    </div>
+
+                    <!-- AI template generator -->
+                    <div class="chart-container" style="margin-bottom:16px;">
+                        <h3><i class="fas fa-magic"></i> AI Template Generator</h3>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0;">
+                            <label style="font-size:0.85rem;color:#666;">Industry:</label>
+                            <select id="proIndustry" style="padding:9px;border:1px solid #ddd;border-radius:6px;">
+                                <option>Wealth Management</option>
+                                <option>Investment Advisory</option>
+                                <option>Insurance</option>
+                                <option>Fintech</option>
+                            </select>
+                            <input type="text" id="proNotes" placeholder="Optional: specific needs/scope…" style="flex:1;min-width:200px;padding:9px;border:1px solid #ddd;border-radius:6px;">
+                            <button class="btn btn-primary" onclick="proGenerate()"><i class="fas fa-wand-magic-sparkles"></i> Generate <span id="proGenType">RFI</span> Template</button>
+                        </div>
+                        <div id="proGenResult"></div>
+                    </div>
+
+                    <!-- Upload + saved list -->
+                    <div class="chart-container" style="margin-bottom:16px;">
+                        <h3><i class="fas fa-folder-open"></i> <span id="proListTitle">Saved RFIs & Documents</span></h3>
+                        <button class="btn btn-secondary" onclick="document.getElementById('proDocFile').click()"><i class="fas fa-upload"></i> Upload Document</button>
+                        <input type="file" id="proDocFile" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" onchange="proUploadDoc()">
+                        <div id="proSaved" class="activity-list" style="margin-top:10px;"></div>
+                        <div id="proDocs" class="activity-list"></div>
                     </div>
                 </div>
 
@@ -2653,6 +2699,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/workflow-tasks.js"></script>
     <script src="js/help.js"></script>
     <script src="js/knowledge.js"></script>
+    <script src="js/proposals.js"></script>
     <script src="js/vendors.js"></script>
     <script src="js/ai-tools.js"></script>
     <script src="js/ai-assist.js"></script>

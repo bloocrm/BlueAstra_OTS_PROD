@@ -257,6 +257,10 @@ app.use('/api/ai', aiRoutes);
 const knowledgeRoutes = require('./routes/knowledge');
 app.use('/api/knowledge', knowledgeRoutes);
 
+// Proposals (RFI / RFQ / RFP templates, guidance, documents)
+const proposalRoutes = require('./routes/proposals');
+app.use('/api/proposals', proposalRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin
@@ -267,6 +271,8 @@ app.use('/api/knowledge', knowledgeRoutes);
 app.use('/recordings', express.static(path.join(__dirname, 'uploads', 'recordings')));
 // Serve uploaded vendor documents
 app.use('/vendor-docs', express.static(path.join(__dirname, 'uploads', 'vendor-docs')));
+// Serve uploaded proposal documents
+app.use('/proposal-docs', express.static(path.join(__dirname, 'uploads', 'proposal-docs')));
 
 const frontendPath = path.join(__dirname, '..', 'frontend');
 app.use(express.static(frontendPath));
