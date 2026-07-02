@@ -16,44 +16,37 @@ const leadSchema = new mongoose.Schema(
       index: true
     },
 
-    // Basic Information
+    // Basic Information (validations removed for free-form upload)
     name: {
       type: String,
-      required: true,
       trim: true,
       index: true
     },
     email: {
       type: String,
-      required: true,
       trim: true,
       lowercase: true,
       index: true
     },
     phone: {
       type: String,
-      required: true,
       trim: true
     },
     company: String,
     jobTitle: String,
 
-    // Lead Status & Classification
+    // Lead Status & Classification (no enum — accepts any value)
     status: {
       type: String,
-      enum: ['new', 'qualified', 'interested', 'negotiating', 'converted', 'lost'],
       default: 'new',
       index: true
     },
     source: {
       type: String,
-      enum: ['website', 'referral', 'email', 'phone', 'event', 'social', 'other'],
       trim: true
     },
     score: {
       type: Number,
-      min: 0,
-      max: 100,
       default: 0
     },
 

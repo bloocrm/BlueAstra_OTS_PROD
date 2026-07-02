@@ -64,11 +64,9 @@ router.get('/:id', validators.idParam, handleValidationErrors, asyncHandler(asyn
   return successResponse(res, lead, 'Lead retrieved successfully');
 }));
 
-// POST /api/leads - Create new lead
+// POST /api/leads - Create new lead (validations removed for free-form upload)
 router.post(
   '/',
-  validators.lead.create,
-  handleValidationErrors,
   asyncHandler(async (req, res) => {
     const allowedFields = [
       'name', 'email', 'phone', 'company', 'jobTitle',
@@ -100,12 +98,9 @@ router.post(
   })
 );
 
-// PUT /api/leads/:id - Update lead
+// PUT /api/leads/:id - Update lead (validations removed for free-form upload)
 router.put(
   '/:id',
-  validators.idParam,
-  validators.lead.update,
-  handleValidationErrors,
   asyncHandler(async (req, res) => {
     await verifyOwnership(Lead, req.params.id, req.userId);
 
