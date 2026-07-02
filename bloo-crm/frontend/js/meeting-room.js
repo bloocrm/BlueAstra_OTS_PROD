@@ -1351,8 +1351,14 @@ async function viewMeetingRecord(meetingId) {
         const m = d.meeting;
         if (!m) return;
         const hasTranscript = m.transcript && m.transcript.trim().length > 0;
+        const rocket = (typeof isRocketPlan === 'function') ? isRocketPlan() : false;
         window.__meetingCache = window.__meetingCache || {};
         window.__meetingCache[m.meetingId] = m;
+
+        const lockedHtml = `<div style="background:var(--theme-soft);border:1px dashed var(--theme-primary);border-radius:8px;padding:14px;color:#555;">
+            <i class="fas fa-lock" style="color:var(--theme-primary);"></i> Viewing and managing the full <strong>recorded video</strong> and <strong>transcript</strong> requires the <strong>Rocket AI+</strong> plan.
+            <div style="margin-top:8px;"><button class="btn btn-sm btn-primary" onclick="this.closest('.modal').remove(); if(typeof selectPlan==='function') selectPlan('rocket-ai-plus');">Upgrade to Rocket AI+</button></div>
+        </div>`;
 
         const overlay = document.createElement('div');
         overlay.className = 'modal active';
@@ -1372,15 +1378,15 @@ async function viewMeetingRecord(meetingId) {
                         <div><div style="color:#888;font-size:0.8em;">Duration</div><div>${m.durationMinutes ? m.durationMinutes + ' Minutes' : '—'}</div></div>
                     </div>
                     <h4>Video Recording</h4>
-                    ${m.recordingUrl ? `<a href="${m.recordingUrl}" target="_blank" class="btn btn-secondary">▶ Play Recording</a>` : `<p style="color:#666;font-size:0.9em;">No recording available (recording pipeline pending).</p>`}
+                    ${!rocket ? lockedHtml : (m.recordingUrl ? `<a href="${m.recordingUrl}" target="_blank" class="btn btn-secondary">▶ Play Recording</a>` : `<p style="color:#666;font-size:0.9em;">No recording available (recording pipeline pending).</p>`)}
                     <h4 style="margin-top:14px;">Summary</h4>
                     <p style="color:#444;">${(m.summary || '(no summary yet)').replace(/</g, '&lt;')}</p>
                     <h4 style="margin-top:14px;">Transcript</h4>
-                    <pre style="white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:6px;max-height:240px;overflow:auto;">${hasTranscript ? m.transcript.replace(/</g, '&lt;') : '(no transcript yet)'}</pre>
+                    ${!rocket ? lockedHtml : `<pre style="white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:6px;max-height:240px;overflow:auto;">${hasTranscript ? m.transcript.replace(/</g, '&lt;') : '(no transcript yet)'}</pre>`}
                 </div>
                 <div class="modal-actions">
                     <button class="btn btn-secondary" onclick="downloadMeetingText('${m.meetingId}','minutes')"><i class="fas fa-download"></i> Download Minutes</button>
-                    <button class="btn btn-primary" onclick="downloadMeetingText('${m.meetingId}','transcript')" ${hasTranscript ? '' : 'disabled'}><i class="fas fa-download"></i> Download Transcript</button>
+                    ${rocket ? `<button class="btn btn-primary" onclick="downloadMeetingText('${m.meetingId}','transcript')" ${hasTranscript ? '' : 'disabled'}><i class="fas fa-download"></i> Download Transcript</button>` : `<button class="btn btn-primary" onclick="this.closest('.modal').remove(); if(typeof selectPlan==='function') selectPlan('rocket-ai-plus');"><i class="fas fa-lock"></i> Transcript — Rocket AI+</button>`}
                 </div>
             </div>`;
         document.body.appendChild(overlay);

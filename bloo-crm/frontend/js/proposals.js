@@ -94,9 +94,10 @@ async function proLoadSaved() {
             <div class="activity-item">
                 <div class="activity-icon blue-bg"><i class="fas fa-file-alt"></i></div>
                 <div class="activity-content" style="flex:1;">
-                    <div class="activity-title">${escPr(p.title)} <span style="font-size:0.72em;color:#888;">${p.proposalId} · ${p.industry} · ${p.status}</span></div>
-                    <div style="margin-top:6px;display:flex;gap:8px;">
+                    <div class="activity-title">${escPr(p.title)} <span style="font-size:0.72em;color:#888;">${p.proposalId} · ${p.industry} · ${p.status}</span>${p.assignedEmployee ? ` <span style="font-size:0.72em;color:var(--theme-primary);"><i class="fas fa-id-badge"></i> ${escPr(p.assignedEmployee)}</span>` : ''}</div>
+                    <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
                         <button class="btn btn-sm btn-secondary" onclick="proView('${p.proposalId}')"><i class="fas fa-eye"></i> View</button>
+                        <button class="btn btn-sm btn-secondary" onclick="proAssign('${p.proposalId}')"><i class="fas fa-user-plus"></i> Assign Employee ${(typeof isRocketPlan==='function'&&isRocketPlan())?'':'🔒'}</button>
                         <button class="btn btn-sm btn-delete" onclick="proDelete('${p.proposalId}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
@@ -120,6 +121,21 @@ async function proDelete(id) {
     if (!confirm('Delete this proposal?')) return;
     try { await apiRequest(`/proposals/${id}`, { method: 'DELETE' }); proLoadSaved(); }
     catch (e) { showNotification(e.message, 'error'); }
+}
+
+// Assign an employee to a proposal's activities (Rocket AI+ only)
+async function proAssign(id) {
+    if (typeof rocketGate === 'function' && !rocketGate('Assign employee to proposal activities')) return;
+    const employee = prompt('Assign which employee to this proposal\'s activities/workflow?');
+    if (employee === null) return;
+    try {
+        await apiRequest(`/proposals/${id}/assign`, { method: 'POST', body: { assignedEmployee: employee } });
+        showNotification('Employee assigned to proposal', 'success');
+        proLoadSaved();
+    } catch (e) {
+        if ((e.message || '').toLowerCase().includes('rocket')) showNotification('This requires the Rocket AI+ plan.', 'error');
+        else showNotification(`Could not assign: ${e.message}`, 'error');
+    }
 }
 
 async function proUploadDoc() {

@@ -17,7 +17,9 @@ const proposalSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true },
     content: { type: String, default: '' },
     status: { type: String, enum: ['draft', 'final'], default: 'draft' },
-    createdBy: { type: String, default: 'AI' }
+    createdBy: { type: String, default: 'AI' },
+    assignedEmployee: String   // Rocket AI+: employee mapped to this proposal's activities
+
   },
   { timestamps: true }
 );

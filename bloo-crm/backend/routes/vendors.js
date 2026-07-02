@@ -16,7 +16,13 @@ const path = require('path');
 const multer = require('multer');
 const Vendor = require('../models/Vendor');
 const VendorDocument = require('../models/VendorDocument');
+const User = require('../models/User');
 const { verifyToken } = require('../middleware/auth');
+
+async function isRocket(userId) {
+  const u = await User.findById(userId).select('plan').lean();
+  return !!u && u.plan === 'rocket-ai-plus';
+}
 
 const DOCS_DIR = path.join(__dirname, '..', 'uploads', 'vendor-docs');
 fs.mkdirSync(DOCS_DIR, { recursive: true });
@@ -115,6 +121,19 @@ router.delete('/:vendorId', async (req, res) => {
   const v = await Vendor.findOneAndDelete({ userId: req.userId, vendorId: req.params.vendorId });
   if (!v) return res.status(404).json({ error: 'Vendor not found' });
   res.json({ status: 'success', message: 'Vendor deleted' });
+});
+
+// Map a vendor to a client / employee / workflow (Rocket AI+ only)
+router.post('/:vendorId/map', async (req, res) => {
+  try {
+    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Mapping a vendor to a client/employee/workflow requires the Rocket AI+ plan.' });
+    const b = req.body || {};
+    const upd = {};
+    ['mappedClient', 'mappedEmployee', 'mappedWorkflow'].forEach(f => { if (b[f] !== undefined) upd[f] = b[f]; });
+    const v = await Vendor.findOneAndUpdate({ userId: req.userId, vendorId: req.params.vendorId }, upd, { new: true });
+    if (!v) return res.status(404).json({ error: 'Vendor not found' });
+    res.json({ status: 'success', vendor: v });
+  } catch (e) { res.status(500).json({ error: 'Failed to map vendor', message: e.message }); }
 });
 
 // ---------- Documents ----------

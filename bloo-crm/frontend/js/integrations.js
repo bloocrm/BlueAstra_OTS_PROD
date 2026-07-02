@@ -7,6 +7,21 @@
    PROJECT-MANAGEMENT INTEGRATIONS (Rocket AI+ only)
    ===================================================== */
 
+// ---- Shared Rocket AI+ gate ----
+function isRocketPlan() {
+    try { return (typeof getCurrentUser === 'function' ? (getCurrentUser() || {}).plan : null) === 'rocket-ai-plus'; }
+    catch (e) { return false; }
+}
+// Returns true if allowed; otherwise shows an upgrade prompt and returns false.
+function rocketGate(feature) {
+    if (isRocketPlan()) return true;
+    const go = confirm(`"${feature}" is a Rocket AI+ feature.\n\nUpgrade to Rocket AI+ to unlock it. Go to Pricing now?`);
+    if (go && typeof selectPlan === 'function') selectPlan('rocket-ai-plus');
+    return false;
+}
+window.isRocketPlan = isRocketPlan;
+window.rocketGate = rocketGate;
+
 const PM_INTEGRATIONS = [
     { tool: 'trello', name: 'Trello', slug: 'trello' },
     { tool: 'asana', name: 'Asana', slug: 'asana' },

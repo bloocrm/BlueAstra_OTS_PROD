@@ -18,7 +18,13 @@ const path = require('path');
 const multer = require('multer');
 const Proposal = require('../models/Proposal');
 const ProposalDocument = require('../models/ProposalDocument');
+const User = require('../models/User');
 const { verifyToken } = require('../middleware/auth');
+
+async function isRocket(userId) {
+  const u = await User.findById(userId).select('plan').lean();
+  return !!u && u.plan === 'rocket-ai-plus';
+}
 
 const DOCS_DIR = path.join(__dirname, '..', 'uploads', 'proposal-docs');
 fs.mkdirSync(DOCS_DIR, { recursive: true });
@@ -119,6 +125,20 @@ router.delete('/:proposalId', async (req, res) => {
   const p = await Proposal.findOneAndDelete({ userId: req.userId, proposalId: req.params.proposalId });
   if (!p) return res.status(404).json({ error: 'Not found' });
   res.json({ status: 'success', message: 'Deleted' });
+});
+
+// Assign an employee to a proposal's activities/workflow (Rocket AI+ only)
+router.post('/:proposalId/assign', async (req, res) => {
+  try {
+    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Assigning employees to proposal activities requires the Rocket AI+ plan.' });
+    const p = await Proposal.findOneAndUpdate(
+      { userId: req.userId, proposalId: req.params.proposalId },
+      { assignedEmployee: (req.body && req.body.assignedEmployee) || '' },
+      { new: true }
+    );
+    if (!p) return res.status(404).json({ error: 'Not found' });
+    res.json({ status: 'success', proposal: p });
+  } catch (e) { res.status(500).json({ error: 'Failed to assign', message: e.message }); }
 });
 
 // ---- Documents ----

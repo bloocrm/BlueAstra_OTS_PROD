@@ -109,8 +109,13 @@ function renderVendorList(vendors) {
                 <div style="margin-top:6px;display:flex;gap:8px;">
                     <button class="btn btn-sm btn-secondary" onclick="editVendor('${v.vendorId}')"><i class="fas fa-edit"></i> Edit</button>
                     <button class="btn btn-sm btn-primary" onclick="openVendorDocs('${v.vendorId}','${escAttr(v.name)}')"><i class="fas fa-folder-open"></i> Documents</button>
+                    <button class="btn btn-sm btn-secondary" onclick="openVendorMap('${v.vendorId}')"><i class="fas fa-project-diagram"></i> Map ${isRocketPlan() ? '' : '🔒'}</button>
                     <button class="btn btn-sm btn-delete" onclick="deleteVendor('${v.vendorId}')"><i class="fas fa-trash"></i></button>
                 </div>
+                ${(v.mappedClient || v.mappedEmployee || v.mappedWorkflow) ? `<div style="font-size:0.78rem;color:#666;margin-top:6px;">
+                    ${v.mappedClient ? '<i class="fas fa-user"></i> ' + escV(v.mappedClient) + ' ' : ''}
+                    ${v.mappedEmployee ? '· <i class="fas fa-id-badge"></i> ' + escV(v.mappedEmployee) + ' ' : ''}
+                    ${v.mappedWorkflow ? '· <i class="fas fa-sitemap"></i> ' + escV(v.mappedWorkflow) : ''}</div>` : ''}
             </div>
         </div>`).join('');
 }
@@ -154,6 +159,26 @@ async function submitVendor(event) {
 }
 
 function editVendor(id) { const v = _vendorsCache.find(x => x.vendorId === id); if (v) openVendorModal(v); }
+
+// Map a vendor to a client / employee / workflow (Rocket AI+ only)
+async function openVendorMap(vendorId) {
+    if (!rocketGate('Map vendor to client / employee / workflow')) return;
+    const v = _vendorsCache.find(x => x.vendorId === vendorId) || {};
+    const client = prompt('Map this vendor to a CLIENT (name):', v.mappedClient || '');
+    if (client === null) return;
+    const employee = prompt('Map this vendor to an EMPLOYEE (name):', v.mappedEmployee || '');
+    if (employee === null) return;
+    const workflow = prompt('Map this vendor to a WORKFLOW / process:', v.mappedWorkflow || '');
+    if (workflow === null) return;
+    try {
+        await apiRequest(`/vendors/${vendorId}/map`, { method: 'POST', body: { mappedClient: client, mappedEmployee: employee, mappedWorkflow: workflow } });
+        showNotification('Vendor mapping saved', 'success');
+        loadVendors();
+    } catch (e) {
+        if ((e.message || '').toLowerCase().includes('rocket')) showNotification('Vendor mapping requires the Rocket AI+ plan.', 'error');
+        else showNotification(`Could not save mapping: ${e.message}`, 'error');
+    }
+}
 async function deleteVendor(id) {
     if (!confirm('Delete this vendor?')) return;
     try { await apiRequest(`/vendors/${id}`, { method: 'DELETE' }); loadVendorDashboard(); }

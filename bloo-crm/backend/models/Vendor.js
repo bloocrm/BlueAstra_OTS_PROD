@@ -31,7 +31,12 @@ const vendorSchema = new mongoose.Schema(
     // KRI: risk index per quarter (0-100, higher = riskier)
     risk: quarterly(),
 
-    notes: String
+    notes: String,
+
+    // Rocket AI+ mappings — tie a vendor to a client / employee / workflow
+    mappedClient: String,
+    mappedEmployee: String,
+    mappedWorkflow: String
   },
   { timestamps: true }
 );
