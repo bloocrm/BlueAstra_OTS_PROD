@@ -108,6 +108,7 @@ function renderVendorList(vendors) {
                 </div>
                 <div style="margin-top:6px;display:flex;gap:8px;">
                     <button class="btn btn-sm btn-secondary" onclick="editVendor('${v.vendorId}')"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="btn btn-sm btn-primary" onclick="openVendorDocs('${v.vendorId}','${escAttr(v.name)}')"><i class="fas fa-folder-open"></i> Documents</button>
                     <button class="btn btn-sm btn-delete" onclick="deleteVendor('${v.vendorId}')"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
@@ -216,8 +217,84 @@ async function loadVendorDocs() {
 
 async function deleteVendorDoc(docId) {
     if (!confirm('Delete this document?')) return;
-    try { await apiRequest(`/vendors/documents/${docId}`, { method: 'DELETE' }); loadVendorDocs(); }
+    try { await apiRequest(`/vendors/documents/${docId}`, { method: 'DELETE' }); loadVendorDocs(); if (window.__vendorDocsOpen) loadVendorDocsFor(window.__vendorDocsOpen.id); }
     catch (e) { showNotification(`Could not delete: ${e.message}`, 'error'); }
+}
+
+// ---- Per-vendor documents (specific to one vendor) ----
+function openVendorDocs(vendorId, name) {
+    window.__vendorDocsOpen = { id: vendorId, name };
+    let overlay = document.getElementById('vendorDocsModal');
+    if (overlay) overlay.remove();
+    overlay = document.createElement('div');
+    overlay.id = 'vendorDocsModal';
+    overlay.className = 'modal active';
+    overlay.style.display = 'flex';
+    overlay.innerHTML = `
+        <div class="modal-content" style="max-width:640px;">
+            <div class="modal-header"><h2><i class="fas fa-folder-open"></i> Documents — ${escV(name)}</h2>
+                <button class="close-btn" onclick="document.getElementById('vendorDocsModal').remove()">&times;</button></div>
+            <div style="padding:0 4px;">
+                <div class="form-row">
+                    <div class="form-group"><label>Document Type</label>
+                        <select id="vDocType">${VENDOR_DOC_TYPES.map(t => `<option>${t}</option>`).join('')}</select>
+                    </div>
+                    <div class="form-group"><label>File (PDF, Excel, Word)</label>
+                        <input type="file" id="vDocFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.ods,.csv,.ppt,.pptx,.txt,image/*">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="uploadVendorDocFor()"><i class="fas fa-upload"></i> Upload to ${escV(name)}</button>
+                <hr style="margin:12px 0;">
+                <h4>Documents for this vendor</h4>
+                <div id="vendorDocsList" class="activity-list"><p class="empty-state">Loading…</p></div>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+    loadVendorDocsFor(vendorId);
+}
+
+async function loadVendorDocsFor(vendorId) {
+    const el = document.getElementById('vendorDocsList');
+    if (!el) return;
+    try {
+        const res = await apiRequest(`/vendors/documents?vendorRef=${encodeURIComponent(vendorId)}`, { method: 'GET' });
+        const docs = res.documents || [];
+        el.innerHTML = docs.length ? docs.map(d => `
+            <div class="activity-item">
+                <div class="activity-icon aqua-bg"><i class="fas fa-file-alt"></i></div>
+                <div class="activity-content" style="flex:1;">
+                    <div class="activity-title">${escV(d.docType)} — ${escV(d.originalName)}</div>
+                    <div class="activity-time">${(d.size/1024).toFixed(0)} KB · ${new Date(d.createdAt).toLocaleDateString()}</div>
+                    <div style="margin-top:6px;display:flex;gap:8px;">
+                        <a class="btn btn-sm btn-primary" href="${d.url}" target="_blank" download><i class="fas fa-download"></i> Download</a>
+                        <button class="btn btn-sm btn-delete" onclick="deleteVendorDoc('${d.docId}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>`).join('') : '<p class="empty-state">No documents for this vendor yet.</p>';
+    } catch (e) { el.innerHTML = `<p class="empty-state">Could not load: ${escV(e.message)}</p>`; }
+}
+
+async function uploadVendorDocFor() {
+    const ctx = window.__vendorDocsOpen;
+    if (!ctx) return;
+    const file = document.getElementById('vDocFile')?.files?.[0];
+    if (!file) { showNotification('Select a file', 'error'); return; }
+    if (file.size > 30 * 1024 * 1024) { showNotification('File exceeds 30MB', 'error'); return; }
+    const form = new FormData();
+    form.append('document', file);
+    form.append('docType', document.getElementById('vDocType')?.value || 'Other');
+    form.append('vendorRef', ctx.id);
+    form.append('vendorName', ctx.name);
+    try {
+        const token = localStorage.getItem('authToken');
+        const resp = await fetch(`${window.API_BASE_URL || '/api'}/vendors/documents`, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {}, body: form });
+        const d = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(d.message || d.error || 'upload failed');
+        showNotification(`Uploaded to ${ctx.name}`, 'success');
+        document.getElementById('vDocFile').value = '';
+        loadVendorDocsFor(ctx.id);
+        loadVendorDocs();
+    } catch (e) { showNotification(`Upload failed: ${e.message}`, 'error'); }
 }
 
 function escV(t) { return String(t || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); }
