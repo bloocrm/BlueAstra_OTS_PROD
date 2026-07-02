@@ -1150,7 +1150,14 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
 
                 <!-- Proposals: RFI / RFQ / RFP -->
                 <div id="proposals" class="view">
-                    <div class="view-header"><h3><i class="fas fa-file-signature"></i> Proposals — RFI / RFQ / RFP</h3></div>
+                    <div class="view-header">
+                        <h3><i class="fas fa-file-signature"></i> Proposals — RFI / RFQ / RFP</h3>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-secondary" onclick="proAssignEmployeeTop()"><i class="fas fa-user-plus"></i> Assign Employee <span class="pro-lock">🔒</span></button>
+                            <button class="btn btn-primary" onclick="proSendTo('lead')"><i class="fas fa-paper-plane"></i> Send to Lead <span class="pro-lock">🔒</span></button>
+                            <button class="btn btn-primary" onclick="proSendTo('client')"><i class="fas fa-paper-plane"></i> Send to Client <span class="pro-lock">🔒</span></button>
+                        </div>
+                    </div>
 
                     <div class="hr-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
                         <button class="btn btn-sm btn-primary" id="proTabRFI" onclick="proSetType('RFI')">RFI</button>

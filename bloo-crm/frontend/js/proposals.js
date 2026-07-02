@@ -13,6 +13,44 @@ let _proLastGenerated = null;
 function loadProposals() {
     proSetType(_proType);
     if (typeof renderProposalIntegrations === 'function') renderProposalIntegrations();
+    // Hide the 🔒 badges on the header buttons for Rocket AI+ users
+    const rocket = (typeof isRocketPlan === 'function') && isRocketPlan();
+    document.querySelectorAll('#proposals .pro-lock').forEach(el => { el.style.display = rocket ? 'none' : ''; });
+}
+
+// Resolve which proposal the top buttons act on (current, else most recent saved)
+async function proResolveCurrent() {
+    if (window.__proCurrentId) return window.__proCurrentId;
+    try {
+        const res = await apiRequest('/proposals', { method: 'GET' });
+        const items = res.proposals || [];
+        if (items.length) { window.__proCurrentId = items[0].proposalId; return window.__proCurrentId; }
+    } catch (e) {}
+    showNotification('Generate or save a proposal first, then use these actions.', 'error');
+    return null;
+}
+
+// Top-right: Assign Employee (Rocket AI+)
+async function proAssignEmployeeTop() {
+    if (!rocketGate('Assign employee to proposal')) return;
+    const id = await proResolveCurrent();
+    if (id) proAssign(id);
+}
+
+// Top-right: Send to Lead / Client (Rocket AI+)
+async function proSendTo(recipientType) {
+    if (!rocketGate('Send proposal to ' + recipientType)) return;
+    const id = await proResolveCurrent();
+    if (!id) return;
+    const to = prompt(`Send this proposal to the ${recipientType}'s email address:`);
+    if (!to) return;
+    try {
+        const res = await apiRequest(`/proposals/${id}/send`, { method: 'POST', body: { to, recipientType } });
+        showNotification(res.emailed ? `Proposal sent to ${recipientType} (${to})` : `Logged (demo mode) for ${to}`, res.emailed ? 'success' : 'info');
+    } catch (e) {
+        if ((e.message || '').toLowerCase().includes('rocket')) showNotification('This requires the Rocket AI+ plan.', 'error');
+        else showNotification(`Could not send: ${e.message}`, 'error');
+    }
 }
 
 function proSetType(t) {
@@ -70,7 +108,8 @@ async function proGenerate() {
 async function proSaveGenerated() {
     if (!_proLastGenerated) return;
     try {
-        await apiRequest('/proposals', { method: 'POST', body: { ..._proLastGenerated, status: 'draft' } });
+        const r = await apiRequest('/proposals', { method: 'POST', body: { ..._proLastGenerated, status: 'draft' } });
+        if (r.proposal) window.__proCurrentId = r.proposal.proposalId;
         showNotification('Saved to Proposals', 'success');
         proLoadSaved();
     } catch (e) { showNotification(`Could not save: ${e.message}`, 'error'); }
@@ -109,6 +148,7 @@ async function proView(id) {
     try {
         const res = await apiRequest(`/proposals/${id}`, { method: 'GET' });
         const p = res.proposal;
+        window.__proCurrentId = id;
         const overlay = document.createElement('div');
         overlay.className = 'modal active'; overlay.style.display = 'flex';
         overlay.innerHTML = `<div class="modal-content" style="max-width:700px;">

@@ -19,6 +19,7 @@ const multer = require('multer');
 const Proposal = require('../models/Proposal');
 const ProposalDocument = require('../models/ProposalDocument');
 const User = require('../models/User');
+const emailService = require('../utils/email-service');
 const { verifyToken } = require('../middleware/auth');
 
 async function isRocket(userId) {
@@ -139,6 +140,27 @@ router.post('/:proposalId/assign', async (req, res) => {
     if (!p) return res.status(404).json({ error: 'Not found' });
     res.json({ status: 'success', proposal: p });
   } catch (e) { res.status(500).json({ error: 'Failed to assign', message: e.message }); }
+});
+
+// Send a proposal to a lead or client by email (Rocket AI+ only)
+router.post('/:proposalId/send', async (req, res) => {
+  try {
+    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Sending proposals to leads/clients requires the Rocket AI+ plan.' });
+    const to = ((req.body && req.body.to) || '').trim();
+    const recipientType = (req.body && req.body.recipientType) || 'recipient';
+    if (!to) return res.status(400).json({ error: 'Recipient email is required' });
+    const p = await Proposal.findOne({ userId: req.userId, proposalId: req.params.proposalId }).lean();
+    if (!p) return res.status(404).json({ error: 'Not found' });
+
+    const html = `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;">
+      <div style="background:#2d6cdf;color:#fff;padding:16px;border-radius:6px 6px 0 0;"><h2 style="margin:0;">${p.type} — ${p.title}</h2></div>
+      <div style="border:1px solid #eee;border-top:none;padding:20px;border-radius:0 0 6px 6px;">
+        <p style="color:#888;">${p.industry} · ${p.proposalId}</p>
+        <pre style="white-space:pre-wrap;font-family:inherit;line-height:1.5;">${(p.content || '').replace(/</g, '&lt;')}</pre>
+      </div></div>`;
+    const r = await emailService.sendEmail({ to, subject: `${p.type}: ${p.title}`, html });
+    res.json({ status: 'success', emailed: !!(r && r.success && !r.mock), mock: !!(r && r.mock), to, recipientType });
+  } catch (e) { res.status(500).json({ error: 'Failed to send', message: e.message }); }
 });
 
 // ---- Documents ----
