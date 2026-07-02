@@ -32,6 +32,7 @@ async function loadHrDashboard() {
     } catch (e) {
         el.innerHTML = '<p class="empty-state">Could not load HR overview.</p>';
     }
+    if (typeof renderIntegrations === 'function') renderIntegrations();
 }
 
 // ---- Performance records ----

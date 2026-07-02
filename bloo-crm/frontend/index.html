@@ -1188,6 +1188,14 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         <div class="stat-card" style="cursor:pointer;" onclick="switchView('onboarding')"><div class="stat-icon aqua-bg"><i class="fas fa-user-plus"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Onboarding</h3><p>New-hire checklist</p></div></div>
                         <div class="stat-card" style="cursor:pointer;" onclick="switchView('approvals')"><div class="stat-icon orange-bg"><i class="fas fa-check-double"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Approvals</h3><p>Expense, travel, hiring…</p></div></div>
                     </div>
+
+                    <!-- Project-management integrations (Rocket AI+) -->
+                    <div class="chart-container" style="margin-top:18px;">
+                        <h3><i class="fas fa-plug"></i> Project Management Integrations
+                            <span style="font-size:0.65em;background:var(--theme-soft);color:var(--theme-primary);padding:2px 8px;border-radius:10px;">Rocket AI+</span></h3>
+                        <p id="integrationsNote" style="color:#888;font-size:0.85rem;margin:4px 0;">Connect your project tools to Bloo CRM.</p>
+                        <div id="hrIntegrations" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:10px;"></div>
+                    </div>
                 </div>
 
                 <!-- Employee Information View -->
@@ -2718,6 +2726,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/help.js"></script>
     <script src="js/knowledge.js"></script>
     <script src="js/proposals.js"></script>
+    <script src="js/integrations.js"></script>
     <script src="js/vendors.js"></script>
     <script src="js/ai-tools.js"></script>
     <script src="js/ai-assist.js"></script>

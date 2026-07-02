@@ -264,6 +264,10 @@ app.use('/api/knowledge', knowledgeRoutes);
 const proposalRoutes = require('./routes/proposals');
 app.use('/api/proposals', proposalRoutes);
 
+// Project-management integrations (Rocket AI+ only)
+const integrationRoutes = require('./routes/integrations');
+app.use('/api/integrations', integrationRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin
