@@ -617,7 +617,78 @@ function viewClientDetails(clientId) {
     // Display documents
     displayClientDocuments(clientId);
 
+    // Render Investment Products fields for this client
+    renderInvestmentProducts(client);
+
     showModal('clientDetailModal');
+}
+
+// Curated list of investment products (from across the financial markets)
+const INVESTMENT_PRODUCTS = [
+    ['invTreasuryBills', 'Treasury Bills'],
+    ['invTreasuryBonds', 'Treasury Notes / Bonds'],
+    ['invGovBonds', 'Government / Sovereign Bonds'],
+    ['invMunicipalBonds', 'Municipal Bonds'],
+    ['invCorporateBonds', 'Corporate Bonds'],
+    ['invStructuredBonds', 'Structured Bonds'],
+    ['invUnstructuredBonds', 'Unstructured Bonds'],
+    ['invSukuk', 'Sukuk (Islamic Bonds)'],
+    ['invFixedIncome', 'Fixed Income'],
+    ['invEquities', 'Equities / Stocks'],
+    ['invEtf', 'ETFs'],
+    ['invIndexFunds', 'Index Funds'],
+    ['invMutualFunds', 'Mutual Funds'],
+    ['invMoneyMarket', 'Money Market Funds'],
+    ['invCds', 'Certificates of Deposit (CDs)'],
+    ['invCommodities', 'Commodities'],
+    ['invPreciousMetals', 'Gold / Precious Metals'],
+    ['invDerivatives', 'Derivatives (Options / Futures)'],
+    ['invForeignInvestments', 'Foreign Investments'],
+    ['invEsg', 'ESG / Sustainable Investments'],
+    ['invCrypto', 'Cryptocurrency'],
+    ['invDigitizedTokens', 'Digitized / Tokenized Assets'],
+    ['invAlternativeAIF', 'Alternative Investments (AIF)'],
+    ['invRealEstate', 'Real Estate / REITs'],
+    ['invPrivateEquity', 'Private Equity'],
+    ['invHedgeFunds', 'Hedge Funds'],
+    ['invVentureCapital', 'Venture Capital'],
+    ['invAnnuities', 'Annuities'],
+    ['invUlip', 'Insurance-linked (ULIPs)'],
+    ['invPension', 'Pension / Retirement Accounts']
+];
+
+function renderInvestmentProducts(client) {
+    const container = document.getElementById('investmentFields');
+    if (!container) return;
+    client = client || {};
+    container.innerHTML = INVESTMENT_PRODUCTS.map(([key, label]) => `
+        <div class="form-group">
+            <label style="font-size:0.8rem;">${label}</label>
+            <input type="text" id="${key}" value="${escInv(client[key] || '')}" placeholder="Holding / interest / notes">
+        </div>
+    `).join('');
+}
+
+async function saveInvestmentProducts() {
+    const clientId = window.currentViewingClientId;
+    if (!clientId) { showNotification('No client selected', 'error'); return; }
+    const data = {};
+    INVESTMENT_PRODUCTS.forEach(([key]) => {
+        const el = document.getElementById(key);
+        if (el) data[key] = el.value.trim();
+    });
+    try {
+        await updateClient(clientId, data);
+        logWorkflowActivity('client_investments_updated', 'Investment products updated');
+        showNotification('Investment products saved!', 'success');
+        loadClientDashboard();
+    } catch (error) {
+        showNotification(error.message || 'Failed to save investment products', 'error');
+    }
+}
+
+function escInv(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
 }
 
 // Switch detail tabs
