@@ -36,6 +36,18 @@ async function handleAddLead(event) {
     }
 }
 
+// Assign an employee to a lead (Swift AI+ or higher)
+async function assignEmployeeToLead(leadId) {
+    if (typeof swiftGate === 'function' && !swiftGate('Assign employee to lead')) return;
+    const employee = prompt('Assign which employee to this lead?');
+    if (employee === null) return;
+    try {
+        await updateLead(leadId, { assignedEmployee: employee });
+        showNotification('Employee assigned to lead', 'success');
+        loadLeadsList();
+    } catch (e) { showNotification(`Could not assign: ${e.message}`, 'error'); }
+}
+
 // Load leads list
 function loadLeadsList() {
     const leads = getLeads();
@@ -76,12 +88,20 @@ function loadLeadsList() {
                     ${lead.notes}
                 </div>
             ` : ''}
+            ${lead.assignedEmployee ? `
+                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--theme-primary);">
+                    <i class="fas fa-id-badge"></i> <strong>Assigned to:</strong> ${lead.assignedEmployee}
+                </div>
+            ` : ''}
             <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-light);">
                 Added: ${formatDate(lead.createdAt)}
             </div>
             <div class="card-actions">
                 <button class="btn-edit" onclick="editLead('${lead.id}')">
                     <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="assignEmployeeToLead('${lead.id}')">
+                    <i class="fas fa-user-plus"></i> Assign Employee ${(typeof isSwiftPlan==='function'&&isSwiftPlan())?'':'🔒'}
                 </button>
                 <button class="btn-delete" onclick="deleteLeadConfirm('${lead.id}')">
                     <i class="fas fa-trash"></i> Delete
@@ -139,12 +159,20 @@ function filterLeads() {
                     ${lead.notes}
                 </div>
             ` : ''}
+            ${lead.assignedEmployee ? `
+                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--theme-primary);">
+                    <i class="fas fa-id-badge"></i> <strong>Assigned to:</strong> ${lead.assignedEmployee}
+                </div>
+            ` : ''}
             <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-light);">
                 Added: ${formatDate(lead.createdAt)}
             </div>
             <div class="card-actions">
                 <button class="btn-edit" onclick="editLead('${lead.id}')">
                     <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="assignEmployeeToLead('${lead.id}')">
+                    <i class="fas fa-user-plus"></i> Assign Employee ${(typeof isSwiftPlan==='function'&&isSwiftPlan())?'':'🔒'}
                 </button>
                 <button class="btn-delete" onclick="deleteLeadConfirm('${lead.id}')">
                     <i class="fas fa-trash"></i> Delete

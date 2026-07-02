@@ -90,6 +90,29 @@ Include clear section headings, guidance/placeholders in [brackets] the user fil
   res.json({ status: 'success', source: 'fallback', type, industry, title, content: fb });
 });
 
+// Campaign: email a proposal/brochure to many selected clients & leads (Rocket AI+)
+router.post('/campaign', async (req, res) => {
+  try {
+    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Proposal campaigns require the Rocket AI+ plan.' });
+    const b = req.body || {};
+    const recipients = Array.isArray(b.recipients) ? [...new Set(b.recipients.map(x => (x || '').trim()).filter(Boolean))] : [];
+    if (!b.proposalId || !recipients.length) return res.status(400).json({ error: 'proposalId and recipients are required' });
+    const p = await Proposal.findOne({ userId: req.userId, proposalId: b.proposalId }).lean();
+    if (!p) return res.status(404).json({ error: 'Proposal not found' });
+
+    const html = `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;">
+      <div style="background:#2d6cdf;color:#fff;padding:16px;border-radius:6px 6px 0 0;"><h2 style="margin:0;">${p.type} — ${p.title}</h2></div>
+      <div style="border:1px solid #eee;border-top:none;padding:20px;border-radius:0 0 6px 6px;">
+        <pre style="white-space:pre-wrap;font-family:inherit;line-height:1.5;">${(p.content || '').replace(/</g, '&lt;')}</pre>
+      </div></div>`;
+    let sent = 0;
+    await Promise.all(recipients.map(async to => {
+      try { const r = await emailService.sendEmail({ to, subject: `${p.type}: ${p.title}`, html }); if (r && r.success && !r.mock) sent++; } catch (e) {}
+    }));
+    res.json({ status: 'success', recipients: recipients.length, sent });
+  } catch (e) { res.status(500).json({ error: 'Campaign failed', message: e.message }); }
+});
+
 // ---- Save / list / get / update / delete ----
 router.post('/', async (req, res) => {
   try {

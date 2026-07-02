@@ -94,6 +94,11 @@
                             style="background:#cc0000;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-weight:600;cursor:pointer;margin-right:8px;">
                         ← CRM Dashboard
                     </button>
+                    <button id="btnCampaign" title="Send proposals & brochures to selected clients/leads (Rocket AI+)"
+                            onclick="openProposalCampaign()"
+                            style="background:var(--theme-primary,#cc0000);color:#fff;border:none;padding:8px 14px;border-radius:6px;font-weight:600;cursor:pointer;margin-right:8px;">
+                        🚀 Rocket AI+ Campaign
+                    </button>
                     <button class="btn-icon" id="btnRefresh" title="Refresh">🔄</button>
                     <button class="btn-icon" id="btnFilter" title="Filter">⚙️</button>
                     <button class="btn-icon" id="btnSettings2" title="Settings">⚙️</button>
@@ -467,6 +472,69 @@
         }
         try { ensureFooter(); setInterval(ensureFooter, 3000); } catch (e) {}
       })();
+    </script>
+    <script>
+      /* Rocket AI+ Proposal Campaign — send a proposal/brochure to selected clients & leads */
+      async function pcApi(path, opts) {
+        const token = localStorage.getItem('authToken');
+        const r = await fetch((window.API_BASE_URL || '/api') + path, {
+          method: (opts && opts.method) || 'GET',
+          headers: Object.assign({ 'Content-Type': 'application/json' }, token ? { Authorization: 'Bearer ' + token } : {}),
+          body: opts && opts.body ? JSON.stringify(opts.body) : undefined
+        });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.message || d.error || 'request failed');
+        return d;
+      }
+      async function openProposalCampaign() {
+        try {
+          const [clientsR, leadsR, propsR] = await Promise.all([
+            pcApi('/clients?page=1&limit=1000').catch(() => ({ data: [] })),
+            pcApi('/leads?page=1&limit=1000').catch(() => ({ data: [] })),
+            pcApi('/proposals').catch(() => ({ proposals: [] }))
+          ]);
+          const recips = [];
+          (clientsR.data || []).forEach(c => { const e = c.email || (c.customFields && c.customFields.email); if (e) recips.push({ email: e, label: (c.name || e) + ' (client)' }); });
+          (leadsR.data || []).forEach(l => { if (l.email) recips.push({ email: l.email, label: (l.name || l.email) + ' (lead)' }); });
+          const proposals = propsR.proposals || [];
+          if (!proposals.length) { alert('No proposals found. Create one in the Proposals tab first.'); return; }
+          if (!recips.length) { alert('No clients/leads with email addresses found.'); return; }
+
+          const overlay = document.createElement('div');
+          overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100000;display:flex;align-items:center;justify-content:center;';
+          overlay.innerHTML = `
+            <div style="background:#fff;border-radius:10px;max-width:560px;width:92%;max-height:88vh;overflow:auto;padding:18px;">
+              <h2 style="margin-top:0;">🚀 Send Proposal Campaign</h2>
+              <p style="color:#888;font-size:0.85rem;">Rocket AI+ — email a proposal/brochure to selected clients & leads.</p>
+              <label style="font-weight:600;">Proposal</label>
+              <select id="pcProposal" style="width:100%;padding:9px;border:1px solid #ddd;border-radius:6px;margin:6px 0 12px;">
+                ${proposals.map(p => `<option value="${p.proposalId}">${p.type} — ${(p.title || '').replace(/"/g, '')}</option>`).join('')}
+              </select>
+              <label style="font-weight:600;">Recipients</label>
+              <div style="max-height:230px;overflow:auto;border:1px solid #eee;border-radius:6px;padding:8px;margin:6px 0 12px;">
+                ${recips.map(r => `<label style="display:block;font-size:0.9rem;margin:3px 0;"><input type="checkbox" class="pcRecip" value="${r.email}" checked> ${r.label} — ${r.email}</label>`).join('')}
+              </div>
+              <div style="display:flex;gap:8px;justify-content:flex-end;">
+                <button onclick="this.closest('div[style*=fixed]').remove()" style="padding:8px 14px;border:1px solid #ddd;background:#fff;border-radius:6px;cursor:pointer;">Cancel</button>
+                <button id="pcSend" style="padding:8px 14px;border:none;background:var(--theme-primary,#cc0000);color:#fff;border-radius:6px;cursor:pointer;font-weight:600;">Send Campaign</button>
+              </div>
+            </div>`;
+          document.body.appendChild(overlay);
+          overlay.querySelector('#pcSend').onclick = async () => {
+            const proposalId = overlay.querySelector('#pcProposal').value;
+            const recipients = Array.from(overlay.querySelectorAll('.pcRecip:checked')).map(c => c.value);
+            if (!recipients.length) { alert('Select at least one recipient.'); return; }
+            try {
+              const res = await pcApi('/proposals/campaign', { method: 'POST', body: { proposalId, recipients } });
+              alert(`Campaign sent to ${res.recipients} recipient(s)${res.sent ? ', ' + res.sent + ' emailed' : ''}.`);
+              overlay.remove();
+            } catch (e) {
+              if ((e.message || '').toLowerCase().includes('rocket')) { if (confirm('This is a Rocket AI+ feature. Go to Pricing to upgrade?')) window.location.href = 'index.html#pricing'; }
+              else alert('Campaign failed: ' + e.message);
+            }
+          };
+        } catch (e) { alert('Could not open campaign: ' + e.message); }
+      }
     </script>
 </body>
 </html>

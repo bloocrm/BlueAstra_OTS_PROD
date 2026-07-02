@@ -10,6 +10,18 @@
 let _kbCache = {};
 
 async function loadKnowledge() {
+    // Knowledge Repository requires Rocket AI+
+    if (typeof isRocketPlan === 'function' && !isRocketPlan()) {
+        const results = document.getElementById('kbResults');
+        const ask = document.getElementById('kbAskResult');
+        const lock = `<div style="background:var(--theme-soft);border:1px dashed var(--theme-primary);border-radius:8px;padding:18px;color:#555;">
+            <i class="fas fa-lock" style="color:var(--theme-primary);"></i> The <strong>Knowledge Repository</strong> is a <strong>Rocket AI+</strong> feature.
+            <div style="margin-top:10px;"><button class="btn btn-primary" onclick="if(typeof selectPlan==='function')selectPlan('rocket-ai-plus')">Upgrade to Rocket AI+</button></div>
+        </div>`;
+        if (ask) ask.innerHTML = lock;
+        if (results) results.innerHTML = '';
+        return;
+    }
     await Promise.all([kbLoadCategories(), kbSearch()]);
 }
 

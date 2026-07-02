@@ -107,6 +107,18 @@ async function saveClientWithFile(fileData, fileObj) {
 }
 
 // Load clients list
+// Assign an employee to a client (Swift AI+ or higher)
+async function assignEmployeeToClient(clientId) {
+    if (typeof swiftGate === 'function' && !swiftGate('Assign employee to client')) return;
+    const employee = prompt('Assign which employee to this client?');
+    if (employee === null) return;
+    try {
+        await updateClient(clientId, { assignedEmployee: employee });
+        showNotification('Employee assigned to client', 'success');
+        loadClientsList();
+    } catch (e) { showNotification(`Could not assign: ${e.message}`, 'error'); }
+}
+
 function loadClientsList() {
     const clients = getClients();
     const container = document.getElementById('clientsList');
@@ -147,12 +159,20 @@ function loadClientsList() {
                 ${client.attorney1Name ? `<br><strong>Attorney 1:</strong> ${client.attorney1Name}` : ''}
                 ${client.documentName ? `<br><strong>Document:</strong> ${client.documentName}` : ''}
             </div>
+            ${client.assignedEmployee ? `
+                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--theme-primary);">
+                    <i class="fas fa-id-badge"></i> <strong>Assigned to:</strong> ${client.assignedEmployee}
+                </div>
+            ` : ''}
             <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-light);">
                 Added: ${formatDate(client.createdAt)}
             </div>
             <div class="card-actions">
                 <button class="btn-edit" onclick="editClient('${client.id}')">
                     <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="assignEmployeeToClient('${client.id}')">
+                    <i class="fas fa-user-plus"></i> Assign Employee ${(typeof isSwiftPlan==='function'&&isSwiftPlan())?'':'🔒'}
                 </button>
                 <button class="btn-delete" onclick="deleteClientConfirm('${client.id}')">
                     <i class="fas fa-trash"></i> Delete
@@ -216,12 +236,20 @@ function filterClients() {
                 ${client.attorney1Name ? `<br><strong>Attorney 1:</strong> ${client.attorney1Name}` : ''}
                 ${client.documentName ? `<br><strong>Document:</strong> ${client.documentName}` : ''}
             </div>
+            ${client.assignedEmployee ? `
+                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--theme-primary);">
+                    <i class="fas fa-id-badge"></i> <strong>Assigned to:</strong> ${client.assignedEmployee}
+                </div>
+            ` : ''}
             <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-light);">
                 Added: ${formatDate(client.createdAt)}
             </div>
             <div class="card-actions">
                 <button class="btn-edit" onclick="editClient('${client.id}')">
                     <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="assignEmployeeToClient('${client.id}')">
+                    <i class="fas fa-user-plus"></i> Assign Employee ${(typeof isSwiftPlan==='function'&&isSwiftPlan())?'':'🔒'}
                 </button>
                 <button class="btn-delete" onclick="deleteClientConfirm('${client.id}')">
                     <i class="fas fa-trash"></i> Delete

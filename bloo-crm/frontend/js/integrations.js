@@ -7,7 +7,19 @@
    PROJECT-MANAGEMENT INTEGRATIONS (Rocket AI+ only)
    ===================================================== */
 
-// ---- Shared Rocket AI+ gate ----
+// ---- Shared plan tiers & gates ----
+const PLAN_RANK = { 'basic': 0, 'swift-ai-plus': 1, 'rocket-ai-plus': 2 };
+function currentPlan() { try { return (typeof getCurrentUser === 'function' ? (getCurrentUser() || {}).plan : null) || 'basic'; } catch (e) { return 'basic'; } }
+function hasPlan(minPlan) { return (PLAN_RANK[currentPlan()] || 0) >= (PLAN_RANK[minPlan] || 0); }
+function isSwiftPlan() { return hasPlan('swift-ai-plus'); }   // swift OR rocket
+function swiftGate(feature) {
+    if (isSwiftPlan()) return true;
+    const go = confirm(`"${feature}" requires the Swift AI+ plan (or higher).\n\nUpgrade now? Go to Pricing?`);
+    if (go && typeof selectPlan === 'function') selectPlan('swift-ai-plus');
+    return false;
+}
+window.hasPlan = hasPlan; window.isSwiftPlan = isSwiftPlan; window.swiftGate = swiftGate;
+
 function isRocketPlan() {
     try { return (typeof getCurrentUser === 'function' ? (getCurrentUser() || {}).plan : null) === 'rocket-ai-plus'; }
     catch (e) { return false; }
