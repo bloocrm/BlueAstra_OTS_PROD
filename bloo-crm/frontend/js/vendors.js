@@ -110,12 +110,16 @@ function renderVendorList(vendors) {
                     <button class="btn btn-sm btn-secondary" onclick="editVendor('${v.vendorId}')"><i class="fas fa-edit"></i> Edit</button>
                     <button class="btn btn-sm btn-primary" onclick="openVendorDocs('${v.vendorId}','${escAttr(v.name)}')"><i class="fas fa-folder-open"></i> Documents</button>
                     <button class="btn btn-sm btn-secondary" onclick="openVendorMap('${v.vendorId}')"><i class="fas fa-project-diagram"></i> Map ${isRocketPlan() ? '' : '🔒'}</button>
+                    <button class="btn btn-sm btn-secondary" onclick="assignVendorTask('${v.vendorId}')"><i class="fas fa-tasks"></i> Assign Task ${isRocketPlan() ? '' : '🔒'}</button>
+                    <button class="btn btn-sm btn-secondary" onclick="assignVendorEmployee('${v.vendorId}')"><i class="fas fa-user-plus"></i> Assign Employee ${isRocketPlan() ? '' : '🔒'}</button>
                     <button class="btn btn-sm btn-delete" onclick="deleteVendor('${v.vendorId}')"><i class="fas fa-trash"></i></button>
                 </div>
                 ${(v.mappedClient || v.mappedEmployee || v.mappedWorkflow) ? `<div style="font-size:0.78rem;color:#666;margin-top:6px;">
                     ${v.mappedClient ? '<i class="fas fa-user"></i> ' + escV(v.mappedClient) + ' ' : ''}
                     ${v.mappedEmployee ? '· <i class="fas fa-id-badge"></i> ' + escV(v.mappedEmployee) + ' ' : ''}
                     ${v.mappedWorkflow ? '· <i class="fas fa-sitemap"></i> ' + escV(v.mappedWorkflow) : ''}</div>` : ''}
+                ${(v.assignedEmployees && v.assignedEmployees.length) ? `<div style="font-size:0.78rem;color:#666;margin-top:4px;"><i class="fas fa-users"></i> Employees: ${v.assignedEmployees.map(escV).join(', ')}</div>` : ''}
+                ${(v.tasks && v.tasks.length) ? `<div style="font-size:0.78rem;color:#666;margin-top:4px;"><i class="fas fa-tasks"></i> Tasks: ${v.tasks.map(t => escV(t.title) + (t.dueDate ? ' (due ' + new Date(t.dueDate).toLocaleDateString() + ')' : '')).join(' · ')}</div>` : ''}
             </div>
         </div>`).join('');
 }
@@ -159,6 +163,37 @@ async function submitVendor(event) {
 }
 
 function editVendor(id) { const v = _vendorsCache.find(x => x.vendorId === id); if (v) openVendorModal(v); }
+
+// Assign a task to a vendor (Rocket AI+ only)
+async function assignVendorTask(vendorId) {
+    if (!rocketGate('Assign task to vendor')) return;
+    const title = prompt('Task to assign to this vendor:');
+    if (!title) return;
+    const dueDate = prompt('Due date (YYYY-MM-DD, optional):') || '';
+    try {
+        await apiRequest(`/vendors/${vendorId}/task`, { method: 'POST', body: { title, dueDate: dueDate || undefined } });
+        showNotification('Task assigned to vendor', 'success');
+        loadVendors();
+    } catch (e) {
+        if ((e.message || '').toLowerCase().includes('rocket')) showNotification('This requires the Rocket AI+ plan.', 'error');
+        else showNotification(`Could not assign task: ${e.message}`, 'error');
+    }
+}
+
+// Assign an employee to a vendor (Rocket AI+ only)
+async function assignVendorEmployee(vendorId) {
+    if (!rocketGate('Assign employee to vendor')) return;
+    const employee = prompt('Employee to assign to this vendor (name):');
+    if (!employee) return;
+    try {
+        await apiRequest(`/vendors/${vendorId}/assign-employee`, { method: 'POST', body: { employee } });
+        showNotification('Employee assigned to vendor', 'success');
+        loadVendors();
+    } catch (e) {
+        if ((e.message || '').toLowerCase().includes('rocket')) showNotification('This requires the Rocket AI+ plan.', 'error');
+        else showNotification(`Could not assign employee: ${e.message}`, 'error');
+    }
+}
 
 // Map a vendor to a client / employee / workflow (Rocket AI+ only)
 async function openVendorMap(vendorId) {

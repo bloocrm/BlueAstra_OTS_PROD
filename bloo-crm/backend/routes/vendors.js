@@ -136,6 +136,34 @@ router.post('/:vendorId/map', async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Failed to map vendor', message: e.message }); }
 });
 
+// Assign an employee to a vendor (Rocket AI+ only)
+router.post('/:vendorId/assign-employee', async (req, res) => {
+  try {
+    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Assigning employees to a vendor requires the Rocket AI+ plan.' });
+    const employee = ((req.body && req.body.employee) || '').trim();
+    if (!employee) return res.status(400).json({ error: 'employee is required' });
+    const v = await Vendor.findOne({ userId: req.userId, vendorId: req.params.vendorId });
+    if (!v) return res.status(404).json({ error: 'Vendor not found' });
+    if (!v.assignedEmployees.includes(employee)) v.assignedEmployees.push(employee);
+    await v.save();
+    res.json({ status: 'success', vendor: v });
+  } catch (e) { res.status(500).json({ error: 'Failed to assign employee', message: e.message }); }
+});
+
+// Assign a task to a vendor (Rocket AI+ only)
+router.post('/:vendorId/task', async (req, res) => {
+  try {
+    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Assigning tasks to a vendor requires the Rocket AI+ plan.' });
+    const b = req.body || {};
+    if (!b.title) return res.status(400).json({ error: 'title is required' });
+    const v = await Vendor.findOne({ userId: req.userId, vendorId: req.params.vendorId });
+    if (!v) return res.status(404).json({ error: 'Vendor not found' });
+    v.tasks.push({ title: b.title.trim(), dueDate: b.dueDate ? new Date(b.dueDate) : undefined, status: 'open' });
+    await v.save();
+    res.json({ status: 'success', vendor: v });
+  } catch (e) { res.status(500).json({ error: 'Failed to assign task', message: e.message }); }
+});
+
 // ---------- Documents ----------
 router.post('/documents', docUpload.single('document'), async (req, res) => {
   let tmp;

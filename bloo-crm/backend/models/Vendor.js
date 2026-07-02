@@ -36,7 +36,11 @@ const vendorSchema = new mongoose.Schema(
     // Rocket AI+ mappings — tie a vendor to a client / employee / workflow
     mappedClient: String,
     mappedEmployee: String,
-    mappedWorkflow: String
+    mappedWorkflow: String,
+
+    // Rocket AI+ — employees assigned to this vendor + tasks assigned to the vendor
+    assignedEmployees: { type: [String], default: [] },
+    tasks: [{ title: String, dueDate: Date, status: { type: String, default: 'open' }, createdAt: { type: Date, default: Date.now } }]
   },
   { timestamps: true }
 );
