@@ -237,6 +237,8 @@ body[data-theme="blue"] .sidebar-nav .nav-item i { color: #000000 !important; }
 /* Sky: Upload Source Data tab tweaks */
 body[data-theme="blue"] .instruction-card { background: linear-gradient(135deg, rgba(255,152,0,0.12), rgba(255,183,77,0.10)) !important; }
 body[data-theme="blue"] .field-table thead { background: #E3F2FD !important; }   /* Column Name/Description strip -> light blue */
+body[data-theme="blue"] .instruction-card h3,
+body[data-theme="blue"] .instruction-card h3 i { color: #EF6C00 !important; }     /* "Upload Instructions" + icon -> orange */
 body[data-theme="blue"] .mapping-table h4 { color: #EF6C00 !important; }          /* Client/Lead Data Fields -> orange */
 body[data-theme="blue"] .info-card.lead-info { border-left-color: #FB8C00 !important; } /* Leads box line -> orange */
 
