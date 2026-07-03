@@ -272,6 +272,46 @@ async function processPayment() {
     }
   }
 
+  // --- Instamojo: create a payment request and redirect to its hosted page ---
+  if (selectedPaymentMethod === 'instamojo') {
+    try {
+      const resp = await fetch(`${API_BASE_URL}/payments/instamojo/create`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          plan: selectedPlan, planName: (PLANS[selectedPlan] && PLANS[selectedPlan].name) || selectedPlan,
+          amount: PLANS[selectedPlan][currentBillingCycle], billingCycle: currentBillingCycle,
+          name: document.getElementById('fullName').value, email: document.getElementById('email').value, phone: document.getElementById('phone').value
+        })
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.url) throw new Error(data.message || data.error || 'Could not start Instamojo payment');
+      window.location.href = data.url;
+      return;
+    } catch (e) { showLoading(false); showError(e.message || 'Instamojo payment failed'); return; }
+  }
+
+  // --- PayU: get signed params and auto-submit a form to PayU's hosted checkout ---
+  if (selectedPaymentMethod === 'payu') {
+    try {
+      const resp = await fetch(`${API_BASE_URL}/payments/payu/create`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          plan: selectedPlan, planName: (PLANS[selectedPlan] && PLANS[selectedPlan].name) || selectedPlan,
+          amount: PLANS[selectedPlan][currentBillingCycle], billingCycle: currentBillingCycle,
+          name: document.getElementById('fullName').value, email: document.getElementById('email').value, phone: document.getElementById('phone').value
+        })
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.action || !data.params) throw new Error(data.message || data.error || 'Could not start PayU payment');
+      const form = document.createElement('form');
+      form.method = 'POST'; form.action = data.action;
+      Object.entries(data.params).forEach(([k, v]) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; form.appendChild(i); });
+      document.body.appendChild(form);
+      form.submit();
+      return;
+    } catch (e) { showLoading(false); showError(e.message || 'PayU payment failed'); return; }
+  }
+
   try {
     const customerDetails = {
       name: document.getElementById('fullName').value,

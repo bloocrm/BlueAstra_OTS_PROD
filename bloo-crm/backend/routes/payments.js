@@ -625,6 +625,85 @@ router.post('/stripe/checkout', verifyToken, async (req, res) => {
   }
 });
 
+// =====================================================
+// INSTAMOJO — create a payment request (hosted page)
+// =====================================================
+router.post('/instamojo/create', verifyToken, async (req, res) => {
+  try {
+    const apiKey = process.env.INSTAMOJO_API_KEY, authToken = process.env.INSTAMOJO_AUTH_TOKEN;
+    const base = process.env.INSTAMOJO_BASE || 'https://www.instamojo.com/api/1.1';
+    if (!apiKey || !authToken) return res.status(503).json({ error: 'Instamojo not configured', message: 'INSTAMOJO_API_KEY / INSTAMOJO_AUTH_TOKEN are not set on the server.' });
+
+    const b = req.body || {};
+    const amount = Number(b.amount);
+    if (!amount || amount <= 0) return res.status(400).json({ error: 'A valid amount is required' });
+    const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || 'https://bloocrm.com';
+
+    const params = new URLSearchParams();
+    params.append('purpose', `${b.planName || 'Bloo CRM Plan'} (${b.billingCycle || 'subscription'})`);
+    params.append('amount', amount.toFixed(2));
+    if (b.name) params.append('buyer_name', b.name);
+    if (b.email) params.append('email', b.email);
+    if (b.phone) params.append('phone', b.phone);
+    params.append('redirect_url', `${appUrl}/pages/payment-confirmation.html?status=success&provider=instamojo`);
+    params.append('send_email', 'false');
+    params.append('allow_repeated_payments', 'false');
+
+    const resp = await fetch(`${base}/payment-requests/`, {
+      method: 'POST',
+      headers: { 'X-Api-Key': apiKey, 'X-Auth-Token': authToken, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.success) return res.status(502).json({ error: 'Instamojo error', message: JSON.stringify(data.message || data) });
+    res.json({ status: 'success', id: data.payment_request.id, url: data.payment_request.longurl });
+  } catch (error) {
+    console.error('Instamojo error:', error);
+    res.status(500).json({ error: 'Failed to create Instamojo payment', message: error.message });
+  }
+});
+
+// =====================================================
+// PayU — build signed params for the hosted checkout (auto-submitted client-side)
+// =====================================================
+router.post('/payu/create', verifyToken, async (req, res) => {
+  try {
+    const crypto = require('crypto');
+    const key = process.env.PAYU_MERCHANT_KEY, salt = process.env.PAYU_SALT;
+    const action = process.env.PAYU_BASE || 'https://secure.payu.in/_payment';
+    if (!key || !salt) return res.status(503).json({ error: 'PayU not configured', message: 'PAYU_MERCHANT_KEY / PAYU_SALT are not set on the server.' });
+
+    const b = req.body || {};
+    const amount = Number(b.amount);
+    if (!amount || amount <= 0) return res.status(400).json({ error: 'A valid amount is required' });
+    const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || 'https://bloocrm.com';
+
+    const txnid = 'BLOO' + Date.now() + Math.floor(Math.random() * 1000);
+    const productinfo = `${b.planName || 'Bloo CRM Plan'} (${b.billingCycle || 'subscription'})`;
+    const firstname = (b.name || 'Customer').split(' ')[0];
+    const email = b.email || '';
+    const amt = amount.toFixed(2);
+    // PayU hash: sha512(key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||salt)
+    const hashString = [key, txnid, amt, productinfo, firstname, email, '', '', '', '', '', '', '', '', '', '', salt].join('|');
+    const hash = crypto.createHash('sha512').update(hashString).digest('hex');
+
+    res.json({
+      status: 'success',
+      action,
+      params: {
+        key, txnid, amount: amt, productinfo, firstname, email,
+        phone: b.phone || '',
+        surl: `${appUrl}/pages/payment-confirmation.html?status=success&provider=payu&txnid=${txnid}`,
+        furl: `${appUrl}/index.html#pricing`,
+        hash
+      }
+    });
+  } catch (error) {
+    console.error('PayU error:', error);
+    res.status(500).json({ error: 'Failed to create PayU payment', message: error.message });
+  }
+});
+
 // Verify a completed Stripe Checkout Session and activate the plan
 router.get('/stripe/verify-session', verifyToken, async (req, res) => {
   try {
