@@ -199,6 +199,10 @@ function validatePaymentForm() {
   if (!document.getElementById('fullName').value) errors.push('Full name is required');
   if (!document.getElementById('email').value) errors.push('Email is required');
   if (!document.getElementById('phone').value) errors.push('Phone number is required');
+  const t = document.getElementById('agreeTerms'), rf = document.getElementById('agreeRefund'), sh = document.getElementById('agreeShipping');
+  if (t && !t.checked) errors.push('Please accept the Terms and Conditions');
+  if (rf && !rf.checked) errors.push('Please accept the Refund and Cancellation Policy');
+  if (sh && !sh.checked) errors.push('Please accept the Shipping and Delivery Policy');
 
   if (errors.length > 0) {
     showError(errors.join(', '));
