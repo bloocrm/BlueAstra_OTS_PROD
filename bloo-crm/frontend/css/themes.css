@@ -146,14 +146,16 @@ body[data-theme="blue"] .btn-primary:hover { background: #0D47A1 !important; }
 body[data-theme="blue"] .sidebar { background: linear-gradient(180deg, #ffffff 0%, #E3F2FD 100%) !important; }
 body[data-theme="blue"] .nav-item.active { background: #E3F2FD !important; border-left-color: #0D47A1 !important; }
 body[data-theme="blue"] .nav-item i { color: #1E88E5 !important; }
-/* Titles & section headings in deep navy for hierarchy against azure accents */
+/* Page titles & section headings follow the theme accent -> ORANGE under Sky */
 body[data-theme="blue"] #pageTitle,
 body[data-theme="blue"] .view-header h3,
+body[data-theme="blue"] .view-header h2,
 body[data-theme="blue"] .sidebar-header h2,
 body[data-theme="blue"] .chart-container > h3,
-body[data-theme="blue"] .chart-container > h4 { color: #0D47A1 !important; }
+body[data-theme="blue"] .chart-container > h4 { color: #EF6C00 !important; }
 body[data-theme="blue"] .view-header h3 i,
-body[data-theme="blue"] .sidebar-header h2 i { color: #1E88E5 !important; }
+body[data-theme="blue"] .view-header h2 i,
+body[data-theme="blue"] .sidebar-header h2 i { color: #FB8C00 !important; }
 /* Pricing hero: azure -> navy gradient */
 body[data-theme="blue"] .pricing-hero { background: linear-gradient(135deg, #1E88E5, #0D47A1) !important; }
 /* Soft-blue tinted badges with a medium-blue label */
