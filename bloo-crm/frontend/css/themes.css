@@ -234,6 +234,12 @@ body[data-theme="blue"] .badge-orange { background: #FFF3E0 !important; color: #
 /* Sky: left-pane (sidebar) tab icons -> black (other icons stay orange) */
 body[data-theme="blue"] .sidebar-nav .nav-item i { color: #000000 !important; }
 
+/* Sky: Upload Source Data tab tweaks */
+body[data-theme="blue"] .instruction-card { background: linear-gradient(135deg, rgba(255,152,0,0.12), rgba(255,183,77,0.10)) !important; }
+body[data-theme="blue"] .field-table thead { background: #E3F2FD !important; }   /* Column Name/Description strip -> light blue */
+body[data-theme="blue"] .mapping-table h4 { color: #EF6C00 !important; }          /* Client/Lead Data Fields -> orange */
+body[data-theme="blue"] .info-card.lead-info { border-left-color: #FB8C00 !important; } /* Leads box line -> orange */
+
 /* Copyright footer accent line + text stay neutral */
 #blooCopyright { color: #666 !important; }
 
