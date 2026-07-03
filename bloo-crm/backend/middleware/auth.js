@@ -7,9 +7,12 @@
 */
 const jwt = require('jsonwebtoken');
 const { AuthenticationError, AuthorizationError } = require('../utils/errors');
+const User = require('../models/User');
 
-// JWT verification middleware
-const verifyToken = (req, res, next) => {
+// JWT verification middleware.
+// Members operate inside their admin's workspace: req.userId is set to the
+// admin (parent) for data scoping, while req.actualUserId is the member's own id.
+const verifyToken = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
 
@@ -23,7 +26,23 @@ const verifyToken = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, jwtSecret);
-    req.userId = decoded.id;
+
+    // Load access-control fields (member resolution + live permission/status)
+    let account = null;
+    try {
+      account = await User.findById(decoded.id).select('role parentUserId permissions isActive').lean();
+    } catch (e) { /* fall back to token below */ }
+
+    if (account && account.isActive === false) {
+      return res.status(403).json({ error: 'ACCOUNT_INACTIVE', message: 'Your access has been suspended by your administrator.' });
+    }
+
+    const role = (account && account.role) || 'admin';
+    req.actualUserId = decoded.id;                       // the logged-in user
+    req.role = role;
+    req.permissions = (account && account.permissions) || [];
+    // Data scoping: members share their admin's workspace
+    req.userId = (role === 'member' && account && account.parentUserId) ? String(account.parentUserId) : decoded.id;
     req.userEmail = decoded.email;
     req.userName = decoded.name;
     req.user = decoded;
@@ -106,10 +125,26 @@ const requireSelfOrAdmin = (req, res, next) => {
   next();
 };
 
+// Restrict a route to admins or members granted the given section permission.
+// Use AFTER verifyToken. Admins always pass.
+const requirePermission = (section) => (req, res, next) => {
+  if (req.role !== 'member') return next();               // admin (or unknown) -> full access
+  if ((req.permissions || []).includes(section)) return next();
+  return res.status(403).json({ error: 'PERMISSION_DENIED', message: `You do not have access to "${section}". Ask your administrator to grant it.` });
+};
+
+// Restrict a route to the workspace admin only (members blocked).
+const requireWorkspaceAdmin = (req, res, next) => {
+  if (req.role === 'member') return res.status(403).json({ error: 'ADMIN_ONLY', message: 'Only the account administrator can manage this.' });
+  next();
+};
+
 module.exports = {
   verifyToken,
   optionalToken,
   verifyOwnership,
   requireAdmin,
-  requireSelfOrAdmin
+  requireSelfOrAdmin,
+  requirePermission,
+  requireWorkspaceAdmin
 };

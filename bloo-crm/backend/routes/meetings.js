@@ -17,7 +17,7 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const Meeting = require('../models/Meeting');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requirePermission } = require('../middleware/auth');
 const { transcribeUrl, transcribeFile } = require('../services/transcription-service');
 
 const RECORDINGS_DIR = path.join(__dirname, '..', 'uploads', 'recordings');
@@ -25,6 +25,7 @@ fs.mkdirSync(RECORDINGS_DIR, { recursive: true });
 const recordingUpload = multer({ dest: RECORDINGS_DIR, limits: { fileSize: 300 * 1024 * 1024 } });
 
 router.use(verifyToken);
+router.use(requirePermission('meetingRoom'));
 
 // Extract the room slug from a meeting URL (JaaS or public Jitsi)
 function roomFromUrl(url) {

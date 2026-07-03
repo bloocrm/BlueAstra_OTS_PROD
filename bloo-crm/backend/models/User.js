@@ -75,6 +75,23 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
+
+    // ---- Sub-user access control ----
+    role: {
+      type: String,
+      enum: ['admin', 'member'],
+      default: 'admin'
+    },
+    parentUserId: {                 // set for members: the admin who owns/manages them
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      index: true
+    },
+    permissions: {                  // sections a member may access (admins have all)
+      type: [String],
+      default: []
+    },
+
     notes: String,
     metadata: mongoose.Schema.Types.Mixed,
     lastLogin: Date,

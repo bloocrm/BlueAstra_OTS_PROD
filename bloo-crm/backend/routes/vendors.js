@@ -17,7 +17,7 @@ const multer = require('multer');
 const Vendor = require('../models/Vendor');
 const VendorDocument = require('../models/VendorDocument');
 const User = require('../models/User');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requirePermission } = require('../middleware/auth');
 
 async function isRocket(userId) {
   const u = await User.findById(userId).select('plan').lean();
@@ -34,6 +34,7 @@ fs.mkdirSync(DOCS_DIR, { recursive: true });
 const docUpload = multer({ dest: DOCS_DIR, limits: { fileSize: 30 * 1024 * 1024 } });
 
 router.use(verifyToken);
+router.use(requirePermission('vendors'));
 
 const num = v => (v == null || v === '') ? 0 : (Number(v) || 0);
 function pickQuarterly(src) {

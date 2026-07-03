@@ -49,6 +49,7 @@ function switchView(viewName) {
         knowledge: 'Knowledge Repository',
         proposals: 'Proposals — RFI / RFQ / RFP',
         vendors: 'Vendor Dashboard',
+        team: 'Team & Access',
         hr: 'Employee Dashboard',
         employees: 'Employee Information',
         policies: 'Company Policies',
@@ -95,6 +96,8 @@ function switchView(viewName) {
         if (typeof loadProposals === 'function') loadProposals();
     } else if (viewName === 'vendors') {
         if (typeof loadVendorDashboard === 'function') loadVendorDashboard();
+    } else if (viewName === 'team') {
+        if (typeof loadTeam === 'function') loadTeam();
     } else if (viewName === 'employees') {
         if (typeof loadEmployees === 'function') loadEmployees();
     } else if (viewName === 'policies') {

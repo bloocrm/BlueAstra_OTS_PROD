@@ -161,6 +161,9 @@ async function showDashboard() {
     // Load the dashboard analytics/charts
     if (typeof loadAnalyticsDashboard === 'function') loadAnalyticsDashboard();
 
+    // Apply per-user access control (hides nav sections a member isn't granted)
+    if (typeof applyAccessControl === 'function') applyAccessControl();
+
     // Navigate to a view from the hash if present
     const initialView = window.location.hash.replace('#', '');
     if (initialView) {

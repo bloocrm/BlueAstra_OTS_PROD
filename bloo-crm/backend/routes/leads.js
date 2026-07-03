@@ -8,13 +8,14 @@
 const express = require('express');
 const router = express.Router();
 const Lead = require('../models/Lead');
-const { verifyToken, verifyOwnership } = require('../middleware/auth');
+const { verifyToken, verifyOwnership, requirePermission } = require('../middleware/auth');
 const { validators, handleValidationErrors } = require('../middleware/validation');
 const { successResponse, paginatedResponse } = require('../utils/response');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { NotFoundError, ValidationError } = require('../utils/errors');
 
 router.use(verifyToken);
+router.use(requirePermission('leads'));
 
 // GET /api/leads - Get all leads for the user
 router.get('/', asyncHandler(async (req, res) => {

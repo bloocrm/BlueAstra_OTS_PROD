@@ -10,13 +10,14 @@ const router = express.Router();
 const Communication = require('../models/Communication');
 const Client = require('../models/Client');
 const Lead = require('../models/Lead');
-const { verifyToken, verifyOwnership } = require('../middleware/auth');
+const { verifyToken, verifyOwnership, requirePermission } = require('../middleware/auth');
 const { validators, handleValidationErrors } = require('../middleware/validation');
 const { successResponse, paginatedResponse } = require('../utils/response');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { NotFoundError, ValidationError } = require('../utils/errors');
 
 router.use(verifyToken);
+router.use(requirePermission('communications'));
 
 // GET /api/communications - Get all communications for the user
 router.get('/', asyncHandler(async (req, res) => {

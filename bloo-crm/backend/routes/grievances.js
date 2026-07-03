@@ -12,9 +12,10 @@
 const express = require('express');
 const router = express.Router();
 const Grievance = require('../models/Grievance');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requirePermission } = require('../middleware/auth');
 
 router.use(verifyToken);
+router.use(requirePermission('grievance'));
 
 // POST /api/grievances — file a new grievance
 router.post('/', async (req, res) => {

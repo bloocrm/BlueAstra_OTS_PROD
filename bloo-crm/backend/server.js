@@ -260,6 +260,10 @@ app.use('/api/ai', aiRoutes);
 const knowledgeRoutes = require('./routes/knowledge');
 app.use('/api/knowledge', knowledgeRoutes);
 
+// Team & access control (admin manages member sub-users)
+const teamRoutes = require('./routes/team');
+app.use('/api/team', teamRoutes);
+
 // Proposals (RFI / RFQ / RFP templates, guidance, documents)
 const proposalRoutes = require('./routes/proposals');
 app.use('/api/proposals', proposalRoutes);

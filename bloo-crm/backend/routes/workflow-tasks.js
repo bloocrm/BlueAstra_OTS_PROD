@@ -16,9 +16,10 @@ const WorkflowTask = require('../models/WorkflowTask');
 const Employee = require('../models/Employee');
 const LeaveApplication = require('../models/LeaveApplication');
 const emailService = require('../utils/email-service');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requirePermission } = require('../middleware/auth');
 
 router.use(verifyToken);
+router.use(requirePermission('workflow'));
 
 async function isOnLeave(userId, name) {
   if (!name) return false;

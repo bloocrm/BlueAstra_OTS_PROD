@@ -15,9 +15,10 @@
 const express = require('express');
 const router = express.Router();
 const KB = require('../models/KnowledgeArticle');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requirePermission } = require('../middleware/auth');
 
 router.use(verifyToken);
+router.use(requirePermission('knowledge'));
 
 // ---- OpenAI helpers (graceful: return null if unavailable) ----
 async function embed(text) {

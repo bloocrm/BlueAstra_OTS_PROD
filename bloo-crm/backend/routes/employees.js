@@ -12,7 +12,7 @@
 const express = require('express');
 const router = express.Router();
 const Employee = require('../models/Employee');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requirePermission } = require('../middleware/auth');
 const { decrypt } = require('../utils/encryption');
 
 function safeDecrypt(v) {
@@ -24,6 +24,7 @@ function safeDecrypt(v) {
 }
 
 router.use(verifyToken);
+router.use(requirePermission('hr'));
 
 const ALLOWED = [
   'name', 'email', 'phone', 'department', 'jobTitle', 'manager', 'backupEmployee', 'dateOfJoining',

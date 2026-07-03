@@ -20,7 +20,7 @@ const Proposal = require('../models/Proposal');
 const ProposalDocument = require('../models/ProposalDocument');
 const User = require('../models/User');
 const emailService = require('../utils/email-service');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requirePermission } = require('../middleware/auth');
 
 async function isRocket(userId) {
   const u = await User.findById(userId).select('plan').lean();
@@ -37,6 +37,7 @@ fs.mkdirSync(DOCS_DIR, { recursive: true });
 const upload = multer({ dest: DOCS_DIR, limits: { fileSize: 30 * 1024 * 1024 } });
 
 router.use(verifyToken);
+router.use(requirePermission('proposals'));
 
 async function chat(messages, maxTokens = 1200) {
   const key = process.env.OPENAI_API_KEY;
