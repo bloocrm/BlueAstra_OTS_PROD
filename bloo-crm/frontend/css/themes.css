@@ -16,12 +16,12 @@ body[data-theme="red"] {
   --theme-icon: #E74C3C;
 }
 body[data-theme="blue"] {
-  --theme-primary: #29b6f6;      /* sky blue */
-  --theme-primary-dark: #0288d1;
-  --theme-primary-light: #81d4fa;
+  --theme-primary: #1E88E5;      /* azure sky blue */
+  --theme-primary-dark: #0D47A1; /* deep navy */
+  --theme-primary-light: #64B5F6;/* light blue */
   --theme-on-primary: #ffffff;   /* white */
-  --theme-soft: #e6f6ff;
-  --theme-icon: #29b6f6;
+  --theme-soft: #E3F2FD;         /* very light blue */
+  --theme-icon: #1E88E5;
 }
 body[data-theme="black-yellow"] {
   --theme-primary: #1a1a1a;      /* black */
@@ -129,6 +129,40 @@ body[data-theme] .upload-section h2,
 body[data-theme] .upload-section h3 { color: var(--theme-primary) !important; }
 body[data-theme] .instruction-card i,
 body[data-theme] .upload-header i { color: var(--theme-primary) !important; }
+
+/* =====================================================
+   SKY THEME — layered, complementary shades of blue (not one flat color)
+   ===================================================== */
+/* Icon/stat circles get distinct blue gradients for depth & variety */
+body[data-theme="blue"] .blue-bg   { background: linear-gradient(135deg, #1E88E5, #0D47A1) !important; } /* azure -> navy */
+body[data-theme="blue"] .aqua-bg   { background: linear-gradient(135deg, #00B0FF, #0277BD) !important; } /* bright cyan-blue */
+body[data-theme="blue"] .orange-bg { background: linear-gradient(135deg, #64B5F6, #1976D2) !important; } /* light -> medium */
+body[data-theme="blue"] .green-bg  { background: linear-gradient(135deg, #4FC3F7, #0288D1) !important; } /* sky -> deep */
+/* Buttons: azure with a navy hover for contrast */
+body[data-theme="blue"] .btn-primary,
+body[data-theme="blue"] .btn.btn-primary { background: #1E88E5 !important; }
+body[data-theme="blue"] .btn-primary:hover { background: #0D47A1 !important; }
+/* Sidebar gets a soft blue wash; active item a light-blue highlight with a navy accent bar */
+body[data-theme="blue"] .sidebar { background: linear-gradient(180deg, #ffffff 0%, #E3F2FD 100%) !important; }
+body[data-theme="blue"] .nav-item.active { background: #E3F2FD !important; border-left-color: #0D47A1 !important; }
+body[data-theme="blue"] .nav-item i { color: #1E88E5 !important; }
+/* Titles & section headings in deep navy for hierarchy against azure accents */
+body[data-theme="blue"] #pageTitle,
+body[data-theme="blue"] .view-header h3,
+body[data-theme="blue"] .sidebar-header h2,
+body[data-theme="blue"] .chart-container > h3,
+body[data-theme="blue"] .chart-container > h4 { color: #0D47A1 !important; }
+body[data-theme="blue"] .view-header h3 i,
+body[data-theme="blue"] .sidebar-header h2 i { color: #1E88E5 !important; }
+/* Pricing hero: azure -> navy gradient */
+body[data-theme="blue"] .pricing-hero { background: linear-gradient(135deg, #1E88E5, #0D47A1) !important; }
+/* Soft-blue tinted badges with a medium-blue label */
+body[data-theme="blue"] .client-badge,
+body[data-theme="blue"] .badge-blue,
+body[data-theme="blue"] .badge-aqua,
+body[data-theme="blue"] .badge-orange { background: #E3F2FD !important; color: #1565C0 !important; }
+/* AI Assist float: gradient azure -> navy */
+body[data-theme="blue"] #aiAssistFab { background: linear-gradient(135deg, #1E88E5, #0D47A1) !important; }
 
 /* Copyright footer accent line + text stay neutral */
 #blooCopyright { color: #666 !important; }
