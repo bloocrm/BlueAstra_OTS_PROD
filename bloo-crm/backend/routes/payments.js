@@ -592,7 +592,7 @@ router.post('/stripe/checkout', verifyToken, async (req, res) => {
     const amount = Number(b.amount);
     if (!amount || amount <= 0) return res.status(400).json({ error: 'A valid amount is required' });
     const planName = (b.planName || b.plan || 'Bloo CRM Plan').toString();
-    const currency = (b.currency || process.env.STRIPE_CURRENCY || 'inr').toLowerCase();
+    const currency = (b.currency || process.env.STRIPE_CURRENCY || 'usd').toLowerCase();
     const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || 'https://bloocrm.com';
 
     const params = new URLSearchParams();

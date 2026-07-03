@@ -264,7 +264,7 @@
             </div>
             <div class="detail-row">
                 <span class="detail-label">Amount Paid:</span>
-                <span class="detail-value" id="amountPaid">₹0</span>
+                <span class="detail-value" id="amountPaid">$0</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Date:</span>
@@ -427,7 +427,7 @@
                     };
 
                     const amount = pricing[planKey]?.[user.billingCycle || 'monthly'] || 0;
-                    document.getElementById('amountPaid').textContent = `₹${amount}`;
+                    document.getElementById('amountPaid').textContent = `$${amount}`;
                 }
             } catch (e) {
                 console.warn('Could not load user data');

@@ -93,7 +93,7 @@ function populatePlanSelector() {
     return `
       <div class="plan-card" onclick="selectPlan('${key}')" data-plan="${key}">
         <div class="plan-name">${plan.name}</div>
-        <div class="plan-price">₹${price}</div>
+        <div class="plan-price">$${price}</div>
         <small>per ${currentBillingCycle === 'yearly' ? 'year' : 'month'}</small>
       </div>
     `;
@@ -140,9 +140,9 @@ function updateSummary() {
 
   document.getElementById('summaryPlan').textContent = plan.name;
   document.getElementById('summaryBilling').textContent = currentBillingCycle.charAt(0).toUpperCase() + currentBillingCycle.slice(1);
-  document.getElementById('summaryAmount').textContent = `₹${amount}`;
+  document.getElementById('summaryAmount').textContent = `$${amount}`;
   document.getElementById('summaryUnit').textContent = currentBillingCycle === 'yearly' ? 'year' : 'month';
-  document.getElementById('totalAmount').textContent = `₹${amount}`;
+  document.getElementById('totalAmount').textContent = `$${amount}`;
 }
 
 // Update payment method UI
