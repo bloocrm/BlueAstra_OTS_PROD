@@ -231,8 +231,8 @@ body[data-theme="blue"] .badge-blue,
 body[data-theme="blue"] .badge-aqua,
 body[data-theme="blue"] .badge-orange { background: #FFF3E0 !important; color: #E65100 !important; }
 
-/* Sky: left-pane (sidebar) tab icons -> electric blue (other icons stay orange) */
-body[data-theme="blue"] .sidebar-nav .nav-item i { color: #2979FF !important; }
+/* Sky: left-pane (sidebar) tab icons -> black (other icons stay orange) */
+body[data-theme="blue"] .sidebar-nav .nav-item i { color: #000000 !important; }
 
 /* Copyright footer accent line + text stay neutral */
 #blooCopyright { color: #666 !important; }
