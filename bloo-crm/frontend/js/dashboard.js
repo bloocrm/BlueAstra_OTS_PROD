@@ -50,6 +50,7 @@ function switchView(viewName) {
         proposals: 'Proposals — RFI / RFQ / RFP',
         vendors: 'Vendor Dashboard',
         team: 'Team & Access',
+        commsHub: 'Communications Hub',
         hr: 'Employee Dashboard',
         employees: 'Employee Information',
         policies: 'Company Policies',

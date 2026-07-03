@@ -134,9 +134,12 @@ async function applyAccessControl() {
     const allowed = new Set(permissions);
     // Always allow help + dashboard landing so the member isn't stranded
     allowed.add('help');
+    // The Communications Hub groups email/communications/meetingRoom — show it if any is granted
+    const commsAllowed = ['email', 'communications', 'meetingRoom'].some(s => allowed.has(s));
     document.querySelectorAll('.nav-item[data-view]').forEach(a => {
         const view = a.getAttribute('data-view');
         if (view === 'team') { a.style.display = 'none'; return; }
+        if (view === 'commsHub') { a.style.display = commsAllowed ? '' : 'none'; return; }
         a.style.display = allowed.has(view) ? '' : 'none';
     });
     // If current view is not allowed, move to the first allowed one

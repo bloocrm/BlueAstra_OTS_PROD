@@ -157,8 +157,8 @@
                 <a href="#" onclick="switchView('clientDashboard')" class="nav-item" data-view="clientDashboard">
                     <i class="fas fa-chart-bar"></i> <span>Client Dashboard</span>
                 </a>
-                <a href="#" onclick="switchView('email')" class="nav-item" data-view="email">
-                    <i class="fas fa-envelope"></i> <span>Email</span>
+                <a href="#" onclick="switchView('commsHub')" class="nav-item" data-view="commsHub">
+                    <i class="fas fa-comment-dots"></i> <span>Communications Hub</span>
                 </a>
                 <a href="#" onclick="switchView('calendar')" class="nav-item" data-view="calendar">
                     <i class="fas fa-calendar-alt"></i> <span>Calendar</span>
@@ -168,9 +168,6 @@
                 </a>
                 <a href="#" onclick="switchView('leads')" class="nav-item" data-view="leads">
                     <i class="fas fa-bullseye"></i> <span>Leads</span>
-                </a>
-                <a href="#" onclick="switchView('communications')" class="nav-item" data-view="communications">
-                    <i class="fas fa-comments"></i> <span>Communications</span>
                 </a>
                 <a href="#" onclick="switchView('grievance')" class="nav-item" data-view="grievance">
                     <i class="fas fa-flag"></i> <span>Grievance</span>
@@ -198,9 +195,6 @@
                 </a>
                 <a href="#" onclick="switchView('workflow')" class="nav-item" data-view="workflow">
                     <i class="fas fa-stream"></i> <span>Workflow</span>
-                </a>
-                <a href="#" onclick="switchView('meetingRoom')" class="nav-item" data-view="meetingRoom">
-                    <i class="fas fa-video"></i> <span>Meeting Room</span>
                 </a>
                 <a href="#" onclick="switchView('ai-insights')" class="nav-item" data-view="ai-insights">
                     <i class="fas fa-brain"></i> <span>AI Insights</span>
@@ -580,7 +574,24 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                 </div>
 
                 <!-- Email View -->
+                <!-- Communications Hub (landing) -->
+                <div id="commsHub" class="view">
+                    <div class="view-header"><h3><i class="fas fa-comment-dots"></i> Communications Hub</h3></div>
+                    <p style="color:#888;">Manage all your outreach in one place — email, logged communications, and meetings.</p>
+                    <div class="dashboard-grid" style="margin-top:12px;">
+                        <div class="stat-card" style="cursor:pointer;" onclick="switchView('email')"><div class="stat-icon blue-bg"><i class="fas fa-envelope"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Email</h3><p>Inbox & compose</p></div></div>
+                        <div class="stat-card" style="cursor:pointer;" onclick="switchView('communications')"><div class="stat-icon aqua-bg"><i class="fas fa-comments"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Communications</h3><p>Logged interactions</p></div></div>
+                        <div class="stat-card" style="cursor:pointer;" onclick="switchView('meetingRoom')"><div class="stat-icon orange-bg"><i class="fas fa-video"></i></div><div class="stat-content"><h3 style="font-size:1.1rem;">Meeting Room</h3><p>Start & review meetings</p></div></div>
+                    </div>
+                </div>
+
                 <div id="email" class="view">
+                    <div class="comms-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('commsHub')">← Overview</button>
+                        <button class="btn btn-sm btn-primary" onclick="switchView('email')">Email</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('communications')">Communications</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('meetingRoom')">Meeting Room</button>
+                    </div>
                     <div class="view-header">
                         <h2><i class="fas fa-envelope"></i> Email Management</h2>
                         <div style="display: flex; gap: 10px;">
@@ -716,6 +727,12 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
 
                 <!-- Communications View -->
                 <div id="communications" class="view">
+                    <div class="comms-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('commsHub')">← Overview</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('email')">Email</button>
+                        <button class="btn btn-sm btn-primary" onclick="switchView('communications')">Communications</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('meetingRoom')">Meeting Room</button>
+                    </div>
                     <div class="view-header">
                         <button onclick="showModal('addCommunicationModal')" class="btn btn-primary">
                             <i class="fas fa-plus"></i> Log Communication
@@ -812,6 +829,12 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
 
                 <!-- Meeting Room View -->
                 <div id="meetingRoom" class="view">
+                    <div class="comms-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('commsHub')">← Overview</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('email')">Email</button>
+                        <button class="btn btn-sm btn-secondary" onclick="switchView('communications')">Communications</button>
+                        <button class="btn btn-sm btn-primary" onclick="switchView('meetingRoom')">Meeting Room</button>
+                    </div>
                     <div class="view-header">
                         <h2><i class="fas fa-video"></i> Meeting Room</h2>
                         <button onclick="showModal('startMeetingModal')" class="btn btn-primary">
