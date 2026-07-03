@@ -23,6 +23,11 @@ async function isRocket(userId) {
   const u = await User.findById(userId).select('plan').lean();
   return !!u && u.plan === 'rocket-ai-plus';
 }
+// Swift AI+ or higher (rocket also qualifies)
+async function isSwift(userId) {
+  const u = await User.findById(userId).select('plan').lean();
+  return !!u && (u.plan === 'swift-ai-plus' || u.plan === 'rocket-ai-plus');
+}
 
 const DOCS_DIR = path.join(__dirname, '..', 'uploads', 'vendor-docs');
 fs.mkdirSync(DOCS_DIR, { recursive: true });
@@ -126,7 +131,7 @@ router.delete('/:vendorId', async (req, res) => {
 // Map a vendor to a client / employee / workflow (Rocket AI+ only)
 router.post('/:vendorId/map', async (req, res) => {
   try {
-    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Mapping a vendor to a client/employee/workflow requires the Rocket AI+ plan.' });
+    if (!(await isSwift(req.userId))) return res.status(403).json({ error: 'Swift AI+ required', message: 'Mapping a vendor to a client/employee/workflow requires the Swift AI+ plan (or higher).' });
     const b = req.body || {};
     const upd = {};
     ['mappedClient', 'mappedEmployee', 'mappedWorkflow'].forEach(f => { if (b[f] !== undefined) upd[f] = b[f]; });
@@ -139,7 +144,7 @@ router.post('/:vendorId/map', async (req, res) => {
 // Assign an employee to a vendor (Rocket AI+ only)
 router.post('/:vendorId/assign-employee', async (req, res) => {
   try {
-    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Assigning employees to a vendor requires the Rocket AI+ plan.' });
+    if (!(await isSwift(req.userId))) return res.status(403).json({ error: 'Swift AI+ required', message: 'Assigning employees to a vendor requires the Swift AI+ plan (or higher).' });
     const employee = ((req.body && req.body.employee) || '').trim();
     if (!employee) return res.status(400).json({ error: 'employee is required' });
     const v = await Vendor.findOne({ userId: req.userId, vendorId: req.params.vendorId });
@@ -153,7 +158,7 @@ router.post('/:vendorId/assign-employee', async (req, res) => {
 // Assign a task to a vendor (Rocket AI+ only)
 router.post('/:vendorId/task', async (req, res) => {
   try {
-    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Assigning tasks to a vendor requires the Rocket AI+ plan.' });
+    if (!(await isSwift(req.userId))) return res.status(403).json({ error: 'Swift AI+ required', message: 'Assigning tasks to a vendor requires the Swift AI+ plan (or higher).' });
     const b = req.body || {};
     if (!b.title) return res.status(400).json({ error: 'title is required' });
     const v = await Vendor.findOne({ userId: req.userId, vendorId: req.params.vendorId });

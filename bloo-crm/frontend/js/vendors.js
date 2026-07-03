@@ -109,9 +109,9 @@ function renderVendorList(vendors) {
                 <div style="margin-top:6px;display:flex;gap:8px;">
                     <button class="btn btn-sm btn-secondary" onclick="editVendor('${v.vendorId}')"><i class="fas fa-edit"></i> Edit</button>
                     <button class="btn btn-sm btn-primary" onclick="openVendorDocs('${v.vendorId}','${escAttr(v.name)}')"><i class="fas fa-folder-open"></i> Documents</button>
-                    <button class="btn btn-sm btn-secondary" onclick="openVendorMap('${v.vendorId}')"><i class="fas fa-project-diagram"></i> Map ${isRocketPlan() ? '' : '🔒'}</button>
-                    <button class="btn btn-sm btn-secondary" onclick="assignVendorTask('${v.vendorId}')"><i class="fas fa-tasks"></i> Assign Task ${isRocketPlan() ? '' : '🔒'}</button>
-                    <button class="btn btn-sm btn-secondary" onclick="assignVendorEmployee('${v.vendorId}')"><i class="fas fa-user-plus"></i> Assign Employee ${isRocketPlan() ? '' : '🔒'}</button>
+                    <button class="btn btn-sm btn-secondary" onclick="openVendorMap('${v.vendorId}')"><i class="fas fa-project-diagram"></i> Map ${isSwiftPlan() ? '' : '🔒'}</button>
+                    <button class="btn btn-sm btn-secondary" onclick="assignVendorTask('${v.vendorId}')"><i class="fas fa-tasks"></i> Assign Task ${isSwiftPlan() ? '' : '🔒'}</button>
+                    <button class="btn btn-sm btn-secondary" onclick="assignVendorEmployee('${v.vendorId}')"><i class="fas fa-user-plus"></i> Assign Employee ${isSwiftPlan() ? '' : '🔒'}</button>
                     <button class="btn btn-sm btn-delete" onclick="deleteVendor('${v.vendorId}')"><i class="fas fa-trash"></i></button>
                 </div>
                 ${(v.mappedClient || v.mappedEmployee || v.mappedWorkflow) ? `<div style="font-size:0.78rem;color:#666;margin-top:6px;">
@@ -166,7 +166,7 @@ function editVendor(id) { const v = _vendorsCache.find(x => x.vendorId === id); 
 
 // Assign a task to a vendor (Rocket AI+ only)
 async function assignVendorTask(vendorId) {
-    if (!rocketGate('Assign task to vendor')) return;
+    if (!swiftGate('Assign task to vendor')) return;
     const title = prompt('Task to assign to this vendor:');
     if (!title) return;
     const dueDate = prompt('Due date (YYYY-MM-DD, optional):') || '';
@@ -182,7 +182,7 @@ async function assignVendorTask(vendorId) {
 
 // Assign an employee to a vendor (Rocket AI+ only)
 async function assignVendorEmployee(vendorId) {
-    if (!rocketGate('Assign employee to vendor')) return;
+    if (!swiftGate('Assign employee to vendor')) return;
     const employee = prompt('Employee to assign to this vendor (name):');
     if (!employee) return;
     try {
@@ -197,7 +197,7 @@ async function assignVendorEmployee(vendorId) {
 
 // Map a vendor to a client / employee / workflow (Rocket AI+ only)
 async function openVendorMap(vendorId) {
-    if (!rocketGate('Map vendor to client / employee / workflow')) return;
+    if (!swiftGate('Map vendor to client / employee / workflow')) return;
     const v = _vendorsCache.find(x => x.vendorId === vendorId) || {};
     const client = prompt('Map this vendor to a CLIENT (name):', v.mappedClient || '');
     if (client === null) return;

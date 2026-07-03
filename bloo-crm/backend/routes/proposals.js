@@ -26,6 +26,11 @@ async function isRocket(userId) {
   const u = await User.findById(userId).select('plan').lean();
   return !!u && u.plan === 'rocket-ai-plus';
 }
+// Swift AI+ or higher (rocket also qualifies)
+async function isSwift(userId) {
+  const u = await User.findById(userId).select('plan').lean();
+  return !!u && (u.plan === 'swift-ai-plus' || u.plan === 'rocket-ai-plus');
+}
 
 const DOCS_DIR = path.join(__dirname, '..', 'uploads', 'proposal-docs');
 fs.mkdirSync(DOCS_DIR, { recursive: true });
@@ -93,7 +98,7 @@ Include clear section headings, guidance/placeholders in [brackets] the user fil
 // Campaign: email a proposal/brochure to many selected clients & leads (Rocket AI+)
 router.post('/campaign', async (req, res) => {
   try {
-    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Proposal campaigns require the Rocket AI+ plan.' });
+    if (!(await isSwift(req.userId))) return res.status(403).json({ error: 'Swift AI+ required', message: 'Proposal campaigns require the Swift AI+ plan (or higher).' });
     const b = req.body || {};
     const recipients = Array.isArray(b.recipients) ? [...new Set(b.recipients.map(x => (x || '').trim()).filter(Boolean))] : [];
     if (!b.proposalId || !recipients.length) return res.status(400).json({ error: 'proposalId and recipients are required' });
@@ -154,7 +159,7 @@ router.delete('/:proposalId', async (req, res) => {
 // Assign an employee to a proposal's activities/workflow (Rocket AI+ only)
 router.post('/:proposalId/assign', async (req, res) => {
   try {
-    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Assigning employees to proposal activities requires the Rocket AI+ plan.' });
+    if (!(await isSwift(req.userId))) return res.status(403).json({ error: 'Swift AI+ required', message: 'Assigning employees to proposal activities requires the Swift AI+ plan (or higher).' });
     const p = await Proposal.findOneAndUpdate(
       { userId: req.userId, proposalId: req.params.proposalId },
       { assignedEmployee: (req.body && req.body.assignedEmployee) || '' },
@@ -168,7 +173,7 @@ router.post('/:proposalId/assign', async (req, res) => {
 // Send a proposal to a lead or client by email (Rocket AI+ only)
 router.post('/:proposalId/send', async (req, res) => {
   try {
-    if (!(await isRocket(req.userId))) return res.status(403).json({ error: 'Rocket AI+ required', message: 'Sending proposals to leads/clients requires the Rocket AI+ plan.' });
+    if (!(await isSwift(req.userId))) return res.status(403).json({ error: 'Swift AI+ required', message: 'Sending proposals to leads/clients requires the Swift AI+ plan (or higher).' });
     const to = ((req.body && req.body.to) || '').trim();
     const recipientType = (req.body && req.body.recipientType) || 'recipient';
     if (!to) return res.status(400).json({ error: 'Recipient email is required' });

@@ -14,7 +14,7 @@ function loadProposals() {
     proSetType(_proType);
     if (typeof renderProposalIntegrations === 'function') renderProposalIntegrations();
     // Hide the 🔒 badges on the header buttons for Rocket AI+ users
-    const rocket = (typeof isRocketPlan === 'function') && isRocketPlan();
+    const rocket = (typeof isRocketPlan === 'function') && isSwiftPlan();
     document.querySelectorAll('#proposals .pro-lock').forEach(el => { el.style.display = rocket ? 'none' : ''; });
 }
 
@@ -32,14 +32,14 @@ async function proResolveCurrent() {
 
 // Top-right: Assign Employee (Rocket AI+)
 async function proAssignEmployeeTop() {
-    if (!rocketGate('Assign employee to proposal')) return;
+    if (!swiftGate('Assign employee to proposal')) return;
     const id = await proResolveCurrent();
     if (id) proAssign(id);
 }
 
 // Top-right: Send to Lead / Client (Rocket AI+)
 async function proSendTo(recipientType) {
-    if (!rocketGate('Send proposal to ' + recipientType)) return;
+    if (!swiftGate('Send proposal to ' + recipientType)) return;
     const id = await proResolveCurrent();
     if (!id) return;
     const to = prompt(`Send this proposal to the ${recipientType}'s email address:`);
@@ -136,7 +136,7 @@ async function proLoadSaved() {
                     <div class="activity-title">${escPr(p.title)} <span style="font-size:0.72em;color:#888;">${p.proposalId} · ${p.industry} · ${p.status}</span>${p.assignedEmployee ? ` <span style="font-size:0.72em;color:var(--theme-primary);"><i class="fas fa-id-badge"></i> ${escPr(p.assignedEmployee)}</span>` : ''}</div>
                     <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
                         <button class="btn btn-sm btn-secondary" onclick="proView('${p.proposalId}')"><i class="fas fa-eye"></i> View</button>
-                        <button class="btn btn-sm btn-secondary" onclick="proAssign('${p.proposalId}')"><i class="fas fa-user-plus"></i> Assign Employee ${(typeof isRocketPlan==='function'&&isRocketPlan())?'':'🔒'}</button>
+                        <button class="btn btn-sm btn-secondary" onclick="proAssign('${p.proposalId}')"><i class="fas fa-user-plus"></i> Assign Employee ${(typeof isRocketPlan==='function'&&isSwiftPlan())?'':'🔒'}</button>
                         <button class="btn btn-sm btn-delete" onclick="proDelete('${p.proposalId}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
@@ -165,7 +165,7 @@ async function proDelete(id) {
 
 // Assign an employee to a proposal's activities (Rocket AI+ only)
 async function proAssign(id) {
-    if (typeof rocketGate === 'function' && !rocketGate('Assign employee to proposal activities')) return;
+    if (typeof rocketGate === 'function' && !swiftGate('Assign employee to proposal activities')) return;
     const employee = prompt('Assign which employee to this proposal\'s activities/workflow?');
     if (employee === null) return;
     try {

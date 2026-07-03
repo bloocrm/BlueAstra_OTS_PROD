@@ -142,7 +142,7 @@ function editEmployee(employeeId) { const e = _empCache[employeeId]; if (e) open
 function viewEmployee(employeeId) {
     const e = _empCache[employeeId];
     if (!e) return;
-    const rocket = (typeof isRocketPlan === 'function') && isRocketPlan();
+    const rocket = (typeof isRocketPlan === 'function') && isSwiftPlan();
     const addr = e.address || {};
     const overlay = document.createElement('div');
     overlay.className = 'modal active';
@@ -175,7 +175,7 @@ function viewEmployee(employeeId) {
 }
 
 async function viewRelatedVendors(empName) {
-    if (typeof rocketGate === 'function' && !rocketGate('View related vendors')) return;
+    if (typeof rocketGate === 'function' && !swiftGate('View related vendors')) return;
     const box = document.getElementById('empRelated');
     if (box) box.innerHTML = '<p class="empty-state">Loading related vendors…</p>';
     try {
@@ -186,7 +186,7 @@ async function viewRelatedVendors(empName) {
 }
 
 async function viewRelatedProposals(empName) {
-    if (typeof rocketGate === 'function' && !rocketGate('View related proposals')) return;
+    if (typeof rocketGate === 'function' && !swiftGate('View related proposals')) return;
     const box = document.getElementById('empRelated');
     if (box) box.innerHTML = '<p class="empty-state">Loading related proposals…</p>';
     try {
