@@ -23,14 +23,7 @@ body[data-theme="blue"] {
   --theme-soft: #E3F2FD;         /* very light blue */
   --theme-icon: #1E88E5;
 }
-body[data-theme="black-yellow"] {
-  --theme-primary: #1a1a1a;      /* black */
-  --theme-primary-dark: #000000;
-  --theme-primary-light: #FFD400; /* yellow accent */
-  --theme-on-primary: #FFD400;   /* yellow text/icons on black */
-  --theme-soft: #fffbe6;
-  --theme-icon: #111111;
-}
+/* (Black & Yellow theme removed — only Red and Sky remain) */
 
 /* ---- Overrides for elements whose colors are not yet variable-driven ---- */
 body[data-theme] .btn-primary,

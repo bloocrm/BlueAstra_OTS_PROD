@@ -3,7 +3,7 @@
   Application-wide theme switcher (Red / Royal Blue / Black & Yellow).
 */
 (function () {
-    var VALID = ['red', 'blue', 'black-yellow'];
+    var VALID = ['red', 'blue'];
     function current() {
         var t = localStorage.getItem('crmTheme');
         return VALID.indexOf(t) !== -1 ? t : 'red';
