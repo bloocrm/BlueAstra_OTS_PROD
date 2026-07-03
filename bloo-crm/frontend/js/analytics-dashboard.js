@@ -55,7 +55,7 @@ function renderConversionDonut(funnel, k) {
             labels: ['Converted', 'Negotiating', 'Interested', 'Qualified', 'New', 'Lost'],
             datasets: [{
                 data: [funnel.converted || 0, funnel.negotiating || 0, funnel.interested || 0, funnel.qualified || 0, funnel.new || 0, funnel.lost || 0],
-                backgroundColor: ['#2ecc71', '#8e44ad', '#2d6cdf', '#00bcd4', '#f39c12', '#e74c3c'],
+                backgroundColor: ['#2ecc71', '#8e44ad', '#2d6cdf', '#00bcd4', '#f39c12', chartRed()],
                 borderWidth: 2, borderColor: '#fff'
             }]
         },
@@ -76,7 +76,7 @@ function renderScatter(points) {
     destroyChart('scatter');
     window.__charts.scatter = new Chart(ctx, {
         type: 'scatter',
-        data: { datasets: [{ label: 'Meetings (duration min)', data: points, backgroundColor: '#e74c3c', pointRadius: 6, pointHoverRadius: 9 }] },
+        data: { datasets: [{ label: 'Meetings (duration min)', data: points, backgroundColor: chartRed(), pointRadius: 6, pointHoverRadius: 9 }] },
         options: {
             responsive: true, maintainAspectRatio: false,
             plugins: {
@@ -99,7 +99,7 @@ function renderEmployeeDonut(byStatus) {
         type: 'doughnut',
         data: {
             labels: ['Active', 'On Leave', 'Terminated'],
-            datasets: [{ data: [byStatus.active || 0, byStatus['on-leave'] || 0, byStatus.terminated || 0], backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'], borderWidth: 2, borderColor: '#fff' }]
+            datasets: [{ data: [byStatus.active || 0, byStatus['on-leave'] || 0, byStatus.terminated || 0], backgroundColor: ['#2ecc71', '#f39c12', chartRed()], borderWidth: 2, borderColor: '#fff' }]
         },
         options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom' } } }
     });

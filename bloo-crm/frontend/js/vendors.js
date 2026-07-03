@@ -68,7 +68,7 @@ function renderVendorPie(q, points) {
     const src = nonzero.length ? nonzero : [{ name: 'No data', value: 1 }];
     window.__vcharts[q] = new Chart(ctx, {
         type: 'pie',
-        data: { labels: src.map(p => p.name), datasets: [{ data: src.map(p => p.value), backgroundColor: src.map((_, i) => PIE_COLORS[i % PIE_COLORS.length]), borderWidth: 1, borderColor: '#fff' }] },
+        data: { labels: src.map(p => p.name), datasets: [{ data: src.map(p => p.value), backgroundColor: src.map((_, i) => (typeof skyFix==='function'?skyFix:(x=>x))(PIE_COLORS[i % PIE_COLORS.length])), borderWidth: 1, borderColor: '#fff' }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.label}: $${(c.parsed || 0).toLocaleString()}` } } } }
     });
 }
@@ -78,7 +78,7 @@ function renderVendorIndex(items) {
     if (!el) return;
     if (!items.length) { el.innerHTML = '<p class="empty-state">Add vendors with performance/risk scores to see the index.</p>'; return; }
     el.innerHTML = items.map(v => {
-        const color = v.index >= 70 ? '#2ecc71' : v.index >= 40 ? '#f39c12' : '#e74c3c';
+        const color = v.index >= 70 ? '#2ecc71' : v.index >= 40 ? '#f39c12' : (typeof chartRed==='function'?chartRed():'#e74c3c');
         return `<div class="activity-item">
             <div class="activity-icon" style="background:${color};"><span style="color:#fff;font-weight:700;font-size:0.8rem;">${v.index}</span></div>
             <div class="activity-content" style="flex:1;">

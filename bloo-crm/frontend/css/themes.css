@@ -164,6 +164,24 @@ body[data-theme="blue"] .badge-orange { background: #E3F2FD !important; color: #
 /* AI Assist float: gradient azure -> navy */
 body[data-theme="blue"] #aiAssistFab { background: linear-gradient(135deg, #1E88E5, #0D47A1) !important; }
 
+/* SKY: convert every remaining RED to ORANGE (danger/error/status accents) */
+body[data-theme="blue"] { --danger: #FB8C00; }   /* remaps all var(--danger): errors, borders, text-danger, delete accents */
+body[data-theme="blue"] .btn-delete { background: #FB8C00 !important; color: #fff !important; }
+body[data-theme="blue"] .btn-delete:hover { background: #EF6C00 !important; }
+body[data-theme="blue"] .btn-danger { background: #FB8C00 !important; border-color: #FB8C00 !important; }
+body[data-theme="blue"] .calendar-event.busy,
+body[data-theme="blue"] .duplicate-highlight,
+body[data-theme="blue"] .toast.error { border-left-color: #FB8C00 !important; }
+body[data-theme="blue"] .text-danger,
+body[data-theme="blue"] .error-message,
+body[data-theme="blue"] .error-text { color: #FB8C00 !important; }
+/* Any element that literally still renders red text/border under sky -> orange */
+body[data-theme="blue"] [style*="color:#E74C3C"],
+body[data-theme="blue"] [style*="color:#e74c3c"],
+body[data-theme="blue"] [style*="color: #E74C3C"],
+body[data-theme="blue"] [style*="color:#cc0000"],
+body[data-theme="blue"] [style*="color:#ef4444"] { color: #FB8C00 !important; }
+
 /* Copyright footer accent line + text stay neutral */
 #blooCopyright { color: #666 !important; }
 

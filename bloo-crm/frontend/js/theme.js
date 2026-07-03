@@ -20,6 +20,9 @@
     // Expose globally
     window.setCrmTheme = apply;
     window.getCrmTheme = current;
+    // Under the Sky theme, chart "red" segments become orange
+    window.chartRed = function () { return current() === 'blue' ? '#FB8C00' : '#e74c3c'; };
+    window.skyFix = function (c) { return (current() === 'blue' && (c === '#e74c3c' || c === '#ff6b6b')) ? '#FB8C00' : c; };
 
     function init() { apply(current()); }
     if (document.body) init();
