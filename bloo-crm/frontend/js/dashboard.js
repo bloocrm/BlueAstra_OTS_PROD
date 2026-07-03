@@ -46,7 +46,7 @@ function switchView(viewName) {
         communications: 'Communications',
         grievance: 'Grievance & Support',
         help: 'Help & Knowledge Base',
-        knowledge: 'Knowledge Repository',
+        knowledge: 'AI Knowledge Repo',
         proposals: 'Proposals — RFI / RFQ / RFP',
         vendors: 'Vendor Dashboard',
         team: 'Team & Access',
