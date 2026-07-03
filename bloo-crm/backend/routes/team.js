@@ -55,6 +55,7 @@ router.post('/members', async (req, res) => {
       name: b.name.trim(),
       email: b.email.toLowerCase().trim(),
       password: b.password,          // hashed by the model pre-save hook
+      phone: (b.phone && b.phone.trim()) || 'N/A',
       role: 'member',
       parentUserId: req.actualUserId,
       permissions,
