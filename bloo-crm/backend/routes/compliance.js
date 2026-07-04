@@ -8,14 +8,25 @@
 const express = require('express');
 const router = express.Router();
 const Compliance = require('../models/Compliance');
+const User = require('../models/User');
 const { verifyToken, verifyOwnership, requirePermission } = require('../middleware/auth');
 const { validators, handleValidationErrors } = require('../middleware/validation');
 const { successResponse, paginatedResponse } = require('../utils/response');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { NotFoundError, ValidationError } = require('../utils/errors');
 
+// Compliance Tracking requires Swift AI+ (or higher). Members inherit their admin's plan.
+async function requireSwiftPlan(req, res, next) {
+  try {
+    const u = await User.findById(req.userId).select('plan').lean();
+    if (u && (u.plan === 'swift-ai-plus' || u.plan === 'rocket-ai-plus')) return next();
+    return res.status(403).json({ error: 'Swift AI+ required', message: 'Compliance Tracking is available on the Swift AI+ plan (or higher).' });
+  } catch (e) { return res.status(500).json({ error: 'Plan check failed', message: e.message }); }
+}
+
 router.use(verifyToken);
 router.use(requirePermission('compliance'));
+router.use(requireSwiftPlan);
 
 // GET /api/compliance - Get all compliance records
 router.get('/', asyncHandler(async (req, res) => {

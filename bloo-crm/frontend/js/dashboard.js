@@ -86,7 +86,14 @@ function switchView(viewName) {
         loadCalendarUpgradeSection();
         if (typeof renderMeetingsCalendar === 'function') renderMeetingsCalendar();
     } else if (viewName === 'compliance') {
-        initializeCompliance();
+        if (typeof isSwiftPlan === 'function' && !isSwiftPlan()) {
+            const c = document.getElementById('complianceContainer');
+            if (c) c.innerHTML = '<div style="background:var(--theme-soft);border:1px dashed var(--theme-primary);border-radius:8px;padding:20px;color:#555;">'
+                + '<i class="fas fa-lock" style="color:var(--theme-primary);"></i> <strong>Compliance Tracking</strong> is available on the <strong>Swift AI+</strong> plan (or higher).'
+                + '<div style="margin-top:10px;"><button class="btn btn-primary" onclick="if(typeof selectPlan===\'function\')selectPlan(\'swift-ai-plus\')">Upgrade to Swift AI+</button></div></div>';
+        } else {
+            initializeCompliance();
+        }
     } else if (viewName === 'grievance') {
         if (typeof loadGrievances === 'function') loadGrievances();
     } else if (viewName === 'help') {
