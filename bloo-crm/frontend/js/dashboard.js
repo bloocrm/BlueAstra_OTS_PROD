@@ -451,8 +451,8 @@ const pricingPlans = {
     },
     'swift-ai-plus': {
         name: 'SWIFT AI+ Plan',
-        monthlyPrice: 50,
-        yearlyPrice: 500,
+        monthlyPrice: 99,
+        yearlyPrice: 990,
         badge: 'Recommended',
         features: [
             'All BASIC Plan features',
@@ -466,8 +466,8 @@ const pricingPlans = {
     },
     'rocket-ai-plus': {
         name: 'ROCKET AI+ Plan',
-        monthlyPrice: 100,
-        yearlyPrice: 1000,
+        monthlyPrice: 199,
+        yearlyPrice: 1990,
         badge: 'Most Popular',
         features: [
             'All SWIFT AI+ Plan features',

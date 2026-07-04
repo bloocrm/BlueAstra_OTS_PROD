@@ -15,8 +15,8 @@ const API_BASE_URL = '/api';
 // Pricing configuration
 const PLANS = {
   'basic': { name: 'BASIC Plan', monthly: 10, yearly: 100 },
-  'swift-ai-plus': { name: 'SWIFT AI+ Plan', monthly: 50, yearly: 500 },
-  'rocket-ai-plus': { name: 'ROCKET AI+ Plan', monthly: 100, yearly: 1000 }
+  'swift-ai-plus': { name: 'SWIFT AI+ Plan', monthly: 99, yearly: 990 },
+  'rocket-ai-plus': { name: 'ROCKET AI+ Plan', monthly: 199, yearly: 1990 }
 };
 
 let currentBillingCycle = 'monthly';

@@ -1394,8 +1394,14 @@
 }
 
 .badge-rocket {
-    background: linear-gradient(135deg, #ec4899, #db2777);
-    color: white;
+    /* Shiny white & gray metallic "Most Popular" badge */
+    background: linear-gradient(135deg, #ffffff 0%, #eef1f4 40%, #c3cad1 55%, #f6f8fa 100%);
+    color: #2b2f36;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    border: 1px solid #d3d9df;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.95);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.7);
 }
 
 .pricing-card.swift-plan .badge-swift {

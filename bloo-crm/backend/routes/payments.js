@@ -32,8 +32,8 @@ paypal.configure({
 // Pricing configuration (must match frontend)
 const PRICING = {
   basic: { monthly: 10, yearly: 100 },
-  'swift-ai-plus': { monthly: 50, yearly: 500 },
-  'rocket-ai-plus': { monthly: 100, yearly: 1000 }
+  'swift-ai-plus': { monthly: 99, yearly: 990 },
+  'rocket-ai-plus': { monthly: 199, yearly: 1990 }
 };
 
 // Helper function to generate OTP
