@@ -29,10 +29,22 @@ const TOOLS = ['trello', 'asana', 'monday', 'clickup', 'jira', 'jama', 'notion',
   'sap-ariba', 'jaggaer', 'ivalua', 'gep', 'zycus', 'basware', 'zycus-proactive'];
 const ROCKET = 'rocket-ai-plus';
 
-async function requireRocket(req, res) {
+// Employee Dashboard (PM + HR) and Vendor Dashboard integrations -> Swift AI+.
+// Proposal and Procurement/Sourcing integrations -> Rocket AI+.
+const SWIFT_TOOLS = new Set([
+  'trello', 'asana', 'monday', 'clickup', 'jira', 'jama', 'notion', 'ms-planner',
+  'bamboohr', 'workday', 'zoho-people', 'rippling', 'deel', 'sap-successfactors',
+  'sap-fieldglass', 'beeline', 'magnit', 'worksome', 'sap', 'oracle', 'coupa', 'kodiak-hub', 'hicx', 'tealbook', 'graphite-connect'
+]);
+function planRank(p) { return ({ 'basic': 0, 'swift-ai-plus': 1, 'rocket-ai-plus': 2 })[p] || 0; }
+
+// Gate a tool by its required tier (Swift for employee/vendor, Rocket otherwise)
+async function requireToolPlan(req, res, tool) {
   const user = await User.findById(req.userId).select('plan').lean();
-  if (!user || user.plan !== ROCKET) {
-    res.status(403).json({ error: 'Rocket AI+ required', message: 'These integrations are available only on the Rocket AI+ plan.' });
+  const minPlan = SWIFT_TOOLS.has(tool) ? 'swift-ai-plus' : 'rocket-ai-plus';
+  if (!user || planRank(user.plan) < planRank(minPlan)) {
+    const label = minPlan === 'swift-ai-plus' ? 'Swift AI+' : 'Rocket AI+';
+    res.status(403).json({ error: `${label} required`, message: `This integration is available on the ${label} plan (or higher).` });
     return null;
   }
   return user;
@@ -47,13 +59,13 @@ router.get('/', async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Failed to list integrations', message: e.message }); }
 });
 
-// Connect a tool (Rocket AI+ only)
+// Connect a tool (Swift AI+ for employee/vendor tools, Rocket AI+ otherwise)
 router.post('/connect', async (req, res) => {
   try {
-    if (!(await requireRocket(req, res))) return;
     const b = req.body || {};
     const tool = (b.tool || '').toLowerCase();
     if (!TOOLS.includes(tool)) return res.status(400).json({ error: 'Unknown tool' });
+    if (!(await requireToolPlan(req, res, tool))) return;
     const apiKey = (b.apiKey || '').toString();
     const integration = await Integration.findOneAndUpdate(
       { userId: req.userId, tool },

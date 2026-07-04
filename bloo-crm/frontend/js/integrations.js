@@ -90,28 +90,31 @@ const SOURCING_INTEGRATIONS = [
     { tool: 'zycus-proactive', name: 'Zycus Proactive', slug: 'zycus' }
 ];
 
-// Back-compat wrapper for the Employee Dashboard integrations
+const PLAN_TIER = { 'basic': 0, 'swift-ai-plus': 1, 'rocket-ai-plus': 2 };
+
+// Employee Dashboard integrations -> Swift AI+
 async function renderIntegrations() {
-    return renderIntegrationSet(PM_INTEGRATIONS, 'hrIntegrations', 'integrationsNote', 'Connect your HR & project tools to Bloo CRM.');
+    return renderIntegrationSet(PM_INTEGRATIONS, 'hrIntegrations', 'integrationsNote', 'Connect your HR & project tools to Bloo CRM.', 'swift-ai-plus');
 }
 
-// Proposals tab integrations
+// Proposals tab integrations -> Rocket AI+
 async function renderProposalIntegrations() {
-    return renderIntegrationSet(PROPOSAL_INTEGRATIONS, 'proposalIntegrations', 'proposalIntegrationsNote', 'Connect your proposal / RFP tools to Bloo CRM.');
+    return renderIntegrationSet(PROPOSAL_INTEGRATIONS, 'proposalIntegrations', 'proposalIntegrationsNote', 'Connect your proposal / RFP tools to Bloo CRM.', 'rocket-ai-plus');
 }
 
-// Vendor Dashboard integrations
+// Vendor Dashboard integrations -> Swift AI+
 async function renderVendorIntegrations() {
-    return renderIntegrationSet(VENDOR_INTEGRATIONS, 'vendorIntegrations', 'vendorIntegrationsNote', 'Connect your vendor management / VMS platforms to Bloo CRM.');
+    return renderIntegrationSet(VENDOR_INTEGRATIONS, 'vendorIntegrations', 'vendorIntegrationsNote', 'Connect your vendor management / VMS platforms to Bloo CRM.', 'swift-ai-plus');
 }
 
-// Upload Source Data (procurement/sourcing) integrations
+// Upload Source Data (procurement/sourcing) integrations -> Rocket AI+
 async function renderSourcingIntegrations() {
-    return renderIntegrationSet(SOURCING_INTEGRATIONS, 'sourcingIntegrations', 'sourcingIntegrationsNote', 'Connect your procurement / sourcing platforms to Bloo CRM.');
+    return renderIntegrationSet(SOURCING_INTEGRATIONS, 'sourcingIntegrations', 'sourcingIntegrationsNote', 'Connect your procurement / sourcing platforms to Bloo CRM.', 'rocket-ai-plus');
 }
 
 // Generic renderer for a set of integrations into a given container
-async function renderIntegrationSet(list, containerId, noteId, connectedNote) {
+async function renderIntegrationSet(list, containerId, noteId, connectedNote, minPlan) {
+    minPlan = minPlan || 'rocket-ai-plus';
     const container = document.getElementById(containerId);
     if (!container) return;
     let plan = null, connected = {};
@@ -122,18 +125,19 @@ async function renderIntegrationSet(list, containerId, noteId, connectedNote) {
     } catch (e) { /* fall back to local plan */ }
     if (!plan) { try { plan = (getCurrentUser() || {}).plan; } catch (e) {} }
 
-    const isRocket = plan === 'rocket-ai-plus';
+    const label = minPlan === 'swift-ai-plus' ? 'Swift AI+' : 'Rocket AI+';
+    const isRocket = (PLAN_TIER[plan] || 0) >= (PLAN_TIER[minPlan] || 2);  // "allowed" for this set's tier
     const note = document.getElementById(noteId);
     if (note) note.innerHTML = isRocket
         ? connectedNote
-        : '🔒 These integrations require the <strong>Rocket AI+</strong> plan. <a href="#" onclick="selectPlan(\'rocket-ai-plus\');return false;" style="color:var(--theme-primary);font-weight:600;">Upgrade now</a>.';
+        : `🔒 These integrations require the <strong>${label}</strong> plan. <a href="#" onclick="selectPlan('${minPlan}');return false;" style="color:var(--theme-primary);font-weight:600;">Upgrade now</a>.`;
 
     container.innerHTML = list.map(it => {
         const conn = connected[it.tool];
         const logo = `<img src="https://cdn.simpleicons.org/${it.slug}" alt="${it.name}" style="width:34px;height:34px;" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'fas fa-plug',style:'font-size:28px;color:var(--theme-primary)'}))">`;
         let action;
         if (!isRocket) {
-            action = `<button class="btn btn-sm btn-secondary" disabled style="opacity:.7;"><i class="fas fa-lock"></i> Rocket AI+</button>`;
+            action = `<button class="btn btn-sm btn-secondary" disabled style="opacity:.7;"><i class="fas fa-lock"></i> ${label}</button>`;
         } else if (conn && conn.status === 'connected') {
             action = `<div style="color:#2ecc71;font-size:0.8rem;margin-bottom:6px;"><i class="fas fa-check-circle"></i> Connected${conn.workspace ? ' · ' + escInt(conn.workspace) : ''}</div>
                       <button class="btn btn-sm btn-delete" onclick="disconnectIntegration('${it.tool}')"><i class="fas fa-unlink"></i> Disconnect</button>`;
