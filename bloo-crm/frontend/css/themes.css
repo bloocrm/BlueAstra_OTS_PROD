@@ -253,6 +253,10 @@ body[data-theme="blue"] .client-box { border-top: 4px solid #40C4FF !important; 
 body[data-theme="blue"] .client-phone i,
 body[data-theme="blue"] .client-box-info i.fa-phone { color: #00B0FF !important; }
 
+/* Highlight a plan card when the user arrives from an "Upgrade to..." link */
+@keyframes planPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } 50% { box-shadow: 0 0 0 8px var(--theme-soft); } }
+.pricing-card.plan-highlight { outline: 3px solid var(--theme-primary); outline-offset: 4px; border-radius: 12px; animation: planPulse 0.8s ease-in-out 3; }
+
 /* Copyright footer accent line + text stay neutral */
 #blooCopyright { color: #666 !important; }
 

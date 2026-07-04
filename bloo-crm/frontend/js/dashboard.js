@@ -355,25 +355,23 @@ function getPlanDisplayName(planKey) {
     return names[planKey] || planKey;
 }
 
-// Select/upgrade plan
+// Upgrade prompt -> take the user to the Pricing & Payments page with the plan
+// highlighted, where they click "Select Plan" to proceed to payment.
 function selectPlan(plan) {
-    const user = getCurrentUser();
+    switchView('pricing');
+    if (typeof loadPricingPlans === 'function') loadPricingPlans();
+    setTimeout(() => highlightPlanCard(plan), 200);
+}
 
-    if (user.plan === plan) {
-        showNotification('You already have this plan!', 'info');
-        return;
-    }
-
-    const planNames = {
-        'basic': 'Basic CRM',
-        'premium': 'Premium CRM',
-        'swift-ai-plus': 'SWIFT AI+ Plan',
-        'rocket-ai-plus': 'ROCKET AI+ Plan'
-    };
-
-    updateUserPlan(plan);
-    showNotification(`Plan upgraded to ${planNames[plan]}!`, 'success');
-    updatePricingDisplay();
+// Scroll to and briefly highlight the chosen plan card on the Pricing page
+function highlightPlanCard(plan) {
+    const card = document.querySelector(`.pricing-card[data-plan="${plan}"]`);
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.classList.add('plan-highlight');
+    const btn = card.querySelector('.btn-primary');
+    if (btn) { const t = btn.textContent; btn.textContent = 'Select Plan ▸'; setTimeout(() => { btn.textContent = t; }, 2500); }
+    setTimeout(() => card.classList.remove('plan-highlight'), 2600);
 }
 
 // Proceed to payment page
@@ -515,7 +513,7 @@ function loadPricingPlans() {
         const cardClass = planKey === 'basic' ? '' : planKey === 'swift-ai-plus' ? 'swift-plan' : 'rocket-plan';
 
         return `
-            <div class="pricing-card ${cardClass}">
+            <div class="pricing-card ${cardClass}" data-plan="${planKey}">
                 <div class="badge badge-${planKey === 'basic' ? 'basic' : planKey === 'swift-ai-plus' ? 'swift' : 'rocket'}">${plan.badge}</div>
                 <div class="pricing-header">
                     <h3>${plan.name}</h3>
@@ -524,7 +522,7 @@ function loadPricingPlans() {
                 <ul class="pricing-features">
                     ${plan.features.slice(0, 5).map(feature => `<li><i class="fas fa-check"></i>${feature}</li>`).join('')}
                 </ul>
-                <button class="btn btn-primary" onclick="proceedToPayment('${planKey}')">Proceed to Payment</button>
+                <button class="btn btn-primary" onclick="proceedToPayment('${planKey}')">Select Plan</button>
             </div>
         `;
     }).join('');
