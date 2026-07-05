@@ -361,10 +361,19 @@
                         <div class="profile-row"><span class="profile-label">Contact Number</span><span class="profile-val" id="pvPhone">—</span></div>
                         <div class="profile-row"><span class="profile-label">Company</span><span class="profile-val" id="pvCompany">—</span></div>
                         <div class="profile-row"><span class="profile-label">Plan</span><span class="profile-val" id="pvPlan">—</span></div>
-                        <div class="profile-row"><span class="profile-label">Two-Factor Auth (MFA)</span><span class="profile-val" id="pvMfa" style="color:#8a93a3;">—</span></div>
+                        <div class="profile-row">
+                            <span class="profile-label">Multi-Factor Authentication <span id="pvMfa" style="font-size:0.78rem;font-weight:700;color:#8a93a3;">—</span></span>
+                            <label class="mfa-switch" title="Enable / disable MFA">
+                                <input type="checkbox" id="mfaToggle" onchange="onMfaToggle(this)">
+                                <span class="mfa-slider"></span>
+                            </label>
+                        </div>
+                        <div class="profile-row" style="border:none;padding-top:4px;">
+                            <span style="font-size:0.8rem;color:#8a93a3;">Authenticator app · YubiKey · RSA SecurID</span>
+                            <a href="#" onclick="openMfaModal();return false;" style="font-size:0.82rem;font-weight:700;color:var(--theme-primary);text-decoration:none;">Manage →</a>
+                        </div>
                         <div class="modal-actions">
-                            <button class="btn btn-secondary" onclick="openMfaModal()"><i class="fas fa-shield-alt"></i> Security &amp; MFA</button>
-                            <button class="btn btn-primary" onclick="startProfileEdit()"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="btn btn-primary" onclick="startProfileEdit()"><i class="fas fa-edit"></i> Edit Profile</button>
                         </div>
                     </div>
 

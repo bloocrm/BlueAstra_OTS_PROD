@@ -10,6 +10,17 @@
    ===================================================== */
 
 let _mfaLoginToken = null;
+let _mfaCurrentlyOn = false;
+
+// Toggle switch in the profile: launches the enable (setup) or disable flow.
+// The switch always snaps back to the real server state until a change is
+// actually confirmed, so it can never get out of sync.
+function onMfaToggle(cb) {
+    const wantOn = cb.checked;
+    cb.checked = _mfaCurrentlyOn;            // revert visual; the modal is the source of truth
+    if (wantOn && !_mfaCurrentlyOn) { openMfaModal(); if (typeof mfaStartTotp === 'function') setTimeout(mfaStartTotp, 150); }
+    else if (!wantOn && _mfaCurrentlyOn) { openMfaModal(); }   // shows the disable row
+}
 
 function _mfaShow(id) {
     ['mfaMethods', 'mfaTotpSetup', 'mfaBackup'].forEach(v => {
@@ -36,8 +47,10 @@ async function mfaUpdateProfileBadge() {
     const el = document.getElementById('pvMfa'); if (!el) return;
     try {
         const st = await apiRequest('/auth/mfa/status', { method: 'GET' });
-        el.textContent = st.enabled ? 'Enabled' : 'Not enabled';
+        _mfaCurrentlyOn = !!st.enabled;
+        el.textContent = st.enabled ? '(ON)' : '(OFF)';
         el.style.color = st.enabled ? '#1b7a43' : '#8a93a3';
+        const tg = document.getElementById('mfaToggle'); if (tg) tg.checked = _mfaCurrentlyOn;
     } catch (e) { el.textContent = '—'; }
 }
 
