@@ -214,16 +214,21 @@ nav{
 </style>
 
 <script>
-
-function choosePackage(packageName, price){
-    // Store the selected package and price in sessionStorage
-    sessionStorage.setItem('selectedPackage', packageName);
-    sessionStorage.setItem('selectedPrice', price);
-    
-    // Redirect to payment page with parameters
-    window.location.href = 'Payment.html?package=' + encodeURIComponent(packageName) + '&price=' + encodeURIComponent(price);
+// Send the user to the application's payment page with the chosen plan.
+// The payment page (payment.html) has the full payment components:
+// monthly/yearly billing toggle, gateways, consent, and "Select Plan" checkout.
+function choosePackage(planKey){
+    window.location.href = '/pages/payment.html?plan=' + encodeURIComponent(planKey);
 }
 
+// Enrollment form -> continue to the payment page with the chosen plan
+function enrollSubmit(e){
+    e.preventDefault();
+    var plan = document.getElementById('package').value;
+    if(!plan){ alert('Please choose a plan.'); return false; }
+    choosePackage(plan);
+    return false;
+}
 </script>
 
 </head>
@@ -250,67 +255,59 @@ function choosePackage(packageName, price){
 
 
 <div class="section-title">
-    <h2>Choose Your CRM Package</h2>
-    <p>Select the package that best fits your business</p>
+    <h2>Choose Your CRM Plan</h2>
+    <p>Same pricing as our Pricing &amp; Payments page — billed per user. Yearly = 10 months charged.</p>
 </div>
 
 <div class="packages">
 
     <div class="package">
-
         <h3>BASIC</h3>
-
-        <div class="price">$5/mo</div>
-
+        <div class="price">$10<span style="font-size:18px;color:#888;">/mo</span></div>
+        <div style="color:#888;margin-bottom:10px;">or $100 / year</div>
         <ul>
-            <li>✓ Contact Management</li>
-            <li>✓ Lead Tracking</li>
-            <li>✓ Email Support</li>
-            <li>✓ 5 Users</li>
+            <li>✓ Spreadsheet &amp; Document Uploads</li>
+            <li>✓ Client &amp; Lead Management</li>
+            <li>✓ Basic Workflow &amp; Financial Goals</li>
+            <li>✓ Email &amp; Calendar Integration</li>
+            <li>✓ Manual Compliance Tracking</li>
+            <li>✓ MFA &amp; Secure Login</li>
         </ul>
-
-        <button onclick="choosePackage('BASIC')">
-            Select BASIC
-        </button>
-
+        <button onclick="choosePackage('basic')">Select Plan</button>
     </div>
 
-    <div class="package">
-
-        <h3>SWIFT</h3>
-
-        <div class="price">$10/mo</div>
-
+    <div class="package" style="border-color:var(--primary);">
+        <div style="display:inline-block;background:var(--primary);color:#fff;font-weight:700;font-size:12px;padding:4px 12px;border-radius:20px;margin-bottom:8px;">RECOMMENDED</div>
+        <h3>SWIFT AI+</h3>
+        <div class="price">$99<span style="font-size:18px;color:#888;">/mo</span></div>
+        <div style="color:#888;margin-bottom:10px;">or $990 / year</div>
         <ul>
-            <li>✓ Sales Automation</li>
-            <li>✓ Advanced Reporting</li>
-            <li>✓ Workflow Automation</li>
-            <li>✓ 25 Users</li>
+            <li>✓ All BASIC features</li>
+            <li>✓ 3rd-Party Financial Analysis APIs</li>
+            <li>✓ Automatic Email Routing</li>
+            <li>✓ AI-Suggested Messages &amp; Emails</li>
+            <li>✓ Compliance Tracking</li>
+            <li>✓ Vendor &amp; Employee Dashboards + Integrations</li>
+            <li>✓ Proposals &amp; AI-Led Sales Pitch</li>
         </ul>
-
-        <button onclick="choosePackage('SWIFT AI', '$10')">
-            Select SWIFT AI
-        </button>
-
+        <button onclick="choosePackage('swift-ai-plus')">Select Plan</button>
     </div>
 
-    <div class="package">
-
-        <h3>ROCKET</h3>
-
-        <div class="price">$15/mo</div>
-
+    <div class="package" style="border-color:var(--primary);">
+        <div style="display:inline-block;background:linear-gradient(135deg,#ffffff,#c3cad1);color:#2b2f36;font-weight:700;font-size:12px;padding:4px 12px;border-radius:20px;margin-bottom:8px;border:1px solid #d3d9df;box-shadow:0 2px 6px rgba(0,0,0,0.15);">MOST POPULAR</div>
+        <h3>ROCKET AI+</h3>
+        <div class="price">$199<span style="font-size:18px;color:#888;">/mo</span></div>
+        <div style="color:#888;margin-bottom:10px;">or $1990 / year</div>
         <ul>
-            <li>✓ Full CRM Suite</li>
-            <li>✓ AI Insights</li>
-            <li>✓ Unlimited Users</li>
+            <li>✓ All SWIFT AI+ features</li>
+            <li>✓ Unlimited AI Capabilities</li>
+            <li>✓ Proposal &amp; Sourcing Integrations</li>
+            <li>✓ AI Knowledge Repository</li>
+            <li>✓ Meeting Recording &amp; Transcripts</li>
+            <li>✓ Client Retention, Cross-Sell &amp; Upsell</li>
             <li>✓ Priority Support</li>
         </ul>
-
-        <button onclick="choosePackage('Rocket AI+', '$15')">
-            Select Rocket AI+
-        </button>
-
+        <button onclick="choosePackage('rocket-ai-plus')">Select Plan</button>
     </div>
 
 </div>
@@ -319,7 +316,7 @@ function choosePackage(packageName, price){
 
     <h2>Customer Enrollment Form</h2>
 
-    <form action="submit.php" method="POST">
+    <form onsubmit="return enrollSubmit(event)">
 
         <div class="form-group">
             <label>Full Name</label>
@@ -346,10 +343,10 @@ function choosePackage(packageName, price){
 
             <select name="package" id="package" required>
 
-                <option value="">Choose Package</option>
-                <option value="BASIC">BASIC</option>
-                <option value="SWIFT">SWIFT</option>
-                <option value="ROCKET">ROCKET</option>
+                <option value="">Choose Plan</option>
+                <option value="basic">BASIC — $10/mo ($100/yr)</option>
+                <option value="swift-ai-plus">SWIFT AI+ — $99/mo ($990/yr)</option>
+                <option value="rocket-ai-plus">ROCKET AI+ — $199/mo ($1990/yr)</option>
 
             </select>
         </div>
@@ -363,7 +360,7 @@ function choosePackage(packageName, price){
         </div>
 
         <button type="submit">
-            Submit Enrollment
+            Continue to Payment
         </button>
 
     </form>
