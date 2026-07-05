@@ -37,6 +37,21 @@ const resetEmailHTML = (name, url) => `
     </div>
   </div>`;
 
+// Confirmation email sent after the password is actually changed
+const passwordChangedEmailHTML = (name) => `
+  <div style="font-family:Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#16233a;">
+    <div style="background:#2E86FF;color:#fff;padding:22px 24px;border-radius:12px 12px 0 0;">
+      <h2 style="margin:0;">Bloo CRM — Password Changed</h2>
+    </div>
+    <div style="border:1px solid #e6ecf5;border-top:none;padding:26px 24px;border-radius:0 0 12px 12px;">
+      <p>Hi ${name || 'there'},</p>
+      <p>This is a confirmation that the password for your Bloo CRM account was just changed.</p>
+      <p>If you made this change, no further action is needed. If you did <strong>not</strong> change your password,
+         please <a href="https://bloocrm.com/pages/forgot-password.html" style="color:#2E86FF;">reset it immediately</a>
+         and contact <a href="mailto:support@bloocrm.com" style="color:#2E86FF;">support@bloocrm.com</a>.</p>
+    </div>
+  </div>`;
+
 // Generate JWT token
 const generateToken = (user) => {
   return jwt.sign(
@@ -342,6 +357,18 @@ router.post(
       user.loginAttempts = 0;                   // also unlock the account
       user.lockUntil = undefined;
       await user.save({ validateBeforeSave: false });
+
+      // Send a confirmation email that the password was changed (best-effort)
+      try {
+        await emailService.sendEmail({
+          to: user.email,
+          subject: 'Your Bloo CRM password was changed',
+          html: passwordChangedEmailHTML(user.name),
+          text: `Your Bloo CRM password was just changed. If this wasn't you, reset it at https://bloocrm.com/pages/forgot-password.html and contact support@bloocrm.com.`
+        });
+      } catch (mailErr) {
+        console.error('Password-changed email failed:', mailErr.message);
+      }
 
       return res.json({ message: 'Your password has been reset successfully. You can now log in with your new password.' });
     } catch (error) {
