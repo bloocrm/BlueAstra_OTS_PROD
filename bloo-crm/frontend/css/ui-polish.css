@@ -1,0 +1,101 @@
+/*
+  Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
+  Proprietary software. Unauthorized copying or use by any means or technology
+  (including AI tools) is strictly prohibited.
+*/
+/* ============================================================
+   UI POLISH — Loom / Atlassian-inspired refinements.
+   Loaded LAST. Only refines shape, spacing, shadow and motion;
+   colours stay theme-driven (themes.css owns colour via !important),
+   so red-default stays red and blue/SKY stay blue-family.
+   ============================================================ */
+
+:root { --ui-ease: cubic-bezier(.4, 0, .2, 1); }
+
+/* Smooth, consistent motion across interactive surfaces */
+.btn, .btn-sm, .btn-small, .btn-primary, .btn-secondary,
+.stat-card, .chart-container, .client-card, .client-box, .info-card,
+.activity-item, .nav-item, .modal-content, .lp-feature-card,
+input, select, textarea, .mfa-method {
+    transition: transform .18s var(--ui-ease), box-shadow .2s var(--ui-ease),
+                background-color .2s var(--ui-ease), border-color .2s var(--ui-ease),
+                color .15s var(--ui-ease), filter .2s var(--ui-ease);
+}
+
+/* ---------- Buttons ---------- */
+.btn, .btn-primary, .btn-secondary, .btn-small, .btn-sm {
+    border-radius: 10px;
+    font-weight: 600;
+    letter-spacing: .1px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+}
+.btn { padding: 0.7rem 1.3rem; }
+.btn-sm, .btn-small { padding: 0.46rem 0.9rem; border-radius: 9px; font-size: 0.82rem; }
+.btn-primary { box-shadow: 0 4px 14px rgba(16,35,58,0.12); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(16,35,58,0.20); filter: brightness(1.04); }
+.btn-primary:active { transform: translateY(0); box-shadow: 0 3px 10px rgba(16,35,58,0.16); }
+.btn-secondary { background: #fff; border: 1px solid #e6ecf5; color: #334155; box-shadow: 0 1px 2px rgba(16,35,58,0.05); }
+.btn-secondary:hover { transform: translateY(-1px); border-color: var(--theme-primary); color: var(--theme-primary-dark); box-shadow: 0 6px 16px rgba(16,35,58,0.10); }
+.btn:disabled { opacity: .6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+/* ---------- Cards & panels ---------- */
+.stat-card, .chart-container, .client-card, .client-box, .info-card {
+    border-radius: 16px;
+    border: 1px solid #eef2f7;
+    box-shadow: 0 6px 22px rgba(16,35,58,0.06);
+}
+.stat-card:hover, .client-card:hover, .client-box:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(16,35,58,0.13); }
+.chart-container { padding: 1.5rem 1.5rem 1.25rem; }
+
+/* Stat icon — larger, rounder, soft glow */
+.stat-icon { width: 60px; height: 60px; border-radius: 16px; box-shadow: 0 6px 16px rgba(16,35,58,0.14); }
+
+/* ---------- List / activity items ---------- */
+.activity-item { border-radius: 12px; padding: 12px 10px; }
+.activity-item:hover { background: var(--theme-soft); }
+
+/* ---------- Sidebar navigation ---------- */
+.sidebar-nav { padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.nav-item { border-radius: 10px; padding: 0.72rem 0.95rem; gap: 0.85rem; }
+.nav-item:hover { background: var(--theme-soft); transform: translateX(2px); }
+.nav-item.active { font-weight: 700; }
+
+/* ---------- Top header ---------- */
+.top-header { border-bottom: 1px solid #eef2f7; padding-top: 1rem; padding-bottom: 1rem; }
+.top-header #pageTitle { letter-spacing: -.3px; }
+
+/* ---------- Inputs ---------- */
+input, select, textarea { border-radius: 10px; }
+input:focus, select:focus, textarea:focus,
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 3px var(--theme-soft);
+}
+
+/* ---------- Modals ---------- */
+.modal-content { border-radius: 18px; box-shadow: 0 30px 80px rgba(16,35,58,0.28); }
+.modal-header { border-bottom: 1px solid #eef2f7; padding-bottom: 14px; margin-bottom: 18px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+/* ---------- Badges / pills ---------- */
+.client-badge, .badge-blue, .badge-aqua, .badge-orange {
+    border-radius: 20px; font-weight: 700; letter-spacing: .3px; padding: 4px 12px;
+}
+
+/* ---------- Section / view headers ---------- */
+.view-header { margin-bottom: 1.3rem; }
+.view-header h2, .view-header h3 { letter-spacing: -.3px; }
+
+/* ---------- Dashboard grid breathing room ---------- */
+.dashboard-grid { gap: 1.25rem; }
+
+/* Nicer custom scrollbars inside the app */
+.main-content ::-webkit-scrollbar, .sidebar ::-webkit-scrollbar { width: 9px; height: 9px; }
+.main-content ::-webkit-scrollbar-thumb, .sidebar ::-webkit-scrollbar-thumb { background: #d7dfea; border-radius: 8px; }
+.main-content ::-webkit-scrollbar-thumb:hover { background: #c2cddb; }
