@@ -10,12 +10,73 @@
    ===================================================== */
 
 .auth-container {
-    min-height: 100vh;
+    min-height: 70vh;
     display: flex;
     justify-content: center;
     align-items: center;
     background: linear-gradient(135deg, var(--theme-soft) 0%, #ffffff 100%);
-    padding: 1rem;
+    padding: 2rem 1rem;
+}
+
+/* ===== Product landing chrome (login page only) — theme-aware ===== */
+.lp-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 6%; background: #fff; position: sticky; top: 0; z-index: 200;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+.lp-logo { font-size: 26px; font-weight: 800; color: var(--theme-primary); }
+.lp-logo i { color: var(--theme-primary); }
+.lp-nav { display: flex; gap: 28px; }
+.lp-nav a { text-decoration: none; color: #333; font-weight: 600; }
+.lp-nav a:hover { color: var(--theme-primary); }
+.lp-btn {
+    background: var(--theme-primary); color: var(--theme-on-primary, #fff);
+    padding: 11px 22px; border-radius: 8px; text-decoration: none; font-weight: 700;
+    display: inline-block; transition: .2s;
+}
+.lp-btn:hover { background: var(--theme-primary-dark); }
+.lp-btn-outline { background: transparent; color: var(--theme-primary); border: 2px solid var(--theme-primary); }
+.lp-btn-outline:hover { background: var(--theme-soft); }
+
+.lp-hero {
+    display: flex; align-items: center; justify-content: space-between; gap: 48px;
+    padding: 56px 6% 40px; flex-wrap: wrap;
+    background: linear-gradient(135deg, var(--theme-soft) 0%, #ffffff 60%);
+}
+.lp-hero-text { flex: 1 1 420px; }
+.lp-hero-text h1 { font-size: 44px; line-height: 1.12; color: var(--theme-primary); margin-bottom: 16px; }
+.lp-hero-text h1 span { color: var(--theme-primary-dark); }
+.lp-hero-text p { color: #555; font-size: 17px; margin-bottom: 16px; max-width: 620px; }
+.lp-website-note { background: #fff; border-left: 4px solid var(--theme-primary); padding: 12px 16px; border-radius: 8px; box-shadow: 0 3px 12px rgba(0,0,0,0.05); font-size: 15px; }
+.lp-website-note a { color: var(--theme-primary); font-weight: 700; text-decoration: none; }
+.lp-hero-stats { flex: 1 1 320px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.lp-stat { background: #fff; border-radius: 12px; padding: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+.lp-stat span { display: block; color: #777; font-size: 13px; margin-bottom: 6px; }
+.lp-stat strong { color: var(--theme-primary); font-size: 26px; }
+
+.lp-features { padding: 56px 6%; background: var(--theme-soft); }
+.lp-section-title { text-align: center; margin-bottom: 34px; }
+.lp-section-title h2 { font-size: 34px; color: var(--theme-primary); margin-bottom: 8px; }
+.lp-section-title p { color: #666; }
+.lp-feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 22px; }
+.lp-feature-card { background: #fff; padding: 26px; border-radius: 14px; box-shadow: 0 5px 20px rgba(0,0,0,0.06); }
+.lp-feature-card h3 { color: var(--theme-primary); margin-bottom: 10px; font-size: 18px; }
+.lp-feature-card p { color: #555; font-size: 15px; }
+.lp-features-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+
+.lp-footer { background: #111; color: #eee; text-align: center; padding: 22px; font-size: 14px; }
+.lp-footer a { color: #fff; font-weight: 600; text-decoration: none; margin: 0 4px; }
+
+/* Hide all landing chrome once the user is inside the app */
+body.app-active .lp-header,
+body.app-active .lp-hero,
+body.app-active .lp-features,
+body.app-active .lp-footer { display: none !important; }
+
+@media (max-width: 780px) {
+    .lp-nav { display: none; }
+    .lp-hero-text h1 { font-size: 34px; }
+    .lp-hero-stats { grid-template-columns: 1fr 1fr; }
 }
 
 .auth-container.hidden {

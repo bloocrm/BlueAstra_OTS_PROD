@@ -142,6 +142,7 @@ async function showDashboard() {
 
     authContainer.style.display = 'none';
     dashboardContainer.style.display = 'flex';
+    document.body.classList.add('app-active');  // hide product-landing chrome inside the app
 
     // Load user data
     loadUserData();

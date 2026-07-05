@@ -288,6 +288,11 @@ app.use('/proposal-docs', express.static(path.join(__dirname, 'uploads', 'propos
 const frontendPath = path.join(__dirname, '..', 'frontend');
 app.use(express.static(frontendPath));
 
+// Dedicated product website pages (Features / Enroll / Customer Support, etc.)
+// served alongside the app. Frontend static above wins for any shared filename.
+const outerLayerPath = path.join(__dirname, '..', '..', 'outer-layer');
+app.use(express.static(outerLayerPath));
+
 // SPA fallback: any non-API GET returns index.html
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path === '/health') return next();

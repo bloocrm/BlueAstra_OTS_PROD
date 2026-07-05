@@ -18,6 +18,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- ===== Product landing chrome (shown only on the login page) ===== -->
+    <header class="lp-header">
+        <div class="lp-logo"><i class="fas fa-chart-line"></i> Bloo CRM</div>
+        <nav class="lp-nav">
+            <a href="Features.html">Features</a>
+            <a href="Enroll.html">Enroll</a>
+            <a href="CusomerSupport.html">Customer Support</a>
+        </nav>
+        <div class="lp-header-actions">
+            <a href="Features.html" class="lp-btn">Explore Website</a>
+        </div>
+    </header>
+
+    <section class="lp-hero">
+        <div class="lp-hero-text">
+            <h1>Wealth Management &amp; <span>Financial Advisory CRM</span></h1>
+            <p>Manage HNI &amp; UHNI clients, investment portfolios, SIPs, mutual funds, insurance,
+               PMS/AIF, KYC, risk profiles, goal-based planning, compliance workflows and AI-powered
+               client engagement — all in one platform.</p>
+            <p class="lp-website-note"><i class="fas fa-globe"></i> This product has a dedicated website —
+               explore <a href="Features.html">Features</a>, <a href="Enroll.html">Enroll</a>, or reach
+               <a href="CusomerSupport.html">Customer Support</a>. Sign in below to access your CRM.</p>
+        </div>
+        <div class="lp-hero-stats">
+            <div class="lp-stat"><span>Active HNI Clients</span><strong>428</strong></div>
+            <div class="lp-stat"><span>Assets Under Advisory</span><strong>$128M</strong></div>
+            <div class="lp-stat"><span>SIPs Monitored</span><strong>2,846</strong></div>
+            <div class="lp-stat"><span>Annual Advisory Revenue</span><strong>$2.4M</strong></div>
+        </div>
+    </section>
+
     <!-- Auth Container -->
     <div id="authContainer" class="auth-container">
         <!-- Login Form -->
@@ -132,6 +163,31 @@
             </form>
         </div>
     </div>
+
+    <!-- Product features preview (login page only) -->
+    <section class="lp-features">
+        <div class="lp-section-title">
+            <h2>CRM Features</h2>
+            <p>Purpose-built for Financial Advisors, Wealth Managers, RIAs, MFDs and Family Offices.</p>
+        </div>
+        <div class="lp-feature-grid">
+            <div class="lp-feature-card"><h3>Client &amp; Family Office Management</h3><p>HNI profiles, nominees, family structures, KYC documents, risk appetite and investment objectives.</p></div>
+            <div class="lp-feature-card"><h3>Portfolio Tracking</h3><p>Mutual funds, equities, bonds, PMS, AIFs, insurance and alternative investments.</p></div>
+            <div class="lp-feature-card"><h3>AI Client Communication</h3><p>Portfolio reviews, market updates, onboarding emails and renewal reminders using AI.</p></div>
+            <div class="lp-feature-card"><h3>Compliance &amp; KYC</h3><p>Document vault, audit trails, suitability checks, FATCA tracking and regulatory workflows.</p></div>
+            <div class="lp-feature-card"><h3>Goal Based Planning</h3><p>Retirement, education, wealth creation and succession planning dashboards.</p></div>
+            <div class="lp-feature-card"><h3>Revenue &amp; Trail Analytics</h3><p>Advisory fees, commissions, trails and AUM growth.</p></div>
+        </div>
+        <div class="lp-features-cta">
+            <a href="Features.html" class="lp-btn">See all features on our website →</a>
+            <a href="Enroll.html" class="lp-btn lp-btn-outline">Enroll now</a>
+        </div>
+    </section>
+
+    <footer class="lp-footer">
+        © 2026 Blue Astra Technologies LLP · <a href="Features.html">Features</a> ·
+        <a href="Enroll.html">Enroll</a> · <a href="CusomerSupport.html">Customer Support</a>
+    </footer>
 
     <!-- Main Dashboard Container -->
     <div id="dashboardContainer" class="dashboard-container" style="display: none;">
