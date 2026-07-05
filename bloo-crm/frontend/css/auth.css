@@ -52,21 +52,21 @@
     background: linear-gradient(135deg, #eef4ff 0%, #ffffff 60%);
     position: relative; overflow: hidden;
 }
-/* Stripe-inspired flowing ribbon — slim, blue & orange, gently swaying */
-.lp-ribbons { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+/* Animated digital dots behind the login box — blue base grid + multicolor twinkles */
 .lp-hero-text, .lp-hero-stats { position: relative; z-index: 2; }
-.lp-ribbon {
-    position: absolute; left: -15%; right: -15%; height: 70px; border-radius: 60px;
-    filter: blur(16px); opacity: .8; will-change: transform, background-position;
-    background: linear-gradient(90deg, #1565C0, #1E88E5, #00B0FF, #4FC3F7, #FFB74D, #FB8C00, #FF7043, #1E88E5);
-    background-size: 300% 100%;
+.lp-dots { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.lp-dots::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(46,134,255,.16) 1.4px, transparent 1.5px);
+    background-size: 26px 26px;
 }
-.lp-ribbon.r1 { top: 32%; transform: rotate(-6deg); animation: lpFlow 9s linear infinite, lpSway1 8s ease-in-out infinite alternate; }
-.lp-ribbon.r2 { top: 58%; height: 48px; opacity: .55; transform: rotate(-3deg); animation: lpFlow 12s linear infinite reverse, lpSway2 10s ease-in-out infinite alternate; }
-@keyframes lpFlow { to { background-position: 300% 50%; } }
-@keyframes lpSway1 { from { transform: rotate(-8deg) translateY(-12px); } to { transform: rotate(-3deg) translateY(12px); } }
-@keyframes lpSway2 { from { transform: rotate(-1deg) translateY(10px); } to { transform: rotate(-6deg) translateY(-10px); } }
-@media (prefers-reduced-motion: reduce) { .lp-ribbon { animation: none; } }
+.lp-dots .dot {
+    position: absolute; width: 8px; height: 8px; border-radius: 50%;
+    opacity: 0; transform: scale(.4); box-shadow: 0 0 10px currentColor;
+    animation: dotTwinkle 4s ease-in-out infinite;
+}
+@keyframes dotTwinkle { 0%, 100% { opacity: 0; transform: scale(.4); } 50% { opacity: .95; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .lp-dots .dot { animation: none; opacity: .55; transform: scale(1); } }
 .lp-hero-text { flex: 1 1 420px; }
 .lp-hero-text h1 { font-size: 44px; line-height: 1.12; color: #16233a; letter-spacing: -.5px; margin-bottom: 16px; }
 .lp-hero-text h1 span { color: #2E86FF; }

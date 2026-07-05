@@ -69,15 +69,32 @@
             }, 350);
         }, 2200);
     })();
+
+    // Populate the login-box background with appearing blue & multicolor digital dots
+    document.addEventListener('DOMContentLoaded', function(){
+        var wrap = document.getElementById('lpDots');
+        if (!wrap) return;
+        var colors = ['#2E86FF','#2E86FF','#2E86FF','#00B0FF','#4FC3F7','#1E88E5','#26C6DA','#7C4DFF','#FB8C00','#FF7043','#2ecc71'];
+        for (var i = 0; i < 48; i++) {
+            var d = document.createElement('span');
+            d.className = 'dot';
+            var c = colors[Math.floor(Math.random() * colors.length)];
+            d.style.color = c; d.style.background = c;
+            d.style.left = (Math.random() * 100).toFixed(2) + '%';
+            d.style.top = (Math.random() * 100).toFixed(2) + '%';
+            var s = (Math.random() * 8 + 4).toFixed(1);
+            d.style.width = s + 'px'; d.style.height = s + 'px';
+            d.style.animationDelay = (Math.random() * 4).toFixed(2) + 's';
+            d.style.animationDuration = (Math.random() * 3 + 3).toFixed(2) + 's';
+            wrap.appendChild(d);
+        }
+    });
     </script>
 
     <!-- Auth Container -->
     <div id="authContainer" class="auth-container">
-        <!-- Stripe-inspired blue & orange ribbon behind the login box -->
-        <div class="lp-ribbons" aria-hidden="true">
-            <span class="lp-ribbon r1"></span>
-            <span class="lp-ribbon r2"></span>
-        </div>
+        <!-- Animated blue & multicolor digital dots behind the login box -->
+        <div class="lp-dots" id="lpDots" aria-hidden="true"></div>
         <!-- Login Form -->
         <div id="loginForm" class="auth-form active">
             <div class="auth-header">
