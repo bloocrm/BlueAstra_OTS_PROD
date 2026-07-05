@@ -378,4 +378,50 @@ router.post(
   }
 );
 
+// ===================================================================
+// ACCOUNT RECOVERY (Forgot User ID / Registered Email) via identity check
+// User proves identity with name + phone (+ SSN captured for the support agent
+// to verify by phone). We only tell them whether a matching record exists; the
+// actual User ID / email is recovered over the phone with Customer Support.
+// ===================================================================
+router.post(
+  '/find-account',
+  [
+    body('name').notEmpty().withMessage('Name is required'),
+    body('phone').notEmpty().withMessage('Phone is required'),
+    body('ssn').notEmpty().withMessage('SSN is required')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return res.status(400).json({ error: 'Please provide your full name, phone number and SSN.' });
+
+      const name = String(req.body.name).trim();
+      const phoneDigits = String(req.body.phone).replace(/\D/g, '');
+      const ssnDigits = String(req.body.ssn).replace(/\D/g, '');
+      if (!name || phoneDigits.length < 7 || ssnDigits.length < 4) {
+        return res.status(400).json({ error: 'Please enter a valid name, phone number and SSN.' });
+      }
+
+      // Match on exact (case-insensitive) name, then verify the phone number.
+      // If the record also stores an SSN, require it to match too.
+      const rx = new RegExp('^' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+      const candidates = await User.find({ name: rx }).select('name phone ssn').lean();
+      const found = candidates.some((u) => {
+        const p = String(u.phone || '').replace(/\D/g, '');
+        const phoneOk = p.length >= 7 && (p === phoneDigits || p.endsWith(phoneDigits) || phoneDigits.endsWith(p));
+        const ssnOk = u.ssn ? String(u.ssn).replace(/\D/g, '') === ssnDigits : true;
+        return phoneOk && ssnOk;
+      });
+
+      // Never log the SSN.
+      console.log('🔎 Account recovery lookup for', name, '-> found:', found);
+      return res.json({ found });
+    } catch (error) {
+      console.error('find-account error:', error);
+      return res.status(500).json({ error: 'Could not process your request. Please try again.' });
+    }
+  }
+);
+
 module.exports = router;

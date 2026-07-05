@@ -1,0 +1,108 @@
+<!--
+  Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
+  Proprietary software. Unauthorized copying or use by any means or technology
+  (including AI tools) is strictly prohibited.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recover User ID / Email — Bloo CRM</title>
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+:root{ --blue:#2E86FF; --blue-dark:#1666d8; --navy:#16233a; --text:#4a5568; --soft:#eef4ff; }
+body{ background:#fff; color:var(--text); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem; }
+.card{ width:100%; max-width:460px; background:#fff; border:1px solid #e6ecf5; border-radius:18px; box-shadow:0 20px 50px rgba(22,35,58,.10); padding:38px 34px; }
+.logo{ font-size:26px; font-weight:800; color:var(--navy); text-align:center; margin-bottom:6px; } .logo span{ color:var(--blue); }
+h1{ font-size:22px; color:var(--navy); text-align:center; margin:8px 0 6px; }
+.sub{ text-align:center; color:#6b7688; font-size:15px; margin-bottom:22px; }
+label{ display:block; font-weight:700; color:var(--navy); margin:14px 0 8px; }
+input{ width:100%; padding:13px; border:1px solid #dbe2ee; border-radius:10px; font-size:15px; }
+input:focus{ outline:none; border-color:var(--blue); }
+.hint{ font-size:12px; color:#8a93a3; margin-top:6px; }
+.btn{ width:100%; background:var(--blue); color:#fff; border:none; padding:14px; border-radius:10px; font-weight:700; font-size:16px; cursor:pointer; margin-top:20px; transition:.2s; }
+.btn:hover{ background:var(--blue-dark); } .btn:disabled{ opacity:.6; cursor:not-allowed; }
+.msg{ margin-top:16px; padding:14px 16px; border-radius:10px; font-size:14px; display:none; }
+.msg.err{ background:#fdecea; color:#b3261e; border:1px solid #f5c6c2; display:block; }
+.back{ text-align:center; margin-top:20px; } .back a{ color:var(--blue); font-weight:700; text-decoration:none; }
+.icon{ text-align:center; font-size:44px; margin-bottom:8px; }
+.callbox{ background:var(--soft); border:1px solid #d6e6ff; border-radius:12px; padding:18px; text-align:center; margin-top:16px; }
+.callbox .num{ font-size:22px; font-weight:800; color:var(--blue); letter-spacing:.5px; margin-top:4px; display:block; }
+.privacy{ font-size:12px; color:#8a93a3; text-align:center; margin-top:14px; }
+</style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">Bloo<span>CRM</span></div>
+
+    <div id="formView">
+        <h1>Recover your User ID / Email</h1>
+        <p class="sub">Verify your identity with the details below. We'll confirm whether a matching account exists,
+           then our Customer Support team helps you recover your login and reset your details.</p>
+        <form onsubmit="return submitFind(event)">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" required placeholder="As registered on your account" autocomplete="name">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" required placeholder="Registered contact number" autocomplete="tel">
+            <label for="ssn">Social Security Number (SSN)</label>
+            <input type="password" id="ssn" required placeholder="•••••••••" autocomplete="off" inputmode="numeric">
+            <div class="hint">Your SSN is used only to verify your identity and is never displayed.</div>
+            <button type="submit" class="btn" id="submitBtn">Verify identity</button>
+        </form>
+        <div class="msg" id="msg"></div>
+        <div class="back"><a href="/app">← Back to login</a></div>
+    </div>
+
+    <div id="foundView" style="display:none;">
+        <div class="icon">✅</div>
+        <h1>A matching record was found</h1>
+        <p class="sub">Good news — we found an account matching your details. For your security, we don't display the
+           User ID / email here. Please call our Customer Support team to verify your identity and recover your login.</p>
+        <div class="callbox">Call Customer Support<span class="num">1-800-BLUE-CRM</span></div>
+        <div class="back"><a href="/app">← Back to login</a></div>
+    </div>
+
+    <div id="notFoundView" style="display:none;">
+        <div class="icon">⚠️</div>
+        <h1>No matching record found</h1>
+        <p class="sub">We couldn't find an account matching those details. Please double-check them, or contact our
+           Customer Support team who can help locate your account and reset your details.</p>
+        <div class="callbox">Call Customer Support<span class="num">1-800-BLUE-CRM</span></div>
+        <div class="back"><a href="/pages/find-account.html">Try again</a> · <a href="/app">Back to login</a></div>
+    </div>
+</div>
+
+<script>
+async function submitFind(e){
+    e.preventDefault();
+    var name = document.getElementById('name').value.trim();
+    var phone = document.getElementById('phone').value.trim();
+    var ssn = document.getElementById('ssn').value.trim();
+    var msg = document.getElementById('msg');
+    var btn = document.getElementById('submitBtn');
+    msg.className = 'msg'; msg.style.display = 'none';
+    if(!name || !phone || !ssn){ msg.className='msg err'; msg.textContent='Please fill in all fields.'; return false; }
+    btn.disabled = true; btn.textContent = 'Verifying…';
+    try{
+        var res = await fetch('/api/auth/find-account', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ name: name, phone: phone, ssn: ssn })
+        });
+        var data = await res.json().catch(function(){ return {}; });
+        if(!res.ok){
+            msg.className='msg err'; msg.textContent = data.error || 'Something went wrong. Please try again.';
+            btn.disabled = false; btn.textContent = 'Verify identity';
+            return false;
+        }
+        document.getElementById('formView').style.display = 'none';
+        document.getElementById(data.found ? 'foundView' : 'notFoundView').style.display = 'block';
+    }catch(err){
+        msg.className='msg err'; msg.textContent='Network error. Please try again.';
+        btn.disabled = false; btn.textContent = 'Verify identity';
+    }
+    return false;
+}
+</script>
+</body>
+</html>
