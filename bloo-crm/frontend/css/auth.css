@@ -55,12 +55,13 @@
 /* Blurred NYSE video background — the login card stays the highlight */
 .lp-bg-video {
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-    z-index: 0; filter: blur(6px) brightness(0.9); transform: scale(1.06); /* scale hides blur edges */
+    object-position: center 40%;   /* frame the NYSE facade + American flag */
+    z-index: 0; filter: blur(2.5px) brightness(0.98); transform: scale(1.03);
     pointer-events: none;
 }
 .lp-bg-overlay {
     position: absolute; inset: 0; z-index: 1; pointer-events: none;
-    background: linear-gradient(180deg, rgba(255,255,255,0.38), rgba(238,244,255,0.48));
+    background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(238,244,255,0.32));
 }
 
 /* Animated digital dots over the video */
