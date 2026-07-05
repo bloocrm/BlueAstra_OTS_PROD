@@ -20,7 +20,7 @@
 <body>
     <!-- ===== Product landing chrome (shown only on the login page) ===== -->
     <header class="lp-header">
-        <div class="lp-logo"><i class="fas fa-chart-line"></i> Bloo CRM</div>
+        <div class="lp-logo">Bloo<span>CRM</span></div>
         <nav class="lp-nav">
             <a href="Features.html">Features</a>
             <a href="Enroll.html">Enroll</a>
@@ -32,10 +32,6 @@
     </header>
 
     <section class="lp-hero">
-        <div class="lp-ribbons" aria-hidden="true">
-            <span class="lp-ribbon r1"></span>
-            <span class="lp-ribbon r2"></span>
-        </div>
         <div class="lp-hero-text">
             <h1>Wealth Management &amp; <span>Financial Advisory CRM</span></h1>
             <p>Manage HNI &amp; UHNI clients, investment portfolios, SIPs, mutual funds, insurance,
@@ -77,10 +73,15 @@
 
     <!-- Auth Container -->
     <div id="authContainer" class="auth-container">
+        <!-- Stripe-inspired blue & orange ribbon behind the login box -->
+        <div class="lp-ribbons" aria-hidden="true">
+            <span class="lp-ribbon r1"></span>
+            <span class="lp-ribbon r2"></span>
+        </div>
         <!-- Login Form -->
         <div id="loginForm" class="auth-form active">
             <div class="auth-header">
-                <h1><i class="fas fa-chart-line bloo-text"></i> Bloo CRM</h1>
+                <h1 class="brand-logo">Bloo<span>CRM</span></h1>
                 <p>Welcome Back!</p>
             </div>
             <div class="theme-picker" style="margin-bottom:14px;">
@@ -137,7 +138,7 @@
         <!-- Registration Form -->
         <div id="registerForm" class="auth-form">
             <div class="auth-header">
-                <h1><i class="fas fa-chart-line bloo-text"></i> Bloo CRM</h1>
+                <h1 class="brand-logo">Bloo<span>CRM</span></h1>
                 <p>Create Your Account</p>
             </div>
             <form onsubmit="handleRegister(event)">
