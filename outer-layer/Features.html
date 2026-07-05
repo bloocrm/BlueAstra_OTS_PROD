@@ -6,533 +6,435 @@
   (including AI tools), is strictly prohibited without express written permission.
 -->
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RedCRM Features</title>
-
+<title>Bloo CRM — Features for Financial Advisors, Wealth Managers & Hedge Funds</title>
 <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 :root{
-    --primary:#ff1e1e;
-    --primary-dark:#d90000;
-    --light:#fff5f5;
-    --dark:#222;
+    --blue:#2E86FF;        /* Hubstaff-style accent blue */
+    --blue-dark:#1666d8;
+    --navy:#16233a;        /* headings */
+    --text:#4a5568;        /* body */
+    --soft:#eef4ff;        /* light blue wash */
     --white:#ffffff;
-    --text:#555;
 }
-
-body{
-    background:var(--light);
-    color:var(--dark);
-}
+body{ background:var(--white); color:var(--text); line-height:1.7; -webkit-font-smoothing:antialiased; }
+a{ text-decoration:none; }
+img,video{ display:block; max-width:100%; }
 
 /* Header */
+header{ background:rgba(255,255,255,.92); backdrop-filter:saturate(180%) blur(8px); padding:16px 7%; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 0 rgba(16,35,58,.08); position:sticky; top:0; z-index:100; }
+.logo{ font-size:26px; font-weight:800; color:var(--navy); letter-spacing:-.5px; }
+.logo span{ color:var(--blue); }
+nav ul{ display:flex; list-style:none; gap:30px; }
+nav a{ color:var(--navy); font-weight:600; }
+nav a:hover{ color:var(--blue); }
+.btn{ background:var(--blue); color:#fff; padding:12px 26px; border-radius:10px; font-weight:700; display:inline-block; transition:.2s; border:none; cursor:pointer; }
+.btn:hover{ background:var(--blue-dark); transform:translateY(-1px); }
+.btn-ghost{ background:transparent; color:var(--blue); border:2px solid var(--blue); }
+.btn-ghost:hover{ background:var(--soft); color:var(--blue-dark); }
 
-header{
-    background:var(--white);
-    padding:20px 8%;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    box-shadow:0 2px 10px rgba(0,0,0,0.08);
-    position:sticky;
-    top:0;
-    z-index:100;
-}
+/* Hero */
+.hero{ display:grid; grid-template-columns:1.05fr 1fr; gap:56px; align-items:center; padding:80px 7% 60px; background:linear-gradient(180deg,var(--soft),#fff); }
+.eyebrow{ display:inline-block; background:var(--soft); color:var(--blue); font-weight:800; font-size:12px; letter-spacing:1px; text-transform:uppercase; padding:6px 14px; border-radius:30px; margin-bottom:18px; }
+.hero h1{ font-size:52px; line-height:1.08; color:var(--navy); letter-spacing:-1px; margin-bottom:18px; }
+.rotator{ color:var(--blue); display:inline-block; transition:opacity .35s ease, transform .35s ease; }
+.hero p{ font-size:19px; max-width:560px; margin-bottom:26px; }
+.hero-actions{ display:flex; gap:14px; flex-wrap:wrap; }
+.hero-media{ border-radius:20px; overflow:hidden; box-shadow:0 30px 60px rgba(22,35,58,.18); }
+.hero-media video, .hero-media img{ width:100%; height:100%; object-fit:cover; }
 
-.logo{
-    font-size:32px;
-    font-weight:700;
-    color:var(--primary);
-}
+/* Trust band */
+.trust{ text-align:center; padding:40px 7%; }
+.trust p{ color:#8a93a3; font-weight:600; letter-spacing:.5px; text-transform:uppercase; font-size:13px; }
+.trust .pills{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
+.trust .pills span{ background:var(--soft); color:var(--navy); font-weight:700; padding:10px 18px; border-radius:30px; font-size:14px; }
 
-nav ul{
-    display:flex;
-    list-style:none;
-    gap:30px;
-}
+/* Split sections */
+.split{ display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; padding:70px 7%; max-width:1400px; margin:0 auto; }
+.split.reverse .split-media{ order:2; }
+.split.reverse .split-text{ order:1; }
+.split-text h2{ font-size:36px; color:var(--navy); line-height:1.15; letter-spacing:-.5px; margin:10px 0 16px; }
+.split-text h2 .hl{ color:var(--blue); }
+.split-text p{ font-size:17px; margin-bottom:18px; }
+.checks{ list-style:none; }
+.checks li{ position:relative; padding:8px 0 8px 34px; color:var(--navy); font-weight:600; }
+.checks li::before{ content:"✓"; position:absolute; left:0; top:7px; width:22px; height:22px; background:var(--soft); color:var(--blue); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; }
+.split-media{ position:relative; }
+.split-media img, .split-media video{ width:100%; border-radius:18px; box-shadow:0 24px 50px rgba(22,35,58,.16); }
+.split-media::after{ content:""; position:absolute; inset:auto -18px -18px auto; width:60%; height:60%; background:radial-gradient(circle at bottom right,rgba(46,134,255,.18),transparent 70%); z-index:-1; border-radius:24px; }
 
-nav a{
-    text-decoration:none;
-    color:var(--dark);
-    font-weight:600;
-}
+/* Bands (audience) */
+.band{ background:var(--navy); color:#dbe6f5; padding:80px 7%; }
+.band .section-head h2{ color:#fff; }
+.band .section-head p{ color:#a9b8d0; }
+.aud-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:26px; margin-top:44px; }
+.aud-card{ background:#1e3050; border:1px solid #2b3f63; border-radius:18px; overflow:hidden; }
+.aud-card img{ width:100%; height:200px; object-fit:cover; }
+.aud-card .aud-body{ padding:24px; }
+.aud-card h3{ color:#fff; font-size:22px; margin-bottom:10px; }
+.aud-card p{ color:#b9c6dd; font-size:15px; }
 
-.btn{
-    background:var(--primary);
-    color:white;
-    padding:12px 28px;
-    border-radius:8px;
-    text-decoration:none;
-    font-weight:600;
-    transition:.3s;
-    border:none;
-    cursor:pointer;
-    display:inline-block;
-}
+/* Section head */
+.section-head{ text-align:center; max-width:760px; margin:0 auto; }
+.section-head h2{ font-size:38px; color:var(--navy); letter-spacing:-.5px; margin:10px 0 12px; }
+.section-head p{ font-size:18px; }
 
-.btn:hover{
-    background:var(--primary-dark);
-}
+/* Video feature */
+.video-feature{ padding:70px 7%; text-align:center; }
+.video-feature .frame{ max-width:1000px; margin:36px auto 0; border-radius:20px; overflow:hidden; box-shadow:0 30px 60px rgba(22,35,58,.2); }
+.video-feature video{ width:100%; }
 
-.hero{
-    text-align:center;
-    background:white;
-    padding:70px 8%;
-}
+/* Capability grid */
+.caps{ padding:80px 7%; background:var(--soft); }
+.cap-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:22px; margin-top:44px; max-width:1300px; margin-left:auto; margin-right:auto; }
+.cap{ background:#fff; border-radius:16px; padding:28px; box-shadow:0 8px 24px rgba(22,35,58,.06); }
+.cap .ic{ font-size:30px; }
+.cap h3{ color:var(--navy); font-size:18px; margin:12px 0 8px; }
+.cap p{ font-size:15px; }
 
-.hero h1{
-    font-size:56px;
-    margin-bottom:15px;
-}
-
-.hero p{
-    color:#666;
-    max-width:800px;
-    margin:auto;
-    font-size:18px;
-    line-height:1.8;
-}
-
-.container{
-    width:90%;
-    max-width:1400px;
-    margin:60px auto;
-}
-
-.section-title{
-    text-align:center;
-    margin-bottom:40px;
-}
-
-.section-title h2{
-    color:var(--primary);
-    font-size:42px;
-}
-
-/* Feature Cards */
-
-.feature-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
-    gap:30px;
-}
-
-.feature-card{
-    background:white;
-    border-radius:18px;
-    overflow:hidden;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-    transition:.3s;
-}
-
-.feature-card:hover{
-    transform:translateY(-8px);
-}
-
-.card-header{
-    background:var(--primary);
-    color:white;
-    text-align:center;
-    padding:25px;
-}
-
-.card-header h3{
-    font-size:32px;
-}
-
-.card-body{
-    padding:30px;
-}
-
-.card-body ul{
-    list-style:none;
-}
-
-.card-body li{
-    padding:12px 0;
-    border-bottom:1px solid #f1f1f1;
-    line-height:1.5;
-}
-
-.card-body li:last-child{
-    border-bottom:none;
-}
-
-.highlight{
-    color:var(--primary);
-    font-weight:bold;
-}
+/* Quote */
+.quote{ padding:80px 7%; text-align:center; max-width:940px; margin:0 auto; }
+.quote blockquote{ font-size:28px; line-height:1.4; color:var(--navy); font-weight:600; letter-spacing:-.3px; }
+.quote blockquote .hl{ color:var(--blue); }
+.quote cite{ display:block; margin-top:20px; color:#8a93a3; font-style:normal; font-weight:700; }
 
 /* CTA */
+.cta{ background:linear-gradient(135deg,var(--blue),#5aa2ff); color:#fff; text-align:center; padding:80px 7%; }
+.cta h2{ font-size:40px; margin-bottom:14px; letter-spacing:-.5px; }
+.cta p{ font-size:19px; opacity:.95; max-width:620px; margin:0 auto 26px; }
+.cta .btn{ background:#fff; color:var(--blue); }
+.cta .btn:hover{ background:#eaf2ff; }
 
-.cta{
-    background:white;
-    margin-top:60px;
-    padding:50px;
-    text-align:center;
-    border-radius:18px;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
-
-.cta h2{
-    color:var(--primary);
-    margin-bottom:15px;
-}
-
-footer{
-    background:#111;
-    color:white;
-    text-align:center;
-    padding:25px;
-    margin-top:50px;
-}
-
-/* Hubstaff-style rotating headline word */
-.rotator{ color:#2E86FF; display:inline-block; transition:opacity .35s ease, transform .35s ease; }
-
-/* Pictorial showcase */
-.showcase{ width:92%; max-width:1400px; margin:60px auto 20px; }
-.showcase .section-title p{ color:#666; max-width:760px; margin:10px auto 0; }
-.showcase-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:28px; }
-.showcase-card{ background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,.08); transition:.3s; }
-.showcase-card:hover{ transform:translateY(-6px); }
-.shot{ position:relative; width:100%; aspect-ratio:16/10; background:linear-gradient(135deg,#fff5f5,#ffe3e3); overflow:hidden; }
-.shot img, .shot video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-.shot-ph{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center; padding:20px; }
-.shot-ph .emoji{ font-size:48px; line-height:1; }
-.shot-ph strong{ font-weight:700; font-size:18px; color:#333; }
-.shot-ph small{ color:#b06; font-size:11px; letter-spacing:.6px; text-transform:uppercase; opacity:.7; }
-.showcase-card .cap{ padding:20px 22px; }
-.showcase-badge{ display:inline-block; background:var(--light); color:var(--primary); font-weight:700; font-size:11px; padding:3px 10px; border-radius:20px; margin-bottom:8px; text-transform:uppercase; letter-spacing:.5px; }
-.showcase-card .cap h3{ color:var(--primary); margin-bottom:8px; font-size:20px; }
-.showcase-card .cap p{ color:#555; font-size:15px; line-height:1.55; }
+footer{ background:#0f1b2e; color:#93a3bd; text-align:center; padding:30px; font-size:14px; }
+footer a{ color:#cfe0ff; font-weight:600; margin:0 6px; }
 
 @media(max-width:900px){
-
-nav{
-    display:none;
+    nav{ display:none; }
+    .hero{ grid-template-columns:1fr; padding-top:50px; }
+    .hero h1{ font-size:38px; }
+    .split{ grid-template-columns:1fr; gap:34px; padding:50px 7%; }
+    .split.reverse .split-media{ order:0; }
+    .split.reverse .split-text{ order:0; }
 }
-
-.hero h1{
-    font-size:40px;
-}
-
-}
-
 </style>
-
 </head>
 <body>
 
 <header>
-    <div class="logo">RedCRM</div>
+    <div class="logo">Bloo<span>CRM</span></div>
     <nav>
         <ul>
-            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="/">Home</a></li>
             <li><a href="Features.html">Features</a></li>
             <li><a href="Enroll.html">Enroll</a></li>
             <li><a href="CusomerSupport.html">Customer Support</a></li>
         </ul>
     </nav>
-    <div style="display:flex; gap:12px; align-items:center;">
-    <a href="/" class="btn btn-login">Login</a>
+    <div style="display:flex;gap:12px;align-items:center;">
+        <a href="/" class="btn">Login</a>
+    </div>
 </header>
 
+<!-- HERO -->
 <section class="hero">
-
-
-<h1>Bloo CRM for <span class="rotator" id="featRotator">Client Management</span></h1>
-
-<p>
-    From client maintenance and 360° client views to AI insights, employee and
-    vendor management, team access control and proposals — see the actual
-    functionality Bloo CRM delivers for financial advisors and wealth managers.
-</p>
-
-
-</section>
-
-<!--
-  PICTORIAL SHOWCASE
-  Each card shows a screenshot/video of a real Bloo CRM feature. Images/videos
-  are optional and load only if present, otherwise a labelled placeholder shows.
-  To wire up your Supabase sample images, either:
-    (a) drop files into outer-layer/images/ with the filenames referenced below, or
-    (b) replace each src with the Supabase public URL, e.g.
-        src="https://<project>.supabase.co/storage/v1/object/public/bloocrm/client-dashboard.png"
--->
-<section class="showcase">
-    <div class="section-title">
-        <h2>See Bloo CRM In Action</h2>
-        <p>Innovative, purpose-built screens that showcase the right functionality your clients need.</p>
+    <div>
+        <span class="eyebrow">Built for wealth &amp; advisory firms</span>
+        <h1>Bloo CRM for <span class="rotator" id="featRotator">Client Management</span></h1>
+        <p>The all-in-one CRM for financial advisors, wealth managers and hedge fund teams —
+           manage HNI &amp; UHNI relationships, portfolios, compliance and AI-driven engagement
+           in one secure workspace.</p>
+        <div class="hero-actions">
+            <a href="Enroll.html" class="btn">See plans &amp; enroll</a>
+            <a href="#product" class="btn btn-ghost">Explore the product</a>
+        </div>
     </div>
-
-    <div class="showcase-grid">
-
-        <div class="showcase-card">
-            <div class="shot">
-                <div class="shot-ph"><span class="emoji">📊</span><strong>Client Dashboard</strong><small>Preview coming soon</small></div>
-                <img alt="Client Dashboard" src="images/client-dashboard.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
-            </div>
-            <div class="cap"><span class="showcase-badge">Client Maintenance</span><h3>Client Dashboard</h3>
-                <p>Maintain clients with KPIs, quarterly revenue pies, financial goals and 360° client health at a glance.</p></div>
-        </div>
-
-        <div class="showcase-card">
-            <div class="shot">
-                <div class="shot-ph"><span class="emoji">👤</span><strong>Client View &amp; List</strong><small>Preview coming soon</small></div>
-                <img alt="Client View" src="images/client-view.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
-            </div>
-            <div class="cap"><span class="showcase-badge">360° Client View</span><h3>Client View &amp; List</h3>
-                <p>Full client profiles — contact details, documents, investments, KYC, conversations and activity history.</p></div>
-        </div>
-
-        <div class="showcase-card">
-            <div class="shot">
-                <div class="shot-ph"><span class="emoji">🤖</span><strong>AI Insights</strong><small>Preview coming soon</small></div>
-                <img alt="AI Insights" src="images/ai-insights.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
-            </div>
-            <div class="cap"><span class="showcase-badge">Insights</span><h3>AI Insights</h3>
-                <p>AI-powered analytics across sales, retention and engagement, built right into Bloo CRM.</p></div>
-        </div>
-
-        <div class="showcase-card">
-            <div class="shot">
-                <div class="shot-ph"><span class="emoji">🧑‍💼</span><strong>Employee Dashboard</strong><small>Preview coming soon</small></div>
-                <img alt="Employee Dashboard" src="images/employee-dashboard.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
-            </div>
-            <div class="cap"><span class="showcase-badge">People</span><h3>Employee Dashboard</h3>
-                <p>Create and manage employees, roles, managers/backups and PII-secure records with edit &amp; view.</p></div>
-        </div>
-
-        <div class="showcase-card">
-            <div class="shot">
-                <div class="shot-ph"><span class="emoji">🔐</span><strong>Team &amp; Access</strong><small>Preview coming soon</small></div>
-                <img alt="Team Management &amp; Access" src="images/team-access.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
-            </div>
-            <div class="cap"><span class="showcase-badge">Team Management</span><h3>Team &amp; Access Control</h3>
-                <p>Admins create sub-users and grant or revoke access to each section, live.</p></div>
-        </div>
-
-        <div class="showcase-card">
-            <div class="shot">
-                <div class="shot-ph"><span class="emoji">🏢</span><strong>Vendor Management</strong><small>Preview coming soon</small></div>
-                <img alt="Vendor Management" src="images/vendor-management.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
-            </div>
-            <div class="cap"><span class="showcase-badge">Vendors</span><h3>Vendor Management</h3>
-                <p>Vendor KPIs/KRIs, quarterly revenue, per-vendor documents, client/employee mapping and VMS integrations.</p></div>
-        </div>
-
-        <div class="showcase-card">
-            <div class="shot">
-                <div class="shot-ph"><span class="emoji">📝</span><strong>Proposals</strong><small>Preview coming soon</small></div>
-                <img alt="Proposals" src="images/proposals.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
-            </div>
-            <div class="cap"><span class="showcase-badge">RFI / RFQ / RFP</span><h3>Proposals</h3>
-                <p>Generate, assign and send proposals with AI templates and proposal-tool integrations.</p></div>
-        </div>
-
-        <div class="showcase-card">
-            <div class="shot">
-                <div class="shot-ph"><span class="emoji">💬</span><strong>Communications Hub</strong><small>Preview coming soon</small></div>
-                <img alt="Communications Hub" src="images/communications.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
-            </div>
-            <div class="cap"><span class="showcase-badge">Engage</span><h3>Communications Hub</h3>
-                <p>Email, logged communications and the Meeting Room with recording &amp; AI transcripts.</p></div>
-        </div>
-
-        <div class="showcase-card">
-            <div class="shot">
-                <div class="shot-ph"><span class="emoji">🎬</span><strong>Product Walkthrough</strong><small>Video coming soon</small></div>
-                <video controls preload="none" style="display:none;" onloadeddata="this.style.display='block';this.previousElementSibling.style.display='none';">
-                    <source src="videos/bloocrm-walkthrough.mp4" type="video/mp4">
-                </video>
-            </div>
-            <div class="cap"><span class="showcase-badge">Walkthrough</span><h3>See It End-to-End</h3>
-                <p>A short video tour of client maintenance, insights, vendors, proposals and team management.</p></div>
-        </div>
-
+    <div class="hero-media">
+        <video autoplay muted loop playsinline preload="auto"
+            poster="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/woman-presenting-data-with-laptop-and-graphics-2026-04-13-23-29-15-utc.jpg">
+            <source src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/flat-design-animation-of-digital-workflow-and-coll-2026-02-18-13-39-40-utc.mp4" type="video/mp4">
+        </video>
     </div>
 </section>
 
-<div class="container">
-
-
-<div class="section-title">
-    <h2>Compare Plans</h2>
-</div>
-
-<div class="feature-grid">
-
-    <!-- BASIC -->
-
-    <div class="feature-card">
-
-        <div class="card-header">
-            <h3>BASIC CRM</h3>
-        </div>
-
-        <div class="card-body">
-
-            <ul>
-
-                <li>✓ Customer & Client Database</li>
-
-                <li>✓ Contact Information Management</li>
-
-                <li>✓ Customer Profiles & Account History</li>
-
-                <li>✓ Previous Conversations & Notes</li>
-
-                <li>✓ Payment Method Tracking</li>
-
-                <li>✓ Investment & Product Records</li>
-
-                <li>✓ Purchase History Management</li>
-
-                <li>✓ Activity Tracking & Follow-Ups</li>
-
-                <li>✓ Identity & Verification Information Storage</li>
-
-                <li>✓ Customer Document Repository</li>
-
-                <li>✓ Manual Reminder Scheduling</li>
-
-                <li>✓ Reporting Dashboard</li>
-
-            </ul>
-
-        </div>
-
+<!-- TRUST -->
+<section class="trust">
+    <p>Purpose-built for the people who manage serious money</p>
+    <div class="pills">
+        <span>Financial Advisors</span><span>Wealth Managers</span><span>RIAs &amp; MFDs</span>
+        <span>Family Offices</span><span>Hedge Fund Managers</span>
     </div>
+</section>
 
-    <!-- SWIFT -->
+<!-- PRODUCT SPLITS -->
+<a id="product"></a>
 
-    <div class="feature-card">
-
-        <div class="card-header">
-            <h3>SWIFT AI</h3>
-        </div>
-
-        <div class="card-body">
-
-            <ul>
-
-                <li>✓ Everything in BASIC CRM</li>
-
-                <li>✓ AI Message Generation</li>
-
-                <li>✓ Personalized Email Drafting</li>
-
-                <li>✓ AI-Powered Customer Follow-Up Suggestions</li>
-
-                <li>✓ Automated Workflow Builder</li>
-
-                <li>✓ Payment Reminder Automation</li>
-
-                <li>✓ Renewal Reminder Automation</li>
-
-                <li>✓ Lead Nurturing Workflows</li>
-
-                <li>✓ Automated SMS & Email Triggers</li>
-
-                <li>✓ AI Customer Segmentation</li>
-
-                <li>✓ Smart Task Assignment</li>
-
-                <li>✓ Engagement Analytics</li>
-
-            </ul>
-
-        </div>
-
+<section class="split">
+    <div class="split-text">
+        <span class="eyebrow">Client Management</span>
+        <h2>Every relationship, in a <span class="hl">single 360° view</span></h2>
+        <p>Stop stitching together spreadsheets and email threads. Bloo CRM gives advisors a
+           complete view of each HNI and UHNI relationship — profiles, family structures, KYC,
+           risk appetite, portfolios, documents and every past conversation — so you spend less
+           time searching and more time advising.</p>
+        <ul class="checks">
+            <li>Unified client &amp; family-office profiles</li>
+            <li>Investment, insurance, PMS &amp; AIF records</li>
+            <li>KYC, suitability checks &amp; a secure document vault</li>
+            <li>Full activity, meeting and conversation history</li>
+        </ul>
     </div>
-
-    <!-- ROCKET -->
-
-    <div class="feature-card">
-
-        <div class="card-header">
-            <h3>ROCKET AI+</h3>
-        </div>
-
-        <div class="card-body">
-
-            <ul>
-
-                <li>✓ Everything in SWIFT AI</li>
-
-                <li>✓ Predictive Lead Generation</li>
-
-                <li>✓ AI Prospect Identification</li>
-
-                <li>✓ Customer Retention Intelligence</li>
-
-                <li>✓ Retention Risk Scoring</li>
-
-                <li>✓ Revenue Growth Recommendations</li>
-
-                <li>✓ Occasion-Based Communication Templates</li>
-
-                <li>✓ Birthday & Anniversary Outreach Campaigns</li>
-
-                <li>✓ Strategic Retention Playbooks</li>
-
-                <li>✓ Churn Prediction Analytics</li>
-
-                <li>✓ Relationship Strength Monitoring</li>
-
-                <li>✓ AI Recommendations For Cross-Selling & Upselling</li>
-
-                <li>✓ Advanced Executive Dashboards</li>
-
-                <li>✓ Customer Lifetime Value Analysis</li>
-
-                <li>✓ Enterprise Growth Strategy Insights</li>
-
-            </ul>
-
-        </div>
-
+    <div class="split-media">
+        <img loading="lazy" alt="Client Dashboard" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/clientdashboard.png">
     </div>
+</section>
 
-</div>
+<section class="split reverse">
+    <div class="split-text">
+        <span class="eyebrow">AI Insights</span>
+        <h2>Turn portfolio data into your <span class="hl">next best action</span></h2>
+        <p>Bloo CRM's AI reads engagement, revenue and portfolio signals to surface who needs a
+           review, who is at risk of leaving, and where the next cross-sell or upsell sits — so
+           your book grows without adding headcount.</p>
+        <ul class="checks">
+            <li>Retention &amp; churn-risk scoring</li>
+            <li>Cross-sell &amp; upsell recommendations</li>
+            <li>Sales, revenue &amp; engagement analytics</li>
+            <li>AI-drafted portfolio reviews and client emails</li>
+        </ul>
+    </div>
+    <div class="split-media">
+        <img loading="lazy" alt="AI Insights &amp; analytics" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/professional-woman-presents-colorful-data-charts-i-2026-03-26-01-19-06-utc.jpg">
+    </div>
+</section>
 
-<div class="cta">
+<section class="split">
+    <div class="split-text">
+        <span class="eyebrow">Client List &amp; Dashboard</span>
+        <h2>A workspace that <span class="hl">adapts to your firm</span></h2>
+        <p>Switch between a clean red or a calm sky-blue theme, and give your team the dashboards
+           they actually use. Client lists, quarterly revenue, financial goals and health scores
+           are one click away — on a screen that looks as premium as your practice.</p>
+        <ul class="checks">
+            <li>Themeable, brandable interface</li>
+            <li>KPIs, revenue pies &amp; goal tracking</li>
+            <li>Fast search across clients and leads</li>
+            <li>Drill into any client's full profile instantly</li>
+        </ul>
+    </div>
+    <div class="split-media">
+        <img loading="lazy" alt="Client List — sky theme" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/ClientList%20blue%20view.png">
+    </div>
+</section>
 
-    <h2>Ready To Transform Customer Relationships?</h2>
+<section class="split reverse">
+    <div class="split-text">
+        <span class="eyebrow">Vendor Management</span>
+        <h2>Govern every <span class="hl">vendor and counterparty</span></h2>
+        <p>Track custodians, fund administrators, research providers and technology vendors with
+           performance and risk indices, quarterly revenue, per-vendor document vaults, and
+           mapping to the clients, employees and workflows they support.</p>
+        <ul class="checks">
+            <li>KPI / KRI performance &amp; risk index</li>
+            <li>Quarterly revenue &amp; spend tracking</li>
+            <li>Per-vendor document repository</li>
+            <li>VMS &amp; procurement integrations</li>
+        </ul>
+    </div>
+    <div class="split-media">
+        <img loading="lazy" alt="Vendor Management" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/vendordahsbord.png">
+    </div>
+</section>
 
-    <p>
-        Select the plan that best matches your business goals
-        and begin building stronger customer engagement today.
-    </p>
+<section class="split">
+    <div class="split-text">
+        <span class="eyebrow">Proposals</span>
+        <h2>Win mandates <span class="hl">faster</span></h2>
+        <p>Generate polished RFI, RFQ and RFP responses with AI templates, assign them to your
+           team, and send them to leads and clients — every version tracked inside the CRM, so
+           nothing falls through the cracks.</p>
+        <ul class="checks">
+            <li>AI RFI / RFQ / RFP generation</li>
+            <li>Assign proposals to employees</li>
+            <li>Send to leads &amp; clients with tracking</li>
+            <li>Integrations with leading proposal tools</li>
+        </ul>
+    </div>
+    <div class="split-media">
+        <img loading="lazy" alt="Proposals" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/Proposals.png">
+    </div>
+</section>
 
-    <a href="Enroll.html" class="btn" style="margin-top:20px;">
-        Start Your Free Trial
-    </a>
+<!-- VIDEO FEATURE -->
+<section class="video-feature">
+    <div class="section-head">
+        <span class="eyebrow">Automated workflows</span>
+        <h2>Move work forward while you sleep</h2>
+        <p>Route recommendations, KYC and rebalancing through multi-level approvals with a full
+           audit trail — and let automation handle the follow-ups, reminders and hand-offs.</p>
+    </div>
+    <div class="frame">
+        <video autoplay muted loop playsinline preload="none"
+            poster="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/connected-organizational-structure-with-wood-and-y-2026-03-24-13-00-21-utc.jpg">
+            <source src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/animated-flat-design-concept-of-teamwork-ideas-a-2026-01-28-04-27-45-utc.mp4" type="video/mp4">
+        </video>
+    </div>
+</section>
 
-</div>
+<section class="split">
+    <div class="split-text">
+        <span class="eyebrow">Employee Dashboard &amp; Team Access</span>
+        <h2>Run your <span class="hl">practice</span>, not just your clients</h2>
+        <p>Manage advisors and support staff with PII-secure employee records, and give every
+           team member exactly the access they need. As the administrator, you grant or revoke
+           access to each section in seconds — no IT ticket required.</p>
+        <ul class="checks">
+            <li>Encrypted employee &amp; PII records</li>
+            <li>Managers, backups &amp; status tracking</li>
+            <li>Admin-controlled sub-user accounts</li>
+            <li>Granular, section-level permissions</li>
+        </ul>
+    </div>
+    <div class="split-media">
+        <img loading="lazy" alt="Employee Dashboard" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/empllyee%20dashboard.png">
+    </div>
+</section>
 
+<section class="split reverse">
+    <div class="split-text">
+        <span class="eyebrow">Workflow &amp; Approvals</span>
+        <h2>Compliance-grade <span class="hl">governance</span></h2>
+        <p>Advisor → Senior Advisor → Investment Committee → Compliance. Every recommendation and
+           exception is routed, time-stamped and logged, giving you the audit trail regulators
+           expect and the control your partners demand.</p>
+        <ul class="checks">
+            <li>Multi-level approval routing</li>
+            <li>Task assignment &amp; SLA tracking</li>
+            <li>Complete, exportable audit trail</li>
+            <li>Suitability, FATCA &amp; KYC controls</li>
+        </ul>
+    </div>
+    <div class="split-media">
+        <img loading="lazy" alt="Workflow &amp; approvals" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/Workflow-Assign.png">
+    </div>
+</section>
 
-</div>
+<section class="split">
+    <div class="split-text">
+        <span class="eyebrow">AI Knowledge Repository</span>
+        <h2>Your firm's knowledge, <span class="hl">instantly searchable</span></h2>
+        <p>Upload research, product sheets, policies and playbooks into an AI-powered repository
+           and get instant, sourced answers. New advisors onboard faster and client questions get
+           accurate responses — every time.</p>
+        <ul class="checks">
+            <li>Retrieval-augmented AI answering</li>
+            <li>Searchable, secure document library</li>
+            <li>Answers cite their source documents</li>
+            <li>Faster onboarding &amp; knowledge sharing</li>
+        </ul>
+    </div>
+    <div class="split-media">
+        <img loading="lazy" alt="AI Knowledge Repository" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/AIBasedKnowledge%20REPO.png">
+    </div>
+</section>
+
+<!-- AUDIENCE BAND -->
+<section class="band">
+    <div class="section-head">
+        <span class="eyebrow">Who it's for</span>
+        <h2>Tailored to how you manage money</h2>
+        <p>From independent advisors to multi-strategy funds, Bloo CRM flexes to your model.</p>
+    </div>
+    <div class="aud-grid">
+        <div class="aud-card">
+            <img loading="lazy" alt="Financial Advisors" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/group-photo-of-colleagues-in-office-2026-03-24-07-32-00-utc.jpg">
+            <div class="aud-body">
+                <h3>Financial Advisors &amp; RIAs</h3>
+                <p>Deepen every relationship with 360° client views, AI-drafted outreach and
+                   goal-based planning — so you can carry more clients without losing the personal touch.</p>
+            </div>
+        </div>
+        <div class="aud-card">
+            <img loading="lazy" alt="Wealth Managers &amp; Family Offices" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/luxurious-modern-office-space-with-dual-monitors-a-2026-03-09-02-51-03-utc.jpg">
+            <div class="aud-body">
+                <h3>Wealth Managers &amp; Family Offices</h3>
+                <p>Coordinate complex UHNI mandates, succession and multi-entity structures with
+                   document governance, approvals and revenue intelligence in one place.</p>
+            </div>
+        </div>
+        <div class="aud-card">
+            <img loading="lazy" alt="Hedge Fund Managers" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/business-woman-sitting-at-table-with-market-hand-d-2026-04-13-23-53-07-utc.jpg">
+            <div class="aud-body">
+                <h3>Hedge Fund Managers</h3>
+                <p>Manage investor relations, subscriptions, counterparties and compliance
+                   workflows with audit-ready controls and AI insight into your book and pipeline.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- COMMUNICATIONS VIDEO -->
+<section class="video-feature">
+    <div class="section-head">
+        <span class="eyebrow">Communications Hub</span>
+        <h2>Email, calendar and meetings — connected</h2>
+        <p>Bring email, logged communications and the meeting room together, with AI-suggested
+           messages, automatic routing and recorded, transcribed calls.</p>
+    </div>
+    <div class="frame">
+        <video autoplay muted loop playsinline preload="none"
+            poster="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/young-woman-presenting-global-network-and-communic-2026-03-26-02-09-07-utc.jpg">
+            <source src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/animated-flat-design-teamwork-and-online-communica-2026-01-28-04-29-59-utc.mp4" type="video/mp4">
+        </video>
+    </div>
+</section>
+
+<!-- CAPABILITIES GRID -->
+<section class="caps">
+    <div class="section-head">
+        <span class="eyebrow">Everything in one platform</span>
+        <h2>The complete advisory toolkit</h2>
+        <p>All the capabilities modern advisory and fund teams need — with bank-grade security throughout.</p>
+    </div>
+    <div class="cap-grid">
+        <div class="cap"><div class="ic">📊</div><h3>Portfolio &amp; AUM Analytics</h3><p>Track mutual funds, equities, bonds, PMS, AIFs and insurance with revenue and AUM growth views.</p></div>
+        <div class="cap"><div class="ic">🎯</div><h3>Lead Conversion</h3><p>Capture, score and nurture prospects with AI follow-ups until they become clients.</p></div>
+        <div class="cap"><div class="ic">🤝</div><h3>AI-Led Sales Pitch</h3><p>Generate tailored pitches and cross-sell / upsell recommendations per client.</p></div>
+        <div class="cap"><div class="ic">🛡️</div><h3>Compliance &amp; KYC</h3><p>Suitability, FATCA, CKYC, audit trails and a secure document vault built in.</p></div>
+        <div class="cap"><div class="ic">✉️</div><h3>AI Email &amp; Calendar</h3><p>Automated routing, AI-drafted messages, meeting invites and reminders.</p></div>
+        <div class="cap"><div class="ic">🎥</div><h3>Meeting Room</h3><p>Host, record and transcribe client meetings with searchable AI transcripts.</p></div>
+        <div class="cap"><div class="ic">🔐</div><h3>Roles &amp; Access Control</h3><p>Admin-managed sub-users with granular, section-level permissions.</p></div>
+        <div class="cap"><div class="ic">📝</div><h3>Proposals &amp; RFPs</h3><p>AI-generated RFI/RFQ/RFP responses, assignable and trackable end-to-end.</p></div>
+    </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote">
+    <blockquote>"Bloo CRM gives our advisors <span class="hl">institutional-grade</span> client lifecycle
+        management, portfolio intelligence and compliance governance — at a fraction of the cost
+        of enterprise platforms."</blockquote>
+    <cite>— Managing Partner, Multi-Family Office</cite>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <h2>Grow your advisory practice with Bloo CRM</h2>
+    <p>Start with the plan that fits your firm and scale into AI-driven insights, automation and
+       enterprise governance whenever you're ready.</p>
+    <a href="Enroll.html" class="btn">See plans &amp; enroll</a>
+</section>
 
 <footer>
-    © 2026 RedCRM Features & Solutions
+    © 2026 Blue Astra Technologies LLP ·
+    <a href="Features.html">Features</a> · <a href="Enroll.html">Enroll</a> ·
+    <a href="CusomerSupport.html">Customer Support</a> · <a href="/">Login</a>
 </footer>
 
 <script>
-// Hubstaff-style rotating headline: "Bloo CRM for [word]" cycling in blue
+// Hubstaff-style rotating headline word (in blue)
 (function(){
     var words = ["Client Management","AI Insights","Employee Dashboard","Vendor Management",
         "Proposal Creation","Lead Conversion","AI-based Sales Pitch","AI-driven Sales Management",
@@ -541,13 +443,11 @@ nav{
     if (!el) return;
     var i = 0;
     setInterval(function(){
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(-10px)';
+        el.style.opacity = '0'; el.style.transform = 'translateY(-10px)';
         setTimeout(function(){
             i = (i + 1) % words.length;
             el.textContent = words[i];
-            el.style.opacity = '1';
-            el.style.transform = 'translateY(0)';
+            el.style.opacity = '1'; el.style.transform = 'translateY(0)';
         }, 350);
     }, 2200);
 })();
