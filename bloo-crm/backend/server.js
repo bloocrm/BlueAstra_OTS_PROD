@@ -286,18 +286,23 @@ app.use('/vendor-docs', express.static(path.join(__dirname, 'uploads', 'vendor-d
 app.use('/proposal-docs', express.static(path.join(__dirname, 'uploads', 'proposal-docs')));
 
 const frontendPath = path.join(__dirname, '..', 'frontend');
+const outerLayerPath = path.join(__dirname, '..', '..', 'outer-layer');
+
+// Public landing page is the marketing Features page; the app (login + CRM)
+// lives at /app. These routes run before the static middleware so "/" is the
+// Features page rather than the app's index.html.
+app.get('/', (req, res) => res.sendFile(path.join(outerLayerPath, 'Features.html')));
+app.get('/app', (req, res) => res.sendFile(path.join(frontendPath, 'index.html')));
+
 app.use(express.static(frontendPath));
 
 // Dedicated product website pages (Features / Enroll / Customer Support, etc.)
-// served alongside the app. Frontend static above wins for any shared filename.
-const outerLayerPath = path.join(__dirname, '..', '..', 'outer-layer');
 app.use(express.static(outerLayerPath));
 
-// Marketing website home — /index.html is served by the app, so expose the
-// outer-layer landing at /home (and /website).
+// Marketing website home also available at /home (and /website).
 app.get(['/home', '/website'], (req, res) => res.sendFile(path.join(outerLayerPath, 'index.html')));
 
-// SPA fallback: any non-API GET returns index.html
+// SPA fallback: any non-API GET returns the app index.html
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path === '/health') return next();
   res.sendFile(path.join(frontendPath, 'index.html'));
