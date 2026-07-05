@@ -198,6 +198,9 @@ footer{
     margin-top:50px;
 }
 
+/* Hubstaff-style rotating headline word */
+.rotator{ color:#2E86FF; display:inline-block; transition:opacity .35s ease, transform .35s ease; }
+
 /* Pictorial showcase */
 .showcase{ width:92%; max-width:1400px; margin:60px auto 20px; }
 .showcase .section-title p{ color:#666; max-width:760px; margin:10px auto 0; }
@@ -249,7 +252,7 @@ nav{
 <section class="hero">
 
 
-<h1>What Bloo CRM Does</h1>
+<h1>Bloo CRM for <span class="rotator" id="featRotator">Client Management</span></h1>
 
 <p>
     From client maintenance and 360° client views to AI insights, employee and
@@ -527,6 +530,28 @@ nav{
 <footer>
     © 2026 RedCRM Features & Solutions
 </footer>
+
+<script>
+// Hubstaff-style rotating headline: "Bloo CRM for [word]" cycling in blue
+(function(){
+    var words = ["Client Management","AI Insights","Employee Dashboard","Vendor Management",
+        "Proposal Creation","Lead Conversion","AI-based Sales Pitch","AI-driven Sales Management",
+        "AI-driven Automated Artifacts","AI-driven Email & Calendar Management"];
+    var el = document.getElementById('featRotator');
+    if (!el) return;
+    var i = 0;
+    setInterval(function(){
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-10px)';
+        setTimeout(function(){
+            i = (i + 1) % words.length;
+            el.textContent = words[i];
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }, 350);
+    }, 2200);
+})();
+</script>
 
 </body>
 </html>

@@ -27,7 +27,7 @@
             <a href="CusomerSupport.html">Customer Support</a>
         </nav>
         <div class="lp-header-actions">
-            <a href="Features.html" class="lp-btn">What Bloo CRM Does</a>
+            <a href="Features.html" class="lp-rotate-cta">Bloo CRM for <span class="lp-rotate-word" id="lpRotateWord">Client Management</span></a>
         </div>
     </header>
 
@@ -48,6 +48,28 @@
             <div class="lp-stat"><span>Annual Advisory Revenue</span><strong>$2.4M</strong></div>
         </div>
     </section>
+
+    <script>
+    // Hubstaff-style rotating word in the header CTA: "Bloo CRM for [word]" (blue)
+    (function(){
+        var words = ["Client Management","AI Insights","Employee Dashboard","Vendor Management",
+            "Proposal Creation","Lead Conversion","AI-based Sales Pitch","AI-driven Sales Management",
+            "AI-driven Automated Artifacts","AI-driven Email & Calendar Management"];
+        var el = document.getElementById('lpRotateWord');
+        if (!el) return;
+        var i = 0;
+        setInterval(function(){
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-8px)';
+            setTimeout(function(){
+                i = (i + 1) % words.length;
+                el.textContent = words[i];
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 350);
+        }, 2200);
+    })();
+    </script>
 
     <!-- Auth Container -->
     <div id="authContainer" class="auth-container">

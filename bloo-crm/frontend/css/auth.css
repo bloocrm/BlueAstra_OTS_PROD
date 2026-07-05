@@ -38,6 +38,12 @@
 .lp-btn-outline { background: transparent; color: var(--theme-primary); border: 2px solid var(--theme-primary); }
 .lp-btn-outline:hover { background: var(--theme-soft); }
 
+/* Hubstaff-style rotating headline CTA in the header */
+.lp-rotate-cta { text-decoration: none; font-weight: 700; color: #222; font-size: 16px; white-space: nowrap; display: inline-flex; align-items: baseline; gap: 6px; }
+.lp-rotate-word { color: #2E86FF; display: inline-block; min-width: 262px; text-align: left; transition: opacity .35s ease, transform .35s ease; }
+.lp-rotate-cta:hover .lp-rotate-word { text-decoration: underline; }
+@media (max-width: 900px) { .lp-rotate-cta { display: none; } }
+
 .lp-hero {
     display: flex; align-items: center; justify-content: space-between; gap: 48px;
     padding: 56px 6% 40px; flex-wrap: wrap;
