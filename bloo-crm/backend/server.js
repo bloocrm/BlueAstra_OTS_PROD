@@ -264,6 +264,10 @@ app.use('/api/knowledge', knowledgeRoutes);
 const teamRoutes = require('./routes/team');
 app.use('/api/team', teamRoutes);
 
+// Brochure Papa — AI brochure generation via Gamma
+const brochureRoutes = require('./routes/brochure');
+app.use('/api/brochure', brochureRoutes);
+
 // Proposals (RFI / RFQ / RFP templates, guidance, documents)
 const proposalRoutes = require('./routes/proposals');
 app.use('/api/proposals', proposalRoutes);
