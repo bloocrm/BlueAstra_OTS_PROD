@@ -83,6 +83,12 @@ async function handleLogin(event) {
             body: { email, password }
         });
 
+        // MFA gate — password ok, but a second factor is required
+        if (result.data && result.data.mfaRequired) {
+            if (typeof showMfaLoginPrompt === 'function') showMfaLoginPrompt(result.data.mfaToken);
+            return;
+        }
+
         const { user, token } = result.data;
         localStorage.setItem('authToken', token);
         localStorage.setItem('currentUser', JSON.stringify(user));

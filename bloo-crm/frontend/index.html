@@ -229,6 +229,24 @@
         <a href="Enroll.html">Enroll</a> · <a href="CusomerSupport.html">Customer Support</a>
     </footer>
 
+    <!-- MFA login prompt (shown after password when 2FA is enabled) -->
+    <div id="mfaLoginModal" class="modal">
+        <div class="modal-content" style="max-width:420px;">
+            <div class="modal-header"><h2><i class="fas fa-shield-alt"></i> Two-Factor Authentication</h2></div>
+            <p style="color:#666;margin-bottom:14px;">Enter the 6-digit code from your authenticator app (or a backup code) to finish signing in.</p>
+            <form onsubmit="return submitMfaLogin(event)">
+                <div class="form-group">
+                    <input type="text" id="mfaLoginCode" inputmode="numeric" autocomplete="one-time-code" maxlength="9" placeholder="123456" style="text-align:center;font-size:22px;letter-spacing:6px;">
+                </div>
+                <div id="mfaLoginMsg" class="msg" style="display:none;"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cancelMfaLogin()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="mfaLoginBtn">Verify &amp; Sign in</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Main Dashboard Container -->
     <div id="dashboardContainer" class="dashboard-container" style="display: none;">
         <!-- Sidebar Navigation -->
@@ -340,7 +358,9 @@
                         <div class="profile-row"><span class="profile-label">Contact Number</span><span class="profile-val" id="pvPhone">—</span></div>
                         <div class="profile-row"><span class="profile-label">Company</span><span class="profile-val" id="pvCompany">—</span></div>
                         <div class="profile-row"><span class="profile-label">Plan</span><span class="profile-val" id="pvPlan">—</span></div>
+                        <div class="profile-row"><span class="profile-label">Two-Factor Auth (MFA)</span><span class="profile-val" id="pvMfa" style="color:#8a93a3;">—</span></div>
                         <div class="modal-actions">
+                            <button class="btn btn-secondary" onclick="openMfaModal()"><i class="fas fa-shield-alt"></i> Security &amp; MFA</button>
                             <button class="btn btn-primary" onclick="startProfileEdit()"><i class="fas fa-edit"></i> Edit</button>
                         </div>
                     </div>
@@ -364,6 +384,74 @@
                                 <button type="submit" class="btn btn-primary" id="peSaveBtn"><i class="fas fa-save"></i> Submit</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MFA / Security Modal -->
+            <div id="mfaModal" class="modal">
+                <div class="modal-content" style="max-width:600px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-shield-alt"></i> Two-Factor Authentication (MFA)</h2>
+                        <button class="close-btn" onclick="closeMfaModal()">&times;</button>
+                    </div>
+
+                    <!-- Method chooser / status -->
+                    <div id="mfaMethods">
+                        <div id="mfaEnabledBanner" style="display:none;background:#eafaf1;border:1px solid #b8ead0;color:#1b7a43;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-weight:600;">
+                            <i class="fas fa-check-circle"></i> MFA is currently <strong>ON</strong> (authenticator app).
+                        </div>
+                        <p style="color:#666;margin-bottom:14px;">Add a second layer of security to your account. Choose a method:</p>
+
+                        <div class="mfa-method" onclick="mfaStartTotp()">
+                            <div class="mfa-ic">📱</div>
+                            <div class="mfa-body"><h4>Authenticator App</h4><p>Google Authenticator, Microsoft Authenticator, Authy, 1Password or Duo. Scan a QR code and you're protected in seconds.</p></div>
+                            <span class="mfa-go">Set up →</span>
+                        </div>
+
+                        <div class="mfa-method emph" onclick="mfaEnterprise('YubiKey / Hardware Token')">
+                            <div class="mfa-ic">🔑</div>
+                            <div class="mfa-body"><h4>YubiKey / Hardware Token <span class="mfa-badge">Recommended</span></h4><p>Phishing-resistant FIDO2/U2F security keys — the strongest everyday protection against account takeover.</p></div>
+                            <span class="mfa-go">Set up →</span>
+                        </div>
+
+                        <div class="mfa-method emph best" onclick="mfaEnterprise('RSA SecurID')">
+                            <div class="mfa-ic">🛡️</div>
+                            <div class="mfa-body"><h4>RSA SecurID <span class="mfa-badge best">Most Secure</span></h4><p>Enterprise hardware / soft-token OTP — the gold standard of authentication for regulated financial and hedge-fund firms.</p></div>
+                            <span class="mfa-go">Set up →</span>
+                        </div>
+
+                        <div id="mfaDisableRow" style="display:none;margin-top:16px;border-top:1px solid #eef2f7;padding-top:14px;">
+                            <label style="font-weight:700;color:var(--navy);">Turn off MFA</label>
+                            <p style="color:#8a93a3;font-size:0.85rem;margin:4px 0 8px;">Enter a current authenticator or backup code to disable.</p>
+                            <div style="display:flex;gap:8px;">
+                                <input type="text" id="mfaDisableCode" inputmode="numeric" placeholder="Code" style="flex:1;padding:11px;border:1px solid #dbe2ee;border-radius:8px;">
+                                <button class="btn btn-delete" onclick="mfaDisable()">Disable</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TOTP setup -->
+                    <div id="mfaTotpSetup" style="display:none;">
+                        <p style="color:#666;"><strong>1.</strong> Scan this QR with your authenticator app, or enter the key manually.</p>
+                        <div style="text-align:center;margin:14px 0;"><div id="mfaQr" style="display:inline-block;padding:10px;background:#fff;border:1px solid #eee;border-radius:10px;"></div></div>
+                        <div style="text-align:center;margin-bottom:14px;font-size:0.9rem;">Manual key: <code id="mfaSecret" style="font-weight:700;letter-spacing:1px;background:#f2f5fa;padding:4px 8px;border-radius:6px;"></code></div>
+                        <p style="color:#666;"><strong>2.</strong> Enter the 6-digit code from your app:</p>
+                        <div class="form-group"><input type="text" id="mfaCode" inputmode="numeric" maxlength="6" placeholder="123456" style="text-align:center;font-size:22px;letter-spacing:6px;"></div>
+                        <div id="mfaSetupMsg" class="msg" style="display:none;"></div>
+                        <div class="modal-actions">
+                            <button class="btn btn-secondary" onclick="mfaBackToMethods()">Back</button>
+                            <button class="btn btn-primary" id="mfaVerifyBtn" onclick="mfaVerify()"><i class="fas fa-check"></i> Verify &amp; Enable</button>
+                        </div>
+                    </div>
+
+                    <!-- Backup codes -->
+                    <div id="mfaBackup" style="display:none;">
+                        <div style="text-align:center;font-size:42px;">✅</div>
+                        <h3 style="text-align:center;color:var(--theme-primary);margin-bottom:8px;">MFA enabled</h3>
+                        <p style="color:#666;">Save these one-time backup codes somewhere safe — each works once if you lose access to your authenticator:</p>
+                        <div id="mfaBackupCodes" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f7f9fc;border-radius:10px;padding:14px;font-family:monospace;font-weight:700;margin:12px 0;"></div>
+                        <div class="modal-actions"><button class="btn btn-primary" onclick="closeMfaModal()">Done</button></div>
                     </div>
                 </div>
             </div>
@@ -2965,6 +3053,8 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/vendors.js"></script>
     <script src="js/team.js"></script>
     <script src="js/profile.js"></script>
+    <script src="js/qrcode.min.js"></script>
+    <script src="js/mfa.js"></script>
     <script src="js/ai-tools.js"></script>
     <script src="js/ai-assist.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>

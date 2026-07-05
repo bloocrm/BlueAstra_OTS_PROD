@@ -15,8 +15,11 @@ const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const emailService = require('../utils/email-service');
+const totp = require('../utils/totp');
 const { verifyToken } = require('../middleware/auth');
 const router = express.Router();
+
+const hashCode = (c) => crypto.createHash('sha256').update(String(c)).digest('hex');
 
 // Email sent when a user changes their profile details
 const profileUpdatedEmailHTML = (name, changedFields, when) => `
@@ -193,6 +196,19 @@ router.post(
       // Reset login attempts on successful login
       user.loginAttempts = 0;
       user.lockUntil = undefined;
+      await user.save();
+
+      // MFA gate: if enabled, don't issue a session token yet — require the
+      // second factor via a short-lived MFA token.
+      if (user.mfaEnabled) {
+        const mfaToken = jwt.sign(
+          { id: user._id, mfa: 'pending' },
+          process.env.JWT_SECRET || 'your-secret-key',
+          { expiresIn: '5m' }
+        );
+        return res.json({ message: 'MFA required', data: { mfaRequired: true, method: user.mfaMethod || 'totp', mfaToken } });
+      }
+
       user.lastLogin = new Date();
       await user.save();
 
@@ -506,6 +522,106 @@ router.put('/profile', verifyToken, async (req, res) => {
     console.error('profile update error:', error);
     return res.status(500).json({ error: 'Could not update your profile. Please try again.' });
   }
+});
+
+// ===================================================================
+// MULTI-FACTOR AUTHENTICATION (TOTP — Google/Microsoft Authenticator, Authy…)
+// ===================================================================
+
+router.get('/mfa/status', verifyToken, async (req, res) => {
+  try {
+    const u = await User.findById(req.actualUserId || req.userId).select('mfaEnabled mfaMethod').lean();
+    res.json({ enabled: !!(u && u.mfaEnabled), method: u ? u.mfaMethod : null });
+  } catch (e) { res.status(500).json({ error: 'Could not load MFA status' }); }
+});
+
+// Begin enrollment: create a pending secret + otpauth URL for the QR / manual key
+router.post('/mfa/setup', verifyToken, async (req, res) => {
+  try {
+    const u = await User.findById(req.actualUserId || req.userId);
+    if (!u) return res.status(404).json({ error: 'User not found' });
+    const secret = totp.generateSecret();
+    u.mfaPendingSecret = secret;
+    await u.save({ validateBeforeSave: false });
+    res.json({ secret, otpauthUrl: totp.otpauthURL(u.email, secret), issuer: 'Bloo CRM', account: u.email });
+  } catch (e) { res.status(500).json({ error: 'Could not start MFA setup' }); }
+});
+
+// Verify the first code from the authenticator app -> registers/enables MFA
+router.post('/mfa/verify', verifyToken, async (req, res) => {
+  try {
+    const u = await User.findById(req.actualUserId || req.userId).select('+mfaPendingSecret +mfaSecret +mfaBackupCodes');
+    if (!u) return res.status(404).json({ error: 'User not found' });
+    if (!u.mfaPendingSecret) return res.status(400).json({ error: 'No pending MFA setup. Please start setup again.' });
+    const code = String((req.body && req.body.code) || '').replace(/\s/g, '');
+    if (!totp.verify(u.mfaPendingSecret, code, 1)) {
+      return res.status(400).json({ error: 'That code is incorrect or expired. Please try again with a fresh code.' });
+    }
+    u.mfaSecret = u.mfaPendingSecret;
+    u.mfaPendingSecret = undefined;
+    u.mfaEnabled = true;
+    u.mfaMethod = 'totp';
+    const plain = [], hashed = [];
+    for (let i = 0; i < 8; i++) { const c = crypto.randomBytes(4).toString('hex'); plain.push(c); hashed.push(hashCode(c)); }
+    u.mfaBackupCodes = hashed;
+    await u.save({ validateBeforeSave: false });
+    try {
+      await emailService.sendEmail({
+        to: u.email,
+        subject: 'Two-factor authentication enabled on Bloo CRM',
+        html: `<div style="font-family:Segoe UI,Arial"><h2 style="color:#2E86FF">Two-factor authentication enabled</h2><p>An authenticator app (TOTP) was just registered on your Bloo CRM account. If this wasn't you, contact <a href="mailto:support@bloocrm.com">support@bloocrm.com</a> immediately.</p></div>`,
+        text: 'Two-factor authentication (authenticator app) was enabled on your Bloo CRM account.'
+      });
+    } catch (mailErr) { console.error('MFA enable email failed:', mailErr.message); }
+    res.json({ enabled: true, backupCodes: plain });
+  } catch (e) { res.status(500).json({ error: 'Could not enable MFA' }); }
+});
+
+// Turn MFA off (needs a current authenticator code or a backup code)
+router.post('/mfa/disable', verifyToken, async (req, res) => {
+  try {
+    const u = await User.findById(req.actualUserId || req.userId).select('+mfaSecret +mfaBackupCodes');
+    if (!u || !u.mfaEnabled) return res.status(400).json({ error: 'MFA is not enabled.' });
+    const code = String((req.body && req.body.code) || '').replace(/\s/g, '');
+    const ok = totp.verify(u.mfaSecret, code, 1) || (u.mfaBackupCodes || []).includes(hashCode(code));
+    if (!ok) return res.status(400).json({ error: 'Enter a valid authenticator or backup code to disable MFA.' });
+    u.mfaEnabled = false; u.mfaMethod = null; u.mfaSecret = undefined; u.mfaPendingSecret = undefined; u.mfaBackupCodes = [];
+    await u.save({ validateBeforeSave: false });
+    try {
+      await emailService.sendEmail({
+        to: u.email,
+        subject: 'Two-factor authentication disabled on Bloo CRM',
+        html: `<div style="font-family:Segoe UI,Arial"><h2 style="color:#2E86FF">Two-factor authentication disabled</h2><p>Two-factor authentication was disabled on your Bloo CRM account. If this wasn't you, <a href="https://bloocrm.com/pages/forgot-password.html">reset your password</a> and contact support@bloocrm.com.</p></div>`,
+        text: 'Two-factor authentication was disabled on your Bloo CRM account.'
+      });
+    } catch (mailErr) { console.error('MFA disable email failed:', mailErr.message); }
+    res.json({ enabled: false });
+  } catch (e) { res.status(500).json({ error: 'Could not disable MFA' }); }
+});
+
+// Login step 2: verify the authenticator/backup code and issue the real session token
+router.post('/mfa/login', async (req, res) => {
+  try {
+    const { mfaToken, code } = req.body || {};
+    if (!mfaToken || !code) return res.status(400).json({ error: 'Please enter your authentication code.' });
+    let decoded;
+    try { decoded = jwt.verify(mfaToken, process.env.JWT_SECRET || 'your-secret-key'); }
+    catch (e) { return res.status(401).json({ error: 'Your login session expired. Please sign in again.' }); }
+    if (decoded.mfa !== 'pending') return res.status(401).json({ error: 'Invalid MFA session.' });
+    const u = await User.findById(decoded.id).select('+mfaSecret +mfaBackupCodes');
+    if (!u || !u.mfaEnabled) return res.status(400).json({ error: 'MFA is not enabled for this account.' });
+    const clean = String(code).replace(/\s/g, '');
+    let ok = totp.verify(u.mfaSecret, clean, 1);
+    if (!ok) {                                   // fall back to a single-use backup code
+      const idx = (u.mfaBackupCodes || []).indexOf(hashCode(clean));
+      if (idx >= 0) { u.mfaBackupCodes.splice(idx, 1); ok = true; }
+    }
+    if (!ok) return res.status(400).json({ error: 'That code is incorrect or expired. Please try again.' });
+    u.lastLogin = new Date();
+    await u.save({ validateBeforeSave: false });
+    const token = generateToken(u);
+    res.json({ message: 'Login successful', data: { user: u.toJSON(), token } });
+  } catch (e) { res.status(500).json({ error: 'MFA verification failed' }); }
 });
 
 module.exports = router;

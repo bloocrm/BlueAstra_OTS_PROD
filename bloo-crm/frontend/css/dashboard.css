@@ -4411,3 +4411,19 @@
 .profile-row:last-of-type { border-bottom: none; }
 .profile-label { color: #8a93a3; font-size: 0.85rem; font-weight: 600; }
 .profile-val { color: #16233a; font-weight: 700; text-align: right; word-break: break-word; }
+
+/* ===== MFA method cards + messages ===== */
+.mfa-method { display:flex; align-items:center; gap:14px; border:1px solid #e6ecf5; border-radius:12px; padding:16px; margin-bottom:12px; cursor:pointer; transition:.15s; background:#fff; }
+.mfa-method:hover { border-color: var(--theme-primary); box-shadow:0 6px 18px rgba(22,35,58,0.08); transform:translateY(-1px); }
+.mfa-method.emph { border-color:#dbe6ff; background:linear-gradient(180deg,#f7faff,#fff); }
+.mfa-method.best { border-color:#ffe0b8; background:linear-gradient(180deg,#fff9f0,#fff); }
+.mfa-method .mfa-ic { font-size:30px; line-height:1; }
+.mfa-method .mfa-body { flex:1; }
+.mfa-method .mfa-body h4 { color:#16233a; margin-bottom:4px; font-size:1rem; }
+.mfa-method .mfa-body p { color:#6b7688; font-size:0.85rem; line-height:1.45; }
+.mfa-method .mfa-go { color: var(--theme-primary); font-weight:700; white-space:nowrap; font-size:0.9rem; }
+.mfa-badge { display:inline-block; font-size:0.66rem; font-weight:800; letter-spacing:.5px; text-transform:uppercase; padding:2px 8px; border-radius:20px; background:#e7f0ff; color:#2E86FF; margin-left:6px; vertical-align:middle; }
+.mfa-badge.best { background:#fff0e0; color:#e67e00; }
+.msg { padding:12px 14px; border-radius:10px; font-size:14px; }
+.msg.err { background:#fdecea; color:#b3261e; border:1px solid #f5c6c2; }
+.msg.ok { background:#eafaf1; color:#1b7a43; border:1px solid #b8ead0; }

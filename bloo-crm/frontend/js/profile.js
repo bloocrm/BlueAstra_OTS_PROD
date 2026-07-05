@@ -69,6 +69,7 @@ function openProfileModal() {
     document.getElementById('profileView').style.display = 'block';
     document.getElementById('profileEdit').style.display = 'none';
     document.getElementById('profileModal').classList.add('active');
+    if (typeof mfaUpdateProfileBadge === 'function') mfaUpdateProfileBadge();
 }
 function closeProfileModal() {
     document.getElementById('profileModal').classList.remove('active');

@@ -106,7 +106,14 @@ const userSchema = new mongoose.Schema(
     resetPasswordExpires: { type: Date, select: false },
 
     // ---- Profile photo (small resized data URL) ----
-    avatar: { type: String }
+    avatar: { type: String },
+
+    // ---- Multi-Factor Authentication ----
+    mfaEnabled: { type: Boolean, default: false },
+    mfaMethod: { type: String, enum: ['totp', 'yubikey', 'rsa', null], default: null },
+    mfaSecret: { type: String, select: false },          // active TOTP secret (base32)
+    mfaPendingSecret: { type: String, select: false },   // during enrollment, before verification
+    mfaBackupCodes: { type: [String], select: false, default: [] }  // sha256-hashed one-time codes
   },
   {
     timestamps: true
