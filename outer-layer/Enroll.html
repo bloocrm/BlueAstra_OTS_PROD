@@ -6,371 +6,161 @@
   (including AI tools), is strictly prohibited without express written permission.
 -->
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enroll - RedCRM</title>
-
+<title>Enroll — Bloo CRM</title>
 <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-:root{
-    --primary:#ff1e1e;
-    --primary-dark:#d90000;
-    --light:#fff5f5;
-    --dark:#222;
-    --white:#ffffff;
-    --text:#555;
-}
-
-body{
-    background:var(--light);
-    color:var(--dark);
-}
-
-/* Header */
-
-header{
-    background:var(--white);
-    padding:20px 8%;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    box-shadow:0 2px 10px rgba(0,0,0,0.08);
-    position:sticky;
-    top:0;
-    z-index:100;
-}
-
-.logo{
-    font-size:32px;
-    font-weight:700;
-    color:var(--primary);
-}
-
-nav ul{
-    display:flex;
-    list-style:none;
-    gap:30px;
-}
-
-nav a{
-    text-decoration:none;
-    color:var(--dark);
-    font-weight:600;
-}
-
-.btn{
-    background:var(--primary);
-    color:white;
-    padding:12px 28px;
-    border-radius:8px;
-    text-decoration:none;
-    font-weight:600;
-    transition:.3s;
-    border:none;
-    cursor:pointer;
-    display:inline-block;
-}
-
-.container{
-    width:90%;
-    max-width:1200px;
-    margin:40px auto;
-}
-
-.section-title{
-    text-align:center;
-    margin-bottom:40px;
-}
-
-.section-title h2{
-    color:var(--primary);
-    font-size:36px;
-}
-
-/* Package Cards */
-
-.packages{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-    gap:25px;
-    margin-bottom:50px;
-}
-
-.package{
-    background:white;
-    border-radius:15px;
-    padding:30px;
-    text-align:center;
-    box-shadow:0 5px 20px rgba(0,0,0,.08);
-    transition:.3s;
-    border:3px solid transparent;
-}
-
-.package:hover{
-    transform:translateY(-5px);
-    border-color:var(--primary);
-}
-
-.package h3{
-    font-size:32px;
-    color:var(--primary);
-}
-
-.price{
-    font-size:42px;
-    font-weight:bold;
-    margin:15px 0;
-}
-
-.package ul{
-    list-style:none;
-    margin:20px 0;
-}
-
-.package ul li{
-    padding:8px 0;
-}
-
-.select-package{
-    margin-top:15px;
-}
-
-/* Enrollment Form */
-
-.form-container{
-    background:white;
-    padding:40px;
-    border-radius:15px;
-    box-shadow:0 5px 20px rgba(0,0,0,.08);
-}
-
-.form-container h2{
-    color:var(--primary);
-    margin-bottom:25px;
-}
-
-.form-group{
-    margin-bottom:18px;
-}
-
-.form-group label{
-    display:block;
-    margin-bottom:8px;
-    font-weight:600;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea{
-    width:100%;
-    padding:12px;
-    border:1px solid #ddd;
-    border-radius:8px;
-}
-
-button{
-    background:var(--primary);
-    color:white;
-    border:none;
-    padding:14px 28px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:16px;
-    font-weight:600;
-}
-
-button:hover{
-    background:var(--primary-dark);
-}
-
-.btn:hover{
-    background:var(--primary-dark);
-}
-
-footer{
-    background:#111;
-    color:white;
-    text-align:center;
-    padding:20px;
-    margin-top:50px;
-}
-
-@media(max-width:900px){
-
-nav{
-    display:none;
-}
-
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+:root{ --blue:#2E86FF; --blue-dark:#1666d8; --navy:#16233a; --text:#4a5568; --soft:#eef4ff; }
+body{ background:#fff; color:var(--text); line-height:1.7; -webkit-font-smoothing:antialiased; }
+a{ text-decoration:none; } img{ display:block; max-width:100%; }
+header{ background:rgba(255,255,255,.92); backdrop-filter:saturate(180%) blur(8px); padding:16px 7%; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 0 rgba(16,35,58,.08); position:sticky; top:0; z-index:100; }
+.logo{ font-size:26px; font-weight:800; color:var(--navy); } .logo span{ color:var(--blue); }
+nav ul{ display:flex; list-style:none; gap:30px; } nav a{ color:var(--navy); font-weight:600; } nav a:hover{ color:var(--blue); }
+.btn{ background:var(--blue); color:#fff; padding:12px 26px; border-radius:10px; font-weight:700; display:inline-block; transition:.2s; border:none; cursor:pointer; font-size:16px; }
+.btn:hover{ background:var(--blue-dark); transform:translateY(-1px); }
+.hero{ display:grid; grid-template-columns:1.05fr 1fr; gap:48px; align-items:center; padding:70px 7% 40px; background:linear-gradient(180deg,var(--soft),#fff); }
+.eyebrow{ display:inline-block; background:var(--soft); color:var(--blue); font-weight:800; font-size:12px; letter-spacing:1px; text-transform:uppercase; padding:6px 14px; border-radius:30px; margin-bottom:16px; }
+.hero h1{ font-size:46px; color:var(--navy); line-height:1.1; letter-spacing:-1px; margin-bottom:14px; }
+.hero p{ font-size:18px; max-width:520px; }
+.hero-media{ border-radius:20px; overflow:hidden; box-shadow:0 30px 60px rgba(22,35,58,.18); }
+.hero-media img{ width:100%; height:100%; object-fit:cover; }
+.wrap{ width:92%; max-width:1300px; margin:56px auto; }
+.section-head{ text-align:center; max-width:720px; margin:0 auto 40px; } .section-head h2{ font-size:34px; color:var(--navy); letter-spacing:-.5px; margin-bottom:10px; } .section-head p{ font-size:17px; }
+.packages{ display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:26px; }
+.package{ background:#fff; border:1px solid #e6ecf5; border-radius:18px; padding:32px; box-shadow:0 10px 30px rgba(22,35,58,.06); transition:.25s; position:relative; }
+.package:hover{ transform:translateY(-6px); box-shadow:0 24px 50px rgba(22,35,58,.12); }
+.package.popular{ border:2px solid var(--blue); }
+.tag{ display:inline-block; font-weight:800; font-size:11px; letter-spacing:.6px; text-transform:uppercase; padding:5px 12px; border-radius:20px; margin-bottom:10px; }
+.tag.rec{ background:var(--soft); color:var(--blue); }
+.tag.pop{ background:linear-gradient(135deg,#fff,#c3cad1); color:#2b2f36; border:1px solid #d3d9df; box-shadow:0 2px 6px rgba(0,0,0,.15); }
+.package h3{ color:var(--navy); font-size:26px; }
+.price{ font-size:44px; font-weight:800; color:var(--navy); margin:8px 0 2px; letter-spacing:-1px; } .price span{ font-size:18px; color:#8a93a3; font-weight:600; }
+.per-year{ color:#8a93a3; margin-bottom:16px; font-size:14px; }
+.package ul{ list-style:none; margin:16px 0 22px; } .package li{ position:relative; padding:8px 0 8px 28px; color:var(--navy); font-weight:600; font-size:15px; }
+.package li::before{ content:"✓"; position:absolute; left:0; top:8px; width:18px; height:18px; background:var(--soft); color:var(--blue); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; }
+.form-wrap{ background:#fff; border:1px solid #e6ecf5; border-radius:18px; padding:36px; box-shadow:0 10px 30px rgba(22,35,58,.06); max-width:760px; margin:0 auto; }
+.form-wrap h2{ color:var(--navy); margin-bottom:8px; } .form-wrap p.sub{ margin-bottom:22px; }
+.form-group{ margin-bottom:18px; } label{ display:block; margin-bottom:8px; font-weight:700; color:var(--navy); }
+input,select,textarea{ width:100%; padding:13px; border:1px solid #dbe2ee; border-radius:10px; font-size:15px; }
+input:focus,select:focus,textarea:focus{ outline:none; border-color:var(--blue); }
+footer{ background:#0f1b2e; color:#93a3bd; text-align:center; padding:30px; font-size:14px; } footer a{ color:#cfe0ff; font-weight:600; margin:0 6px; }
+@media(max-width:900px){ nav{ display:none; } .hero{ grid-template-columns:1fr; } .hero h1{ font-size:34px; } }
 </style>
-
 <script>
-// Send the user to the application's payment page with the chosen plan.
-// The payment page (payment.html) has the full payment components:
-// monthly/yearly billing toggle, gateways, consent, and "Select Plan" checkout.
-function choosePackage(planKey){
-    window.location.href = '/pages/payment.html?plan=' + encodeURIComponent(planKey);
-}
-
-// Enrollment form -> continue to the payment page with the chosen plan
-function enrollSubmit(e){
-    e.preventDefault();
-    var plan = document.getElementById('package').value;
-    if(!plan){ alert('Please choose a plan.'); return false; }
-    choosePackage(plan);
-    return false;
-}
+// Continue to the application's payment page (full payment components live there)
+function choosePackage(planKey){ window.location.href = '/pages/payment.html?plan=' + encodeURIComponent(planKey); }
+function enrollSubmit(e){ e.preventDefault(); var plan = document.getElementById('package').value; if(!plan){ alert('Please choose a plan.'); return false; } choosePackage(plan); return false; }
 </script>
-
 </head>
-
 <body>
 
 <header>
-    <div class="logo">RedCRM</div>
-    <nav>
-        <ul>
-            <li><a href="index.html">Dashboard</a></li>
-            <li><a href="Features.html">Features</a></li>
-            <li><a href="Enroll.html">Enroll</a></li>
-            <li><a href="CusomerSupport.html">Customer Support</a></li>
-        </ul>
-    </nav>
-    <div style="display:flex; gap:12px; align-items:center;">
-    <a href="/" class="btn btn-login">Login</a>
+    <div class="logo">Bloo<span>CRM</span></div>
+    <nav><ul>
+        <li><a href="/home">Home</a></li>
+        <li><a href="Features.html">Features</a></li>
+        <li><a href="Enroll.html">Enroll</a></li>
+        <li><a href="CusomerSupport.html">Customer Support</a></li>
+    </ul></nav>
+    <div style="display:flex;gap:12px;align-items:center;"><a href="/" class="btn">Login</a></div>
 </header>
 
-<div class="container">
-
-
-<div class="section-title">
-    <h2>Choose Your CRM Plan</h2>
-    <p>Same pricing as our Pricing &amp; Payments page — billed per user. Yearly = 10 months charged.</p>
-</div>
-
-<div class="packages">
-
-    <div class="package">
-        <h3>BASIC</h3>
-        <div class="price">$10<span style="font-size:18px;color:#888;">/mo</span></div>
-        <div style="color:#888;margin-bottom:10px;">or $100 / year</div>
-        <ul>
-            <li>✓ Spreadsheet &amp; Document Uploads</li>
-            <li>✓ Client &amp; Lead Management</li>
-            <li>✓ Basic Workflow &amp; Financial Goals</li>
-            <li>✓ Email &amp; Calendar Integration</li>
-            <li>✓ Manual Compliance Tracking</li>
-            <li>✓ MFA &amp; Secure Login</li>
-        </ul>
-        <button onclick="choosePackage('basic')">Select Plan</button>
+<section class="hero">
+    <div>
+        <span class="eyebrow">Enroll</span>
+        <h1>Choose the plan that fits your firm</h1>
+        <p>Same pricing as our in-app Pricing &amp; Payments page — billed per user. Yearly is charged
+           as 10 months. Pick a plan and continue securely to checkout.</p>
     </div>
-
-    <div class="package" style="border-color:var(--primary);">
-        <div style="display:inline-block;background:var(--primary);color:#fff;font-weight:700;font-size:12px;padding:4px 12px;border-radius:20px;margin-bottom:8px;">RECOMMENDED</div>
-        <h3>SWIFT AI+</h3>
-        <div class="price">$99<span style="font-size:18px;color:#888;">/mo</span></div>
-        <div style="color:#888;margin-bottom:10px;">or $990 / year</div>
-        <ul>
-            <li>✓ All BASIC features</li>
-            <li>✓ 3rd-Party Financial Analysis APIs</li>
-            <li>✓ Automatic Email Routing</li>
-            <li>✓ AI-Suggested Messages &amp; Emails</li>
-            <li>✓ Compliance Tracking</li>
-            <li>✓ Vendor &amp; Employee Dashboards + Integrations</li>
-            <li>✓ Proposals &amp; AI-Led Sales Pitch</li>
-        </ul>
-        <button onclick="choosePackage('swift-ai-plus')">Select Plan</button>
+    <div class="hero-media">
+        <img alt="Get started with Bloo CRM" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/business-analytics-concept-with-a-man-and-laptop-2026-03-26-02-31-19-utc.jpg">
     </div>
+</section>
 
-    <div class="package" style="border-color:var(--primary);">
-        <div style="display:inline-block;background:linear-gradient(135deg,#ffffff,#c3cad1);color:#2b2f36;font-weight:700;font-size:12px;padding:4px 12px;border-radius:20px;margin-bottom:8px;border:1px solid #d3d9df;box-shadow:0 2px 6px rgba(0,0,0,0.15);">MOST POPULAR</div>
-        <h3>ROCKET AI+</h3>
-        <div class="price">$199<span style="font-size:18px;color:#888;">/mo</span></div>
-        <div style="color:#888;margin-bottom:10px;">or $1990 / year</div>
-        <ul>
-            <li>✓ All SWIFT AI+ features</li>
-            <li>✓ Unlimited AI Capabilities</li>
-            <li>✓ Proposal &amp; Sourcing Integrations</li>
-            <li>✓ AI Knowledge Repository</li>
-            <li>✓ Meeting Recording &amp; Transcripts</li>
-            <li>✓ Client Retention, Cross-Sell &amp; Upsell</li>
-            <li>✓ Priority Support</li>
-        </ul>
-        <button onclick="choosePackage('rocket-ai-plus')">Select Plan</button>
+<div class="wrap">
+    <div class="section-head"><h2>Plans &amp; pricing</h2><p>Start on any plan and upgrade anytime as your practice grows.</p></div>
+    <div class="packages">
+
+        <div class="package">
+            <h3>BASIC</h3>
+            <div class="price">$10<span>/mo</span></div>
+            <div class="per-year">or $100 / year</div>
+            <ul>
+                <li>Spreadsheet &amp; document uploads</li>
+                <li>Client &amp; lead management</li>
+                <li>Basic workflow &amp; financial goals</li>
+                <li>Email &amp; calendar integration</li>
+                <li>Manual compliance tracking</li>
+                <li>MFA &amp; secure login</li>
+            </ul>
+            <button class="btn" style="width:100%;" onclick="choosePackage('basic')">Select Plan</button>
+        </div>
+
+        <div class="package popular">
+            <span class="tag rec">Recommended</span>
+            <h3>SWIFT AI+</h3>
+            <div class="price">$99<span>/mo</span></div>
+            <div class="per-year">or $990 / year</div>
+            <ul>
+                <li>All BASIC features</li>
+                <li>3rd-party financial analysis APIs</li>
+                <li>Automatic email routing</li>
+                <li>AI-suggested messages &amp; emails</li>
+                <li>Compliance tracking</li>
+                <li>Vendor &amp; employee dashboards + integrations</li>
+                <li>Proposals &amp; AI-led sales pitch</li>
+            </ul>
+            <button class="btn" style="width:100%;" onclick="choosePackage('swift-ai-plus')">Select Plan</button>
+        </div>
+
+        <div class="package popular">
+            <span class="tag pop">Most Popular</span>
+            <h3>ROCKET AI+</h3>
+            <div class="price">$199<span>/mo</span></div>
+            <div class="per-year">or $1990 / year</div>
+            <ul>
+                <li>All SWIFT AI+ features</li>
+                <li>Unlimited AI capabilities</li>
+                <li>Proposal &amp; sourcing integrations</li>
+                <li>AI Knowledge Repository</li>
+                <li>Meeting recording &amp; transcripts</li>
+                <li>Retention, cross-sell &amp; upsell</li>
+                <li>Priority support</li>
+            </ul>
+            <button class="btn" style="width:100%;" onclick="choosePackage('rocket-ai-plus')">Select Plan</button>
+        </div>
+
     </div>
-
 </div>
 
-<div class="form-container" id="enrollmentForm">
-
-    <h2>Customer Enrollment Form</h2>
-
-    <form onsubmit="return enrollSubmit(event)">
-
-        <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" name="fullname" required>
-        </div>
-
-        <div class="form-group">
-            <label>Company Name</label>
-            <input type="text" name="company">
-        </div>
-
-        <div class="form-group">
-            <label>Contact Number</label>
-            <input type="tel" name="phone" required>
-        </div>
-
-        <div class="form-group">
-            <label>Email Address</label>
-            <input type="email" name="email" required>
-        </div>
-
-        <div class="form-group">
-            <label>Selected Package</label>
-
-            <select name="package" id="package" required>
-
-                <option value="">Choose Plan</option>
-                <option value="basic">BASIC — $10/mo ($100/yr)</option>
-                <option value="swift-ai-plus">SWIFT AI+ — $99/mo ($990/yr)</option>
-                <option value="rocket-ai-plus">ROCKET AI+ — $199/mo ($1990/yr)</option>
-
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Business Requirements</label>
-
-            <textarea rows="5"
-                      name="requirements"
-                      placeholder="Tell us about your CRM requirements..."></textarea>
-        </div>
-
-        <button type="submit">
-            Continue to Payment
-        </button>
-
-    </form>
-
+<div class="wrap">
+    <div class="form-wrap">
+        <h2>Tell us about your firm</h2>
+        <p class="sub">Optional — share a few details and we'll tailor onboarding, then continue to payment.</p>
+        <form onsubmit="return enrollSubmit(event)">
+            <div class="form-group"><label>Full Name</label><input type="text" name="fullname"></div>
+            <div class="form-group"><label>Firm / Company</label><input type="text" name="company"></div>
+            <div class="form-group"><label>Contact Number</label><input type="tel" name="phone"></div>
+            <div class="form-group"><label>Email Address</label><input type="email" name="email"></div>
+            <div class="form-group">
+                <label>Selected Plan</label>
+                <select name="package" id="package" required>
+                    <option value="">Choose Plan</option>
+                    <option value="basic">BASIC — $10/mo ($100/yr)</option>
+                    <option value="swift-ai-plus">SWIFT AI+ — $99/mo ($990/yr)</option>
+                    <option value="rocket-ai-plus">ROCKET AI+ — $199/mo ($1990/yr)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>What would you like to achieve?</label><textarea rows="4" placeholder="Tell us about your advisory practice…"></textarea></div>
+            <button type="submit" class="btn">Continue to Payment</button>
+        </form>
+    </div>
 </div>
 
-
-</div>
-
-<footer>
-    © 2026 RedCRM Enrollment Center
-</footer>
+<footer>© 2026 Blue Astra Technologies LLP · <a href="/home">Home</a> · <a href="Features.html">Features</a> · <a href="Enroll.html">Enroll</a> · <a href="CusomerSupport.html">Customer Support</a> · <a href="/">Login</a></footer>
 
 </body>
 </html>

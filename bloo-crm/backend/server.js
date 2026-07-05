@@ -293,6 +293,10 @@ app.use(express.static(frontendPath));
 const outerLayerPath = path.join(__dirname, '..', '..', 'outer-layer');
 app.use(express.static(outerLayerPath));
 
+// Marketing website home — /index.html is served by the app, so expose the
+// outer-layer landing at /home (and /website).
+app.get(['/home', '/website'], (req, res) => res.sendFile(path.join(outerLayerPath, 'index.html')));
+
 // SPA fallback: any non-API GET returns index.html
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path === '/health') return next();
