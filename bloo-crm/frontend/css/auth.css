@@ -14,7 +14,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, var(--theme-soft) 0%, #ffffff 100%);
+    background: #ffffff;
     padding: 2rem 1rem;
     position: relative;
     overflow: hidden;
