@@ -93,7 +93,12 @@
 
     <!-- Auth Container -->
     <div id="authContainer" class="auth-container">
-        <!-- Animated blue & multicolor digital dots behind the login box -->
+        <!-- Blurred NYSE video background behind the login box -->
+        <video class="lp-bg-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+            <source src="/videos/nyse-login-bg.mp4" type="video/mp4">
+        </video>
+        <div class="lp-bg-overlay" aria-hidden="true"></div>
+        <!-- Animated blue digital dots over the video -->
         <div class="lp-dots" id="lpDots" aria-hidden="true"></div>
         <!-- Login Form -->
         <div id="loginForm" class="auth-form active">
