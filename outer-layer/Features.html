@@ -198,6 +198,23 @@ footer{
     margin-top:50px;
 }
 
+/* Pictorial showcase */
+.showcase{ width:92%; max-width:1400px; margin:60px auto 20px; }
+.showcase .section-title p{ color:#666; max-width:760px; margin:10px auto 0; }
+.showcase-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:28px; }
+.showcase-card{ background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,.08); transition:.3s; }
+.showcase-card:hover{ transform:translateY(-6px); }
+.shot{ position:relative; width:100%; aspect-ratio:16/10; background:linear-gradient(135deg,#fff5f5,#ffe3e3); overflow:hidden; }
+.shot img, .shot video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.shot-ph{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center; padding:20px; }
+.shot-ph .emoji{ font-size:48px; line-height:1; }
+.shot-ph strong{ font-weight:700; font-size:18px; color:#333; }
+.shot-ph small{ color:#b06; font-size:11px; letter-spacing:.6px; text-transform:uppercase; opacity:.7; }
+.showcase-card .cap{ padding:20px 22px; }
+.showcase-badge{ display:inline-block; background:var(--light); color:var(--primary); font-weight:700; font-size:11px; padding:3px 10px; border-radius:20px; margin-bottom:8px; text-transform:uppercase; letter-spacing:.5px; }
+.showcase-card .cap h3{ color:var(--primary); margin-bottom:8px; font-size:20px; }
+.showcase-card .cap p{ color:#555; font-size:15px; line-height:1.55; }
+
 @media(max-width:900px){
 
 nav{
@@ -232,16 +249,118 @@ nav{
 <section class="hero">
 
 
-<h1>CRM Plans Designed For Every Stage Of Growth</h1>
+<h1>What Bloo CRM Does</h1>
 
 <p>
-    From basic customer relationship management to
-    advanced AI-powered customer retention and lead
-    generation, RedCRM provides the tools your business
-    needs to scale effectively.
+    From client maintenance and 360° client views to AI insights, employee and
+    vendor management, team access control and proposals — see the actual
+    functionality Bloo CRM delivers for financial advisors and wealth managers.
 </p>
 
 
+</section>
+
+<!--
+  PICTORIAL SHOWCASE
+  Each card shows a screenshot/video of a real Bloo CRM feature. Images/videos
+  are optional and load only if present, otherwise a labelled placeholder shows.
+  To wire up your Supabase sample images, either:
+    (a) drop files into outer-layer/images/ with the filenames referenced below, or
+    (b) replace each src with the Supabase public URL, e.g.
+        src="https://<project>.supabase.co/storage/v1/object/public/bloocrm/client-dashboard.png"
+-->
+<section class="showcase">
+    <div class="section-title">
+        <h2>See Bloo CRM In Action</h2>
+        <p>Innovative, purpose-built screens that showcase the right functionality your clients need.</p>
+    </div>
+
+    <div class="showcase-grid">
+
+        <div class="showcase-card">
+            <div class="shot">
+                <div class="shot-ph"><span class="emoji">📊</span><strong>Client Dashboard</strong><small>Preview coming soon</small></div>
+                <img alt="Client Dashboard" src="images/client-dashboard.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
+            </div>
+            <div class="cap"><span class="showcase-badge">Client Maintenance</span><h3>Client Dashboard</h3>
+                <p>Maintain clients with KPIs, quarterly revenue pies, financial goals and 360° client health at a glance.</p></div>
+        </div>
+
+        <div class="showcase-card">
+            <div class="shot">
+                <div class="shot-ph"><span class="emoji">👤</span><strong>Client View &amp; List</strong><small>Preview coming soon</small></div>
+                <img alt="Client View" src="images/client-view.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
+            </div>
+            <div class="cap"><span class="showcase-badge">360° Client View</span><h3>Client View &amp; List</h3>
+                <p>Full client profiles — contact details, documents, investments, KYC, conversations and activity history.</p></div>
+        </div>
+
+        <div class="showcase-card">
+            <div class="shot">
+                <div class="shot-ph"><span class="emoji">🤖</span><strong>AI Insights</strong><small>Preview coming soon</small></div>
+                <img alt="AI Insights" src="images/ai-insights.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
+            </div>
+            <div class="cap"><span class="showcase-badge">Insights</span><h3>AI Insights</h3>
+                <p>AI-powered analytics across sales, retention and engagement, built right into Bloo CRM.</p></div>
+        </div>
+
+        <div class="showcase-card">
+            <div class="shot">
+                <div class="shot-ph"><span class="emoji">🧑‍💼</span><strong>Employee Dashboard</strong><small>Preview coming soon</small></div>
+                <img alt="Employee Dashboard" src="images/employee-dashboard.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
+            </div>
+            <div class="cap"><span class="showcase-badge">People</span><h3>Employee Dashboard</h3>
+                <p>Create and manage employees, roles, managers/backups and PII-secure records with edit &amp; view.</p></div>
+        </div>
+
+        <div class="showcase-card">
+            <div class="shot">
+                <div class="shot-ph"><span class="emoji">🔐</span><strong>Team &amp; Access</strong><small>Preview coming soon</small></div>
+                <img alt="Team Management &amp; Access" src="images/team-access.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
+            </div>
+            <div class="cap"><span class="showcase-badge">Team Management</span><h3>Team &amp; Access Control</h3>
+                <p>Admins create sub-users and grant or revoke access to each section, live.</p></div>
+        </div>
+
+        <div class="showcase-card">
+            <div class="shot">
+                <div class="shot-ph"><span class="emoji">🏢</span><strong>Vendor Management</strong><small>Preview coming soon</small></div>
+                <img alt="Vendor Management" src="images/vendor-management.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
+            </div>
+            <div class="cap"><span class="showcase-badge">Vendors</span><h3>Vendor Management</h3>
+                <p>Vendor KPIs/KRIs, quarterly revenue, per-vendor documents, client/employee mapping and VMS integrations.</p></div>
+        </div>
+
+        <div class="showcase-card">
+            <div class="shot">
+                <div class="shot-ph"><span class="emoji">📝</span><strong>Proposals</strong><small>Preview coming soon</small></div>
+                <img alt="Proposals" src="images/proposals.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
+            </div>
+            <div class="cap"><span class="showcase-badge">RFI / RFQ / RFP</span><h3>Proposals</h3>
+                <p>Generate, assign and send proposals with AI templates and proposal-tool integrations.</p></div>
+        </div>
+
+        <div class="showcase-card">
+            <div class="shot">
+                <div class="shot-ph"><span class="emoji">💬</span><strong>Communications Hub</strong><small>Preview coming soon</small></div>
+                <img alt="Communications Hub" src="images/communications.png" style="display:none;" onload="this.style.display='block';this.previousElementSibling.style.display='none';" onerror="this.remove();">
+            </div>
+            <div class="cap"><span class="showcase-badge">Engage</span><h3>Communications Hub</h3>
+                <p>Email, logged communications and the Meeting Room with recording &amp; AI transcripts.</p></div>
+        </div>
+
+        <div class="showcase-card">
+            <div class="shot">
+                <div class="shot-ph"><span class="emoji">🎬</span><strong>Product Walkthrough</strong><small>Video coming soon</small></div>
+                <video controls preload="none" style="display:none;" onloadeddata="this.style.display='block';this.previousElementSibling.style.display='none';">
+                    <source src="videos/bloocrm-walkthrough.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="cap"><span class="showcase-badge">Walkthrough</span><h3>See It End-to-End</h3>
+                <p>A short video tour of client maintenance, insights, vendors, proposals and team management.</p></div>
+        </div>
+
+    </div>
 </section>
 
 <div class="container">
