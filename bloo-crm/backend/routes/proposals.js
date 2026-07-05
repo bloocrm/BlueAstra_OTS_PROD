@@ -15,6 +15,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 const multer = require('multer');
 const Proposal = require('../models/Proposal');
 const ProposalDocument = require('../models/ProposalDocument');
@@ -219,6 +220,37 @@ router.delete('/documents/:docId', async (req, res) => {
   if (!d) return res.status(404).json({ error: 'Not found' });
   if (d.storedName) { try { fs.unlinkSync(path.join(DOCS_DIR, d.storedName)); } catch (_) {} }
   res.json({ status: 'success', message: 'Deleted' });
+});
+
+// Save a generated template/brochure into MongoDB, gzip-compressed (a few KB)
+router.post('/documents/save-generated', async (req, res) => {
+  try {
+    const b = req.body || {};
+    const text = String(b.content || '');
+    if (!text.trim()) return res.status(400).json({ error: 'No content to save.' });
+    const title = String(b.title || 'Generated Document').slice(0, 200);
+    const type = String(b.type || 'RFI').toUpperCase();
+    const format = ['text', 'word', 'pdf'].includes(b.format) ? b.format : 'text';
+    const gz = zlib.gzipSync(Buffer.from(text, 'utf8'));   // compress
+    const doc = await ProposalDocument.create({
+      userId: req.userId, type, title,
+      originalName: title.replace(/[^a-z0-9]+/gi, '-') + (format === 'word' ? '.doc' : format === 'pdf' ? '.pdf' : '.txt'),
+      source: 'generated', format, encoding: 'gzip', content: gz,
+      size: gz.length, mimetype: 'application/gzip'
+    });
+    res.status(201).json({ status: 'success', document: { docId: doc.docId, title: doc.title, type: doc.type, format: doc.format, size: doc.size, source: doc.source, createdAt: doc.createdAt } });
+  } catch (e) { res.status(500).json({ error: 'Could not save document', message: e.message }); }
+});
+
+// Return the decompressed body of a generated document (for download as word/pdf/text)
+router.get('/documents/:docId/content', async (req, res) => {
+  try {
+    const d = await ProposalDocument.findOne({ userId: req.userId, docId: req.params.docId }).select('+content');
+    if (!d) return res.status(404).json({ error: 'Not found' });
+    if (!d.content) return res.status(400).json({ error: 'This document has no inline content.' });
+    const text = (d.encoding === 'gzip' ? zlib.gunzipSync(d.content) : d.content).toString('utf8');
+    res.json({ status: 'success', title: d.title, type: d.type, format: d.format, content: text });
+  } catch (e) { res.status(500).json({ error: 'Could not read document', message: e.message }); }
 });
 
 module.exports = router;

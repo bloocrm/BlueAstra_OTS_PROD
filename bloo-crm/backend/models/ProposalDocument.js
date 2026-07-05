@@ -18,7 +18,13 @@ const proposalDocSchema = new mongoose.Schema(
     storedName: String,
     mimetype: String,
     size: Number,
-    url: String
+    url: String,
+
+    // Generated brochures/templates stored inline, gzip-compressed (a few KB)
+    source: { type: String, default: 'upload' },   // 'upload' | 'generated'
+    format: { type: String },                       // 'text' | 'word' | 'pdf'
+    encoding: { type: String },                     // 'gzip' when content is compressed
+    content: { type: Buffer, select: false }        // gzip-compressed document body
   },
   { timestamps: true }
 );

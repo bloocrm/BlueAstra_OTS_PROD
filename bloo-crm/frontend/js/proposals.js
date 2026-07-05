@@ -76,11 +76,13 @@ async function proLoadGuide() {
         const res = await apiRequest(`/proposals/guide?type=${_proType}`, { method: 'GET' });
         const g = res.guide || {};
         el.innerHTML = `
-            <p>${escPr(g.definition || '')}</p>
-            ${g.whenToUse ? `<p style="color:#666;"><strong>When to use:</strong> ${escPr(g.whenToUse)}</p>` : ''}
-            ${(g.sections && g.sections.length) ? `<div style="margin-top:8px;"><strong>Key sections to include:</strong><ul>${g.sections.map(s => '<li>' + escPr(s) + '</li>').join('')}</ul></div>` : ''}
-            ${(g.tips && g.tips.length) ? `<div style="margin-top:8px;"><strong>Best-practice tips:</strong><ul>${g.tips.map(s => '<li>' + escPr(s) + '</li>').join('')}</ul></div>` : ''}
-            <div style="font-size:0.72rem;color:#aaa;">${res.source === 'ai' ? 'AI-curated guidance' : 'Standard guidance (enable OpenAI for AI-curated)'}</div>`;
+            <p style="margin-bottom:12px;line-height:1.6;">${escPr(g.definition || '')}</p>
+            ${g.whenToUse ? `<div class="pro-guide-note"><strong>When to use:</strong> ${escPr(g.whenToUse)}</div>` : ''}
+            <div class="pro-guide-cols">
+                ${(g.sections && g.sections.length) ? `<div class="pro-guide-col"><h4><i class="fas fa-list-check"></i> Key sections to include</h4><ul class="pro-guide-list">${g.sections.map(s => '<li>' + escPr(s) + '</li>').join('')}</ul></div>` : ''}
+                ${(g.tips && g.tips.length) ? `<div class="pro-guide-col"><h4><i class="fas fa-lightbulb"></i> Best-practice tips</h4><ul class="pro-guide-list">${g.tips.map(s => '<li>' + escPr(s) + '</li>').join('')}</ul></div>` : ''}
+            </div>
+            <div style="font-size:0.72rem;color:#aaa;margin-top:10px;">${res.source === 'ai' ? 'AI-curated guidance' : 'Standard guidance (enable OpenAI for AI-curated)'}</div>`;
     } catch (e) { el.innerHTML = `<p class="empty-state">Could not load guidance: ${escPr(e.message)}</p>`; }
 }
 
@@ -96,11 +98,15 @@ async function proGenerate() {
             <div style="background:#f8fafc;border-radius:8px;padding:14px;">
                 <div style="font-weight:600;margin-bottom:6px;">${escPr(res.title)}</div>
                 <pre style="white-space:pre-wrap;font-family:inherit;margin:0;max-height:340px;overflow:auto;">${escPr(res.content)}</pre>
-                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="btn btn-sm btn-primary" onclick="proSaveGenerated()"><i class="fas fa-save"></i> Save to Proposals</button>
-                    <button class="btn btn-sm btn-secondary" onclick="proDownloadGenerated()"><i class="fas fa-download"></i> Download</button>
-                    <span style="font-size:0.72rem;color:#aaa;align-self:center;">${res.source === 'ai' ? 'AI-generated' : 'Offline template (enable OpenAI for a tailored version)'}</span>
+                    <button class="btn btn-sm btn-secondary" onclick="proDownloadWord()"><i class="fas fa-file-word"></i> Save as Word</button>
+                    <button class="btn btn-sm btn-secondary" onclick="proDownloadPdf()"><i class="fas fa-file-pdf"></i> Save as PDF</button>
+                    <button class="btn btn-sm btn-secondary" onclick="proSaveGeneratedDoc()"><i class="fas fa-database"></i> Save to Documents</button>
+                    <button class="btn btn-sm" style="background:linear-gradient(135deg,#7C4DFF,#B388FF);color:#fff;border:none;" onclick="proToBrochure()"><i class="fas fa-wand-magic-sparkles"></i> Convert to Brochure</button>
                 </div>
+                <div class="pro-brochure-ask">💡 Want to turn this ${escPr(res.type || _proType)} into a designed brochure? <a href="#" onclick="proToBrochure();return false;">Convert with Brochure Papa →</a></div>
+                <div style="font-size:0.72rem;color:#aaa;margin-top:6px;">${res.source === 'ai' ? 'AI-generated' : 'Offline template (enable OpenAI for a tailored version)'} · Saving to Documents compresses &amp; stores it in the cloud.</div>
             </div>`;
     } catch (e) { el.innerHTML = `<p class="empty-state">Generation failed: ${escPr(e.message)}</p>`; }
 }
@@ -116,11 +122,91 @@ async function proSaveGenerated() {
 }
 function proDownloadGenerated() {
     if (!_proLastGenerated) return;
-    const blob = new Blob([_proLastGenerated.content], { type: 'text/plain' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = (_proLastGenerated.title || 'proposal').replace(/[^a-z0-9]+/gi, '-') + '.txt';
-    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    proDownloadWord();
+}
+
+// ---- Word / PDF export + compressed cloud storage ----
+function _proFile(title) { return (title || 'document').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'document'; }
+function _proDl(name, blob) {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+function _proDocHtml(title, content) {
+    return `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${escPr(title)}</title></head>
+    <body style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#222;">
+    <h2 style="color:#16233a;">${escPr(title)}</h2>
+    <pre style="white-space:pre-wrap;font-family:Calibri,Arial,sans-serif;font-size:11pt;">${escPr(content)}</pre></body></html>`;
+}
+function _proBuildWord(title, content) {
+    _proDl(_proFile(title) + '.doc', new Blob(['﻿' + _proDocHtml(title, content)], { type: 'application/msword' }));
+}
+function _proBuildPdf(title, content) {
+    const ns = window.jspdf || {};
+    const JsPDF = ns.jsPDF;
+    if (!JsPDF) { showNotification('PDF library not loaded — try Word instead.', 'error'); return; }
+    const doc = new JsPDF({ unit: 'pt', format: 'a4' });
+    const margin = 48, W = doc.internal.pageSize.getWidth() - margin * 2, H = doc.internal.pageSize.getHeight() - margin;
+    let y = margin;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.splitTextToSize(title || 'Document', W).forEach(l => { doc.text(l, margin, y); y += 22; });
+    y += 6; doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+    doc.splitTextToSize(content || '', W).forEach(l => { if (y > H) { doc.addPage(); y = margin; } doc.text(l, margin, y); y += 15; });
+    doc.save(_proFile(title) + '.pdf');
+}
+
+// Store a compressed copy in MongoDB (a few KB) — used on any save/download
+async function proSaveToMongo(format) {
+    if (!_proLastGenerated) return;
+    try {
+        await apiRequest('/proposals/documents/save-generated', {
+            method: 'POST',
+            body: { title: _proLastGenerated.title, type: _proType, content: _proLastGenerated.content, format: format || 'text' }
+        });
+        proLoadDocs();
+    } catch (e) { /* non-fatal */ }
+}
+
+async function proSaveGeneratedDoc() {
+    if (!_proLastGenerated) { showNotification('Generate a template first.', 'info'); return; }
+    try {
+        await apiRequest('/proposals/documents/save-generated', { method: 'POST', body: { title: _proLastGenerated.title, type: _proType, content: _proLastGenerated.content, format: 'text' } });
+        showNotification('Saved to Documents — compressed & stored in the cloud.', 'success');
+        proLoadDocs();
+    } catch (e) { showNotification('Could not save: ' + e.message, 'error'); }
+}
+
+function proDownloadWord() {
+    if (!_proLastGenerated) return;
+    _proBuildWord(_proLastGenerated.title, _proLastGenerated.content);
+    proSaveToMongo('word');
+    showNotification('Downloaded Word — a compressed copy was saved to Documents.', 'success');
+}
+function proDownloadPdf() {
+    if (!_proLastGenerated) return;
+    _proBuildPdf(_proLastGenerated.title, _proLastGenerated.content);
+    proSaveToMongo('pdf');
+    showNotification('Downloaded PDF — a compressed copy was saved to Documents.', 'success');
+}
+
+// Ask / convert the generated template into a brochure via Brochure Papa
+function proToBrochure() {
+    if (typeof openBrochurePapa !== 'function') { showNotification('Brochure Papa is unavailable.', 'error'); return; }
+    openBrochurePapa();
+    setTimeout(() => {
+        const t = document.getElementById('bpTopic');
+        const d = document.getElementById('bpDetails');
+        if (t && _proLastGenerated) t.value = _proLastGenerated.title || (_proType + ' brochure');
+        if (d && _proLastGenerated) d.value = (_proLastGenerated.content || '').slice(0, 1500);
+    }, 150);
+}
+
+// Download a saved generated document (word/pdf) from the Documents list
+async function proDownloadDoc(docId, format) {
+    try {
+        const res = await apiRequest('/proposals/documents/' + encodeURIComponent(docId) + '/content', { method: 'GET' });
+        if (format === 'pdf') _proBuildPdf(res.title, res.content);
+        else _proBuildWord(res.title, res.content);
+    } catch (e) { showNotification('Download failed: ' + e.message, 'error'); }
 }
 
 async function proLoadSaved() {
@@ -201,18 +287,25 @@ async function proLoadDocs() {
     try {
         const res = await apiRequest(`/proposals/documents/list?type=${_proType}`, { method: 'GET' });
         const docs = res.documents || [];
-        el.innerHTML = docs.map(d => `
+        el.innerHTML = docs.map(d => {
+            const isGen = d.source === 'generated';
+            const dl = isGen
+                ? `<button class="btn btn-sm btn-primary" onclick="proDownloadDoc('${d.docId}','word')"><i class="fas fa-file-word"></i> Word</button>
+                   <button class="btn btn-sm btn-secondary" onclick="proDownloadDoc('${d.docId}','pdf')"><i class="fas fa-file-pdf"></i> PDF</button>`
+                : `<a class="btn btn-sm btn-primary" href="${d.url}" target="_blank" download><i class="fas fa-download"></i> Download</a>`;
+            return `
             <div class="activity-item">
-                <div class="activity-icon aqua-bg"><i class="fas fa-paperclip"></i></div>
+                <div class="activity-icon ${isGen ? 'blue-bg' : 'aqua-bg'}"><i class="fas ${isGen ? 'fa-file-lines' : 'fa-paperclip'}"></i></div>
                 <div class="activity-content" style="flex:1;">
-                    <div class="activity-title">${escPr(d.originalName)}</div>
-                    <div class="activity-time">${(d.size/1024).toFixed(0)} KB · ${new Date(d.createdAt).toLocaleDateString()}</div>
-                    <div style="margin-top:6px;display:flex;gap:8px;">
-                        <a class="btn btn-sm btn-primary" href="${d.url}" target="_blank" download><i class="fas fa-download"></i> Download</a>
+                    <div class="activity-title">${escPr(d.title || d.originalName)} ${isGen ? '<span style="font-size:0.7em;color:#7C4DFF;font-weight:700;">generated · compressed</span>' : ''}</div>
+                    <div class="activity-time">${(d.size / 1024).toFixed(1)} KB · ${new Date(d.createdAt).toLocaleDateString()}</div>
+                    <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+                        ${dl}
                         <button class="btn btn-sm btn-delete" onclick="proDeleteDoc('${d.docId}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
-            </div>`).join('');
+            </div>`;
+        }).join('');
     } catch (e) { /* ignore */ }
 }
 async function proDeleteDoc(id) {

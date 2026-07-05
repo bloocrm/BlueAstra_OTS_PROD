@@ -1513,14 +1513,14 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                 </div>
 
                 <div id="proposals" class="view">
-                    <div class="view-header">
+                    <div class="view-header" style="flex-wrap:wrap;gap:12px;">
                         <h3><i class="fas fa-file-signature"></i> Proposals — RFI / RFQ / RFP</h3>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                            <button class="btn btn-secondary" onclick="openBrochurePapa()" style="background:linear-gradient(135deg,#7C4DFF,#B388FF);color:#fff;border:none;"><i class="fas fa-wand-magic-sparkles"></i> Brochure Papa</button>
-                            <button class="btn btn-secondary" onclick="proAssignEmployeeTop()"><i class="fas fa-user-plus"></i> Assign Employee <span class="pro-lock">🔒</span></button>
-                            <button class="btn btn-primary" onclick="proSendTo('lead')"><i class="fas fa-paper-plane"></i> Send to Lead <span class="pro-lock">🔒</span></button>
-                            <button class="btn btn-primary" onclick="proSendTo('client')"><i class="fas fa-paper-plane"></i> Send to Client <span class="pro-lock">🔒</span></button>
-                        </div>
+                    </div>
+                    <div class="proposals-toolbar">
+                        <button class="btn btn-sm" onclick="openBrochurePapa()" style="background:linear-gradient(135deg,#7C4DFF,#B388FF);color:#fff;border:none;"><i class="fas fa-wand-magic-sparkles"></i> Brochure Papa</button>
+                        <button class="btn btn-sm btn-secondary" onclick="proAssignEmployeeTop()"><i class="fas fa-user-plus"></i> Assign Employee <span class="pro-lock">🔒</span></button>
+                        <button class="btn btn-sm btn-primary" onclick="proSendTo('lead')"><i class="fas fa-paper-plane"></i> Send to Lead <span class="pro-lock">🔒</span></button>
+                        <button class="btn btn-sm btn-primary" onclick="proSendTo('client')"><i class="fas fa-paper-plane"></i> Send to Client <span class="pro-lock">🔒</span></button>
                     </div>
 
                     <div class="hr-subnav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
@@ -3128,6 +3128,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/qrcode.min.js"></script>
     <script src="js/mfa.js"></script>
     <script src="js/brochure.js"></script>
+    <script src="js/jspdf.umd.min.js"></script>
     <script src="js/ai-tools.js"></script>
     <script src="js/ai-assist.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
