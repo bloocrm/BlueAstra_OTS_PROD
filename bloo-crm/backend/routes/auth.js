@@ -15,7 +15,24 @@ const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const emailService = require('../utils/email-service');
+const { verifyToken } = require('../middleware/auth');
 const router = express.Router();
+
+// Email sent when a user changes their profile details
+const profileUpdatedEmailHTML = (name, changedFields, when) => `
+  <div style="font-family:Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#16233a;">
+    <div style="background:#2E86FF;color:#fff;padding:22px 24px;border-radius:12px 12px 0 0;">
+      <h2 style="margin:0;">Bloo CRM — Profile Updated</h2>
+    </div>
+    <div style="border:1px solid #e6ecf5;border-top:none;padding:26px 24px;border-radius:0 0 12px 12px;">
+      <p>Hi ${name || 'there'},</p>
+      <p>This is a confirmation that your Bloo CRM profile was updated on <strong>${when}</strong>.</p>
+      <p>Details changed: <strong>${(changedFields || []).join(', ') || 'profile details'}</strong>.</p>
+      <p style="font-size:13px;color:#6b7688;">If you did not make this change, please
+         <a href="https://bloocrm.com/pages/forgot-password.html" style="color:#2E86FF;">reset your password</a>
+         immediately and contact <a href="mailto:support@bloocrm.com" style="color:#2E86FF;">support@bloocrm.com</a>.</p>
+    </div>
+  </div>`;
 
 // Hash a reset token before storing/looking it up (never store the raw token)
 const hashToken = (t) => crypto.createHash('sha256').update(String(t)).digest('hex');
@@ -423,5 +440,61 @@ router.post(
     }
   }
 );
+
+// ===================================================================
+// PROFILE — view is via GET /profile above; this updates the logged-in
+// user's own account details (from sign-up) and emails a change alert.
+// ===================================================================
+router.put('/profile', verifyToken, async (req, res) => {
+  try {
+    const userId = req.actualUserId || req.userId;   // the logged-in user's own id
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const b = req.body || {};
+    const changed = [];
+    const setIf = (field, label) => {
+      if (b[field] !== undefined && b[field] !== null) {
+        const nv = String(b[field]).trim();
+        if (nv && nv !== (user[field] || '')) { user[field] = nv; changed.push(label); }
+      }
+    };
+
+    // Email change needs validation + uniqueness (it's the login identity)
+    if (b.email !== undefined) {
+      const newEmail = String(b.email).toLowerCase().trim();
+      if (newEmail && newEmail !== user.email) {
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(newEmail)) return res.status(400).json({ error: 'Please enter a valid email address.' });
+        const exists = await User.findOne({ email: newEmail, _id: { $ne: user._id } });
+        if (exists) return res.status(409).json({ error: 'That email is already in use by another account.' });
+        user.email = newEmail; changed.push('email');
+      }
+    }
+    setIf('name', 'name');
+    setIf('phone', 'phone');
+    setIf('company', 'company');
+
+    if (!changed.length) return res.json({ message: 'No changes to save.', data: user.toJSON() });
+
+    await user.save({ validateBeforeSave: false });
+
+    const when = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }) + ' UTC';
+    try {
+      await emailService.sendEmail({
+        to: user.email,
+        subject: 'Your Bloo CRM profile was updated',
+        html: profileUpdatedEmailHTML(user.name, changed, when),
+        text: `Your Bloo CRM profile was updated on ${when}. Changed: ${changed.join(', ')}. If this wasn't you, contact support@bloocrm.com.`
+      });
+    } catch (mailErr) {
+      console.error('Profile-update email failed:', mailErr.message);
+    }
+
+    return res.json({ message: 'Profile updated successfully.', data: user.toJSON(), changed, updatedAt: when });
+  } catch (error) {
+    console.error('profile update error:', error);
+    return res.status(500).json({ error: 'Could not update your profile. Please try again.' });
+  }
+});
 
 module.exports = router;

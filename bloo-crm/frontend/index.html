@@ -314,12 +314,53 @@
                     <h1 id="pageTitle">Dashboard</h1>
                 </div>
                 <div class="header-right">
-                    <div class="user-info">
+                    <div class="user-info" id="userInfo" onclick="toggleUserMenu(event)" style="cursor:pointer;position:relative;">
                         <span id="userName">User</span>
                         <img src="https://via.placeholder.com/40" alt="Profile" class="profile-avatar">
+                        <i class="fas fa-chevron-down" style="font-size:0.7rem;margin-left:4px;color:#999;"></i>
+                        <div id="userMenu" class="user-menu">
+                            <a href="#" onclick="openProfileModal();return false;"><i class="fas fa-id-card"></i> View Profile</a>
+                            <a href="#" onclick="handleLogout();return false;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
                     </div>
                 </div>
             </header>
+
+            <!-- Profile Modal -->
+            <div id="profileModal" class="modal">
+                <div class="modal-content" style="max-width:540px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-id-card"></i> My Profile</h2>
+                        <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+                    </div>
+
+                    <!-- Read-only view -->
+                    <div id="profileView">
+                        <div class="profile-row"><span class="profile-label">Full Name</span><span class="profile-val" id="pvName">—</span></div>
+                        <div class="profile-row"><span class="profile-label">Email</span><span class="profile-val" id="pvEmail">—</span></div>
+                        <div class="profile-row"><span class="profile-label">Contact Number</span><span class="profile-val" id="pvPhone">—</span></div>
+                        <div class="profile-row"><span class="profile-label">Company</span><span class="profile-val" id="pvCompany">—</span></div>
+                        <div class="profile-row"><span class="profile-label">Plan</span><span class="profile-val" id="pvPlan">—</span></div>
+                        <div class="modal-actions">
+                            <button class="btn btn-primary" onclick="startProfileEdit()"><i class="fas fa-edit"></i> Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Edit form -->
+                    <div id="profileEdit" style="display:none;">
+                        <form onsubmit="return saveProfile(event)">
+                            <div class="form-group"><label>Full Name</label><input type="text" id="peName" required></div>
+                            <div class="form-group"><label>Email</label><input type="email" id="peEmail" required></div>
+                            <div class="form-group"><label>Contact Number</label><input type="tel" id="pePhone" required></div>
+                            <div class="form-group"><label>Company</label><input type="text" id="peCompany"></div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onclick="cancelProfileEdit()">Cancel</button>
+                                <button type="submit" class="btn btn-primary" id="peSaveBtn"><i class="fas fa-save"></i> Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             <!-- Views Container -->
             <div class="views-container">
@@ -2917,6 +2958,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
     <script src="js/integrations.js"></script>
     <script src="js/vendors.js"></script>
     <script src="js/team.js"></script>
+    <script src="js/profile.js"></script>
     <script src="js/ai-tools.js"></script>
     <script src="js/ai-assist.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>

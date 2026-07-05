@@ -4388,3 +4388,26 @@
         font-size: 1rem;
     }
 }
+
+/* ===== User dropdown menu + profile modal ===== */
+.user-menu {
+    display: none; position: absolute; top: 120%; right: 0; min-width: 190px;
+    background: #fff; border: 1px solid #e6ecf5; border-radius: 10px;
+    box-shadow: 0 12px 30px rgba(16,35,58,0.14); padding: 6px; z-index: 500;
+}
+.user-menu.open { display: block; }
+.user-menu a {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    color: #16233a; text-decoration: none; font-size: 0.9rem; font-weight: 600;
+    border-radius: 8px;
+}
+.user-menu a:hover { background: var(--theme-soft); color: var(--theme-primary); }
+.user-menu a i { width: 16px; color: var(--theme-primary); }
+
+.profile-row {
+    display: flex; justify-content: space-between; gap: 14px; align-items: center;
+    padding: 13px 4px; border-bottom: 1px solid #eef2f7;
+}
+.profile-row:last-of-type { border-bottom: none; }
+.profile-label { color: #8a93a3; font-size: 0.85rem; font-weight: 600; }
+.profile-val { color: #16233a; font-weight: 700; text-align: right; word-break: break-word; }
