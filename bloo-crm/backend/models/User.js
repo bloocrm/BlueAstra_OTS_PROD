@@ -99,7 +99,11 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-    lockUntil: Date
+    lockUntil: Date,
+
+    // ---- Password reset ----
+    resetPasswordToken: { type: String, select: false },   // sha256 hash of the emailed token
+    resetPasswordExpires: { type: Date, select: false }
   },
   {
     timestamps: true
