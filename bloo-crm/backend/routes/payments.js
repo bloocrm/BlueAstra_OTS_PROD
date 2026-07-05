@@ -433,6 +433,7 @@ router.post('/verify', verifyToken, async (req, res) => {
     // Update user plan
     const user = await User.findById(req.userId);
     user.plan = order.plan;
+    user.paymentPending = false;   // member has now paid for their plan
     user.billingCycle = order.billingCycle;
     user.planStartDate = new Date();
 
@@ -497,6 +498,7 @@ router.get('/paypal-callback', verifyToken, async (req, res) => {
       // Update user plan
       const user = await User.findById(req.userId);
       user.plan = order.plan;
+      user.paymentPending = false;   // member has now paid for their plan
       user.billingCycle = order.billingCycle;
       user.planStartDate = new Date();
 

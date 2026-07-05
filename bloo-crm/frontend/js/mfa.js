@@ -132,6 +132,10 @@ async function submitMfaLogin(event) {
         localStorage.setItem('authToken', token);
         localStorage.setItem('currentUser', JSON.stringify(user));
         document.getElementById('mfaLoginModal').classList.remove('active');
+        if (user.paymentPending) {
+            window.location.href = '/pages/payment.html?plan=' + (user.plan || 'basic');
+            return;
+        }
         showNotification('Login successful!', 'success');
         showDashboard();
     } catch (e) {

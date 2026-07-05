@@ -93,6 +93,13 @@ async function handleLogin(event) {
         localStorage.setItem('authToken', token);
         localStorage.setItem('currentUser', JSON.stringify(user));
 
+        // Member must pay for the plan chosen by their admin before entering the app
+        if (user.paymentPending) {
+            showNotification('Please complete payment for your plan to continue.', 'info');
+            window.location.href = '/pages/payment.html?plan=' + (user.plan || 'basic');
+            return;
+        }
+
         showNotification('Login successful!', 'success');
         showDashboard();
     } catch (error) {

@@ -108,6 +108,9 @@ const userSchema = new mongoose.Schema(
     // ---- Profile photo (small resized data URL) ----
     avatar: { type: String },
 
+    // ---- Billing: member must pay for the plan chosen by their admin ----
+    paymentPending: { type: Boolean, default: false },
+
     // ---- Multi-Factor Authentication ----
     mfaEnabled: { type: Boolean, default: false },
     mfaMethod: { type: String, enum: ['totp', 'yubikey', 'rsa', null], default: null },

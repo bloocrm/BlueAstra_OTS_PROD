@@ -33,16 +33,20 @@ router.get('/me', (req, res) => {
 // Everything below is admin-only
 router.use(requireWorkspaceAdmin);
 
+const PLAN_KEYS = ['basic', 'swift-ai-plus', 'rocket-ai-plus'];
+
 // List members under this admin
 router.get('/members', async (req, res) => {
   try {
     const members = await User.find({ parentUserId: req.actualUserId, role: 'member' })
-      .select('name email permissions isActive lastLogin createdAt').sort({ createdAt: -1 }).lean();
+      .select('name email permissions isActive lastLogin createdAt plan paymentPending').sort({ createdAt: -1 }).lean();
+    const base = (process.env.APP_URL || 'https://bloocrm.com').replace(/\/+$/, '');
+    members.forEach(m => { m.paymentLink = `${base}/pages/payment.html?plan=${m.plan || 'basic'}`; });
     res.json({ status: 'success', sections: SECTIONS, count: members.length, members });
   } catch (e) { res.status(500).json({ error: 'Failed to list members', message: e.message }); }
 });
 
-// Create a member
+// Create a member (with a plan the member must pay for on first login)
 router.post('/members', async (req, res) => {
   try {
     const b = req.body || {};
@@ -51,6 +55,7 @@ router.post('/members', async (req, res) => {
     if (exists) return res.status(409).json({ error: 'A user with this email already exists' });
 
     const permissions = Array.isArray(b.permissions) ? b.permissions.filter(p => SECTIONS.includes(p)) : [];
+    const plan = PLAN_KEYS.includes(b.plan) ? b.plan : 'basic';
     const member = new User({
       name: b.name.trim(),
       email: b.email.toLowerCase().trim(),
@@ -60,10 +65,16 @@ router.post('/members', async (req, res) => {
       parentUserId: req.actualUserId,
       permissions,
       isActive: true,
-      plan: 'basic'
+      plan,
+      paymentPending: true           // member pays on first login (can change plan there)
     });
     await member.save();
-    res.status(201).json({ status: 'success', member: { id: member._id, name: member.name, email: member.email, permissions: member.permissions, isActive: member.isActive } });
+    const base = (process.env.APP_URL || 'https://bloocrm.com').replace(/\/+$/, '');
+    res.status(201).json({
+      status: 'success',
+      member: { id: member._id, name: member.name, email: member.email, permissions: member.permissions, isActive: member.isActive, plan: member.plan, paymentPending: member.paymentPending },
+      paymentLink: `${base}/pages/payment.html?plan=${member.plan}`
+    });
   } catch (e) { res.status(500).json({ error: 'Failed to create member', message: e.message }); }
 });
 

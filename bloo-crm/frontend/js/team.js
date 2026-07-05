@@ -42,6 +42,11 @@ function renderTeam(members) {
             <div class="activity-content" style="flex:1;">
                 <div class="activity-title">${escT(m.name)} <span style="font-size:0.75em;color:#888;">${escT(m.email)}</span>
                     <span style="font-size:0.72em;color:${m.isActive ? '#2ecc71' : '#e67e22'};">${m.isActive ? 'ACTIVE' : 'SUSPENDED'}</span></div>
+                <div class="activity-time">Plan: <strong>${PLAN_LABEL[m.plan] || (m.plan || 'BASIC')}</strong>
+                    ${m.paymentPending
+                        ? `<span style="color:#e67e22;font-weight:700;"> · Payment pending</span> · <a href="${m.paymentLink || '#'}" target="_blank" style="color:var(--theme-primary);font-weight:700;">Payment link</a>`
+                        : `<span style="color:#2ecc71;font-weight:700;"> · Paid</span>`}
+                </div>
                 <div class="activity-time">Access: ${(m.permissions && m.permissions.length) ? m.permissions.map(p => labelFor(p)).join(', ') : 'none granted'}</div>
                 <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="btn btn-sm btn-secondary" onclick="editMemberPerms('${m.id}')"><i class="fas fa-key"></i> Edit Access</button>
@@ -64,15 +69,22 @@ function openMemberModal() {
 }
 function closeMemberModal() { document.getElementById('memberModal').classList.remove('active'); }
 
+const PLAN_LABEL = { 'basic': 'BASIC', 'swift-ai-plus': 'SWIFT AI+', 'rocket-ai-plus': 'ROCKET AI+' };
+
 async function submitMember(event) {
     event.preventDefault();
     const v = id => (document.getElementById(id)?.value || '').trim();
     const permissions = Array.from(document.querySelectorAll('#memberPermsGrid .mperm:checked')).map(c => c.value);
+    const plan = v('memberPlan') || 'basic';
     try {
-        await apiRequest('/team/members', { method: 'POST', body: { name: v('memberName'), email: v('memberEmail'), password: v('memberPassword'), permissions } });
-        showNotification('User created', 'success');
+        const res = await apiRequest('/team/members', { method: 'POST', body: { name: v('memberName'), email: v('memberEmail'), password: v('memberPassword'), permissions, plan } });
+        showNotification(`User created on the ${PLAN_LABEL[plan] || plan} plan.`, 'success');
         closeMemberModal();
         loadTeam();
+        // Show the payment note + link for this new user
+        if (res.paymentLink) {
+            alert(`User created.\n\nPayment required: this user is on the ${PLAN_LABEL[plan] || plan} plan and must complete payment.\n\nWhen they log in they'll be taken to the Pricing & Payments page automatically. You can also share this payment link:\n\n${res.paymentLink}`);
+        }
     } catch (e) { showNotification(`Could not create user: ${e.message}`, 'error'); }
 }
 
