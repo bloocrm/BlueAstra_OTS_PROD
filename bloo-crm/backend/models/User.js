@@ -103,7 +103,10 @@ const userSchema = new mongoose.Schema(
 
     // ---- Password reset ----
     resetPasswordToken: { type: String, select: false },   // sha256 hash of the emailed token
-    resetPasswordExpires: { type: Date, select: false }
+    resetPasswordExpires: { type: Date, select: false },
+
+    // ---- Profile photo (small resized data URL) ----
+    avatar: { type: String }
   },
   {
     timestamps: true

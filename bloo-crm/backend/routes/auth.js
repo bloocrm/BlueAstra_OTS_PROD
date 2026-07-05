@@ -474,6 +474,17 @@ router.put('/profile', verifyToken, async (req, res) => {
     setIf('phone', 'phone');
     setIf('company', 'company');
 
+    // Profile photo: small resized data URL (validated + size-capped)
+    if (b.avatar !== undefined && typeof b.avatar === 'string' && b.avatar !== (user.avatar || '')) {
+      if (b.avatar && !/^data:image\/(png|jpe?g|webp);base64,/.test(b.avatar)) {
+        return res.status(400).json({ error: 'Invalid image format. Please upload a PNG or JPEG.' });
+      }
+      if (b.avatar.length > 700000) { // ~500KB after base64 — resized client-side well below this
+        return res.status(400).json({ error: 'Image is too large. Please choose a smaller photo.' });
+      }
+      user.avatar = b.avatar; changed.push('profile photo');
+    }
+
     if (!changed.length) return res.json({ message: 'No changes to save.', data: user.toJSON() });
 
     await user.save({ validateBeforeSave: false });

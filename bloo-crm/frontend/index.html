@@ -129,10 +129,6 @@
 
                 <div class="auth-options">
                     <div class="auth-card">
-                        <h4>OTP Authentication</h4>
-                        <p>Login using mobile OTP verification.</p>
-                    </div>
-                    <div class="auth-card">
                         <h4>Multi-Factor Authentication</h4>
                         <p>Enhanced security for advisors and HNI clients.</p>
                     </div>
@@ -316,7 +312,7 @@
                 <div class="header-right">
                     <div class="user-info" id="userInfo" onclick="toggleUserMenu(event)" style="cursor:pointer;position:relative;">
                         <span id="userName">User</span>
-                        <img src="https://via.placeholder.com/40" alt="Profile" class="profile-avatar">
+                        <img id="topAvatar" src="https://via.placeholder.com/40" alt="Profile" class="profile-avatar">
                         <i class="fas fa-chevron-down" style="font-size:0.7rem;margin-left:4px;color:#999;"></i>
                         <div id="userMenu" class="user-menu">
                             <a href="#" onclick="openProfileModal();return false;"><i class="fas fa-id-card"></i> View Profile</a>
@@ -336,6 +332,9 @@
 
                     <!-- Read-only view -->
                     <div id="profileView">
+                        <div style="text-align:center;margin-bottom:16px;">
+                            <img id="pvAvatar" src="https://via.placeholder.com/96" alt="Profile photo" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--theme-soft);">
+                        </div>
                         <div class="profile-row"><span class="profile-label">Full Name</span><span class="profile-val" id="pvName">—</span></div>
                         <div class="profile-row"><span class="profile-label">Email</span><span class="profile-val" id="pvEmail">—</span></div>
                         <div class="profile-row"><span class="profile-label">Contact Number</span><span class="profile-val" id="pvPhone">—</span></div>
@@ -349,6 +348,13 @@
                     <!-- Edit form -->
                     <div id="profileEdit" style="display:none;">
                         <form onsubmit="return saveProfile(event)">
+                            <div style="text-align:center;margin-bottom:14px;">
+                                <img id="peAvatarPreview" src="https://via.placeholder.com/96" alt="Photo preview" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--theme-soft);">
+                                <div style="margin-top:8px;">
+                                    <label for="peAvatarFile" class="btn btn-sm btn-secondary" style="cursor:pointer;"><i class="fas fa-camera"></i> Upload Photo</label>
+                                    <input type="file" id="peAvatarFile" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="onAvatarChosen(event)">
+                                </div>
+                            </div>
                             <div class="form-group"><label>Full Name</label><input type="text" id="peName" required></div>
                             <div class="form-group"><label>Email</label><input type="email" id="peEmail" required></div>
                             <div class="form-group"><label>Contact Number</label><input type="tel" id="pePhone" required></div>

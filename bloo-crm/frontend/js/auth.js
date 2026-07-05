@@ -179,6 +179,8 @@ function loadUserData() {
     if (currentUser.name) {
         document.getElementById('userName').textContent = currentUser.name;
     }
+    const av = document.getElementById('topAvatar');
+    if (av) av.src = currentUser.avatar || 'https://via.placeholder.com/40';
 }
 
 // Handle logout

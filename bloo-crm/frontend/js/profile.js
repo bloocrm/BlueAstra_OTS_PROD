@@ -25,6 +25,42 @@ function _profileUser() {
 }
 
 const PLAN_LABELS = { 'basic': 'Basic CRM', 'swift-ai-plus': 'SWIFT AI+', 'rocket-ai-plus': 'ROCKET AI+', 'premium': 'Premium CRM' };
+const AVATAR_PLACEHOLDER = 'https://via.placeholder.com/96';
+let _pendingAvatar = null;   // resized data URL awaiting save
+
+// Reflect the current user's avatar in the top-bar circle
+function applyTopAvatar() {
+    const u = _profileUser();
+    const img = document.getElementById('topAvatar');
+    if (img) img.src = u.avatar || 'https://via.placeholder.com/40';
+}
+document.addEventListener('DOMContentLoaded', applyTopAvatar);
+
+// Resize a chosen image to a small square data URL (keeps it light in MongoDB)
+function onAvatarChosen(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!/^image\/(png|jpe?g|webp)$/.test(file.type)) { showNotification('Please choose a PNG or JPEG image.', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+        const img = new Image();
+        img.onload = function () {
+            const size = 220;
+            const canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            // center-crop to a square, then draw
+            const min = Math.min(img.width, img.height);
+            const sx = (img.width - min) / 2, sy = (img.height - min) / 2;
+            ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+            _pendingAvatar = canvas.toDataURL('image/jpeg', 0.85);
+            const prev = document.getElementById('peAvatarPreview');
+            if (prev) prev.src = _pendingAvatar;
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+}
 
 function openProfileModal() {
     const m = document.getElementById('userMenu'); if (m) m.classList.remove('open');
@@ -48,6 +84,9 @@ function renderProfileView() {
     set('pvPhone', u.phone);
     set('pvCompany', u.company);
     set('pvPlan', PLAN_LABELS[u.plan] || u.plan || 'Basic CRM');
+    const av = document.getElementById('pvAvatar');
+    if (av) av.src = u.avatar || AVATAR_PLACEHOLDER;
+    applyTopAvatar();
 }
 
 function startProfileEdit() {
@@ -57,6 +96,10 @@ function startProfileEdit() {
     val('peEmail', u.email);
     val('pePhone', u.phone);
     val('peCompany', u.company);
+    _pendingAvatar = null;
+    const prev = document.getElementById('peAvatarPreview');
+    if (prev) prev.src = u.avatar || AVATAR_PLACEHOLDER;
+    const fileEl = document.getElementById('peAvatarFile'); if (fileEl) fileEl.value = '';
     document.getElementById('profileView').style.display = 'none';
     document.getElementById('profileEdit').style.display = 'block';
 }
@@ -69,6 +112,7 @@ async function saveProfile(event) {
     event.preventDefault();
     const v = id => (document.getElementById(id)?.value || '').trim();
     const body = { name: v('peName'), email: v('peEmail'), phone: v('pePhone'), company: v('peCompany') };
+    if (_pendingAvatar) body.avatar = _pendingAvatar;
     if (!body.name || !body.email || !body.phone) {
         showNotification('Name, email and contact number are required.', 'error');
         return false;
@@ -83,6 +127,7 @@ async function saveProfile(event) {
             const nameEl = document.getElementById('userName');
             if (nameEl && res.data.name) nameEl.textContent = res.data.name;
         }
+        _pendingAvatar = null;
         renderProfileView();
         cancelProfileEdit();
         const changed = (res.changed && res.changed.length) ? ` (${res.changed.join(', ')})` : '';
