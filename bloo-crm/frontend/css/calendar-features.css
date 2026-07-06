@@ -64,6 +64,46 @@ body { background: var(--cf-bg) !important; color: var(--cf-text); }
 .btn-icon-small:hover { background: var(--cf-soft) !important; border-color: var(--cf-blue) !important; }
 .modal-content { border-radius: 18px !important; box-shadow: 0 30px 80px rgba(16,35,58,0.28) !important; }
 
+/* ============================================================
+   Month / Week / Day view interiors — Features look
+   (shape, spacing, typography; provider colours preserved)
+   ============================================================ */
+
+/* Weekday header row */
+.calendar-weekdays { background: #fbfcfe !important; border-bottom: 1px solid var(--cf-border) !important; }
+.weekday { color: #8a93a3 !important; text-transform: uppercase; letter-spacing: .5px; font-size: .72rem; font-weight: 700; }
+
+/* ---- Month view ---- */
+.calendar-grid, .calendar-days { background: #fff !important; }
+.day-cell { border: 1px solid #f0f3f8 !important; transition: background .12s ease; }
+.day-cell:hover { background: var(--cf-soft) !important; }
+.day-cell.other-month { background: #fafbfd !important; }
+.day-number { color: var(--cf-navy) !important; font-weight: 600; }
+.day-cell.other-month .day-number { color: #c3ccd8 !important; }
+.day-cell.today { background: var(--cf-soft) !important; box-shadow: inset 0 0 0 2px var(--cf-blue); }
+.day-cell.today .day-number { background: var(--cf-blue) !important; color: #fff !important; border-radius: 8px; padding: 1px 7px; }
+.day-cell.selected { box-shadow: inset 0 0 0 2px var(--cf-blue-dark); }
+
+/* Event chips (month) — refine shape, keep provider colour */
+.day-event { border-radius: 7px !important; padding: 3px 8px !important; font-size: .76rem !important; font-weight: 600; box-shadow: 0 1px 3px rgba(16,35,58,0.10); transition: transform .12s ease, box-shadow .15s ease; }
+.day-event:hover { transform: translateY(-1px); box-shadow: 0 5px 12px rgba(16,35,58,0.16); }
+.event-count { color: var(--cf-blue) !important; font-weight: 700; font-size: .72rem; }
+
+/* ---- Week view ---- */
+.week-day-cell { border: 1px solid #f0f3f8 !important; background: #fff !important; border-radius: 12px; overflow: hidden; }
+.week-day-header { background: #fbfcfe !important; color: var(--cf-navy) !important; border-bottom: 1px solid var(--cf-border) !important; font-weight: 700; }
+.week-event { border-radius: 9px !important; padding: 6px 10px !important; font-size: .8rem; box-shadow: 0 2px 6px rgba(16,35,58,0.10); transition: transform .12s ease, box-shadow .15s ease; }
+.week-event:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(16,35,58,0.16); }
+
+/* ---- Day (full) view ---- */
+.full-day-cell { background: #fff !important; border: 1px solid var(--cf-border) !important; border-radius: 16px; box-shadow: 0 6px 22px rgba(16,35,58,0.06); }
+.full-day-header h2 { color: var(--cf-navy) !important; letter-spacing: -.3px; }
+.full-day-events-list { padding: 6px 0; }
+.full-day-event { border-radius: 12px !important; padding: 12px 14px !important; box-shadow: 0 2px 8px rgba(16,35,58,0.08); transition: transform .15s ease, box-shadow .2s ease; }
+.full-day-event:hover { transform: translateX(2px); box-shadow: 0 8px 18px rgba(16,35,58,0.14); }
+.full-day-event strong { color: var(--cf-navy) !important; }
+.full-day-events-list .empty-state { color: #8a93a3 !important; }
+
 /* Scrollbars */
-.calendar-sidebar ::-webkit-scrollbar { width: 8px; }
-.calendar-sidebar ::-webkit-scrollbar-thumb { background: #d7dfea; border-radius: 8px; }
+.calendar-sidebar ::-webkit-scrollbar, .calendar-main ::-webkit-scrollbar { width: 9px; height: 9px; }
+.calendar-sidebar ::-webkit-scrollbar-thumb, .calendar-main ::-webkit-scrollbar-thumb { background: #d7dfea; border-radius: 8px; }
