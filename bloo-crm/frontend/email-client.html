@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="css/email-client.css">
     <link rel="stylesheet" href="css/smtp-provider-modal.css">
     <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/email-features.css">
 </head>
 <body>
     <div class="email-client-container">
@@ -44,6 +45,21 @@
                     <span class="folder-name">Starred</span>
                     <span class="folder-count" id="starredCount">0</span>
                 </div>
+                <div class="folder-item" data-folder="archive">
+                    <span class="folder-icon">🗄️</span>
+                    <span class="folder-name">Archive</span>
+                    <span class="folder-count" id="archiveCount">0</span>
+                </div>
+                <div class="folder-item" data-folder="conversation-history">
+                    <span class="folder-icon">💬</span>
+                    <span class="folder-name">Conversation History</span>
+                    <span class="folder-count" id="conversationCount">0</span>
+                </div>
+                <div class="folder-item" data-folder="notes">
+                    <span class="folder-icon">🗒️</span>
+                    <span class="folder-name">Notes</span>
+                    <span class="folder-count" id="notesCount">0</span>
+                </div>
                 <div class="folder-item" data-folder="sent">
                     <span class="folder-icon">📤</span>
                     <span class="folder-name">Sent</span>
@@ -56,7 +72,7 @@
                 </div>
                 <div class="folder-item" data-folder="trash">
                     <span class="folder-icon">🗑️</span>
-                    <span class="folder-name">Trash</span>
+                    <span class="folder-name">Deleted Items</span>
                     <span class="folder-count" id="trashCount">0</span>
                 </div>
                 <div class="folder-item" data-folder="spam">
@@ -91,17 +107,15 @@
                 <div class="topbar-actions">
                     <button id="btnBackToDashboard" title="Back to CRM Dashboard"
                             onclick="window.location.href='index.html#dashboard'"
-                            style="background:#cc0000;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-weight:600;cursor:pointer;margin-right:8px;">
+                            style="background:#16233a;color:#fff;border:none;padding:9px 16px;border-radius:10px;font-weight:700;cursor:pointer;margin-right:8px;">
                         ← CRM Dashboard
                     </button>
                     <button id="btnCampaign" title="Send proposals & brochures to selected clients/leads (Rocket AI+)"
                             onclick="openProposalCampaign()"
-                            style="background:var(--theme-primary,#cc0000);color:#fff;border:none;padding:8px 14px;border-radius:6px;font-weight:600;cursor:pointer;margin-right:8px;">
+                            style="background:linear-gradient(135deg,#2E86FF,#5aa2ff);color:#fff;border:none;padding:9px 16px;border-radius:10px;font-weight:700;cursor:pointer;margin-right:8px;box-shadow:0 6px 16px rgba(46,134,255,.28);">
                         🚀 Rocket AI+ Campaign
                     </button>
                     <button class="btn-icon" id="btnRefresh" title="Refresh">🔄</button>
-                    <button class="btn-icon" id="btnFilter" title="Filter">⚙️</button>
-                    <button class="btn-icon" id="btnSettings2" title="Settings">⚙️</button>
                 </div>
             </div>
 

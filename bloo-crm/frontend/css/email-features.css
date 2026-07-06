@@ -1,0 +1,90 @@
+/*
+  Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
+  Proprietary software. Unauthorized copying or use by any means or technology
+  (including AI tools) is strictly prohibited.
+*/
+/* ============================================================
+   EMAIL CLIENT — Features-page look & feel (Hubstaff style).
+   Loaded last. Navy text, blue accents, soft blue washes,
+   rounded panels, soft shadows and generous spacing.
+   ============================================================ */
+:root {
+    --ef-blue: #2E86FF;
+    --ef-blue-dark: #1666d8;
+    --ef-navy: #16233a;
+    --ef-text: #4a5568;
+    --ef-soft: #eef4ff;
+    --ef-border: #e6ecf5;
+    --ef-bg: #f4f7fc;
+}
+
+body { background: var(--ef-bg) !important; color: var(--ef-text); }
+
+/* ---- Sidebar ---- */
+.email-sidebar { background: #fff !important; border-right: 1px solid var(--ef-border) !important; box-shadow: 0 0 0 1px rgba(16,35,58,0.01); }
+.sidebar-header { border-bottom: 1px solid var(--ef-border) !important; }
+.sidebar-header h2 { color: var(--ef-navy) !important; font-weight: 800; letter-spacing: -.3px; }
+
+.btn-compose {
+    background: var(--ef-blue) !important; color: #fff !important; border: none !important;
+    border-radius: 12px !important; font-weight: 700 !important; box-shadow: 0 6px 16px rgba(46,134,255,0.28) !important;
+    transition: transform .18s ease, box-shadow .2s ease, background .2s ease;
+}
+.btn-compose:hover { background: var(--ef-blue-dark) !important; transform: translateY(-1px); box-shadow: 0 10px 22px rgba(46,134,255,0.35) !important; }
+
+.account-dropdown, .search-input {
+    border: 1px solid var(--ef-border) !important; border-radius: 10px !important; color: var(--ef-navy) !important; background: #fff !important;
+}
+.account-dropdown:focus, .search-input:focus { outline: none; border-color: var(--ef-blue) !important; box-shadow: 0 0 0 3px var(--ef-soft) !important; }
+.btn-add-account { background: var(--ef-soft) !important; color: var(--ef-blue) !important; border-radius: 10px !important; border: 1px solid var(--ef-border) !important; }
+.btn-add-account:hover { background: var(--ef-blue) !important; color: #fff !important; }
+
+/* ---- Folders ---- */
+.folder-list { padding: 8px 10px !important; }
+.folder-item {
+    border-radius: 10px !important; margin: 2px 0; padding: 10px 12px !important; gap: 10px; color: var(--ef-text) !important;
+    transition: background .18s ease, color .15s ease, transform .15s ease; border-left: none !important;
+}
+.folder-item:hover { background: var(--ef-soft) !important; color: var(--ef-navy) !important; transform: translateX(2px); }
+.folder-item.active { background: var(--ef-soft) !important; color: var(--ef-blue-dark) !important; font-weight: 700; box-shadow: inset 3px 0 0 var(--ef-blue); }
+.folder-name { color: inherit !important; }
+.folder-count { background: #eef2f7 !important; color: #6b7688 !important; border-radius: 20px !important; font-weight: 700; font-size: 0.72rem; padding: 1px 9px; }
+.folder-item.active .folder-count { background: var(--ef-blue) !important; color: #fff !important; }
+
+.labels-section { border-top: 1px solid var(--ef-border) !important; }
+.labels-section h4 { color: #8a93a3 !important; text-transform: uppercase; letter-spacing: .5px; font-size: 0.72rem; }
+.btn-new-label { color: var(--ef-blue) !important; }
+
+.sidebar-footer { border-top: 1px solid var(--ef-border) !important; }
+.btn-settings, .btn-sync, .btn-sync-config { background: #fff !important; color: var(--ef-navy) !important; border: 1px solid var(--ef-border) !important; border-radius: 10px !important; }
+.btn-settings:hover, .btn-sync:hover, .btn-sync-config:hover { background: var(--ef-soft) !important; color: var(--ef-blue-dark) !important; border-color: var(--ef-blue) !important; }
+
+/* ---- Main / topbar ---- */
+.email-main { background: var(--ef-bg) !important; }
+.email-topbar { background: #fff !important; border-bottom: 1px solid var(--ef-border) !important; box-shadow: 0 1px 3px rgba(16,35,58,0.04); }
+.search-input { background: var(--ef-bg) !important; }
+.btn-icon { background: #fff !important; border: 1px solid var(--ef-border) !important; border-radius: 10px !important; transition: .18s ease; }
+.btn-icon:hover { background: var(--ef-soft) !important; border-color: var(--ef-blue) !important; transform: translateY(-1px); }
+
+/* ---- Email list ---- */
+.email-list-container, .email-detail-container { background: #fff !important; border-radius: 16px; margin: 14px; box-shadow: 0 6px 22px rgba(16,35,58,0.06); border: 1px solid var(--ef-border); overflow: hidden; }
+.email-list-header { background: #fbfcfe !important; border-bottom: 1px solid var(--ef-border) !important; color: #8a93a3 !important; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; font-size: 0.72rem; }
+.email-item { border-bottom: 1px solid #f0f3f8 !important; transition: background .15s ease; }
+.email-item:hover { background: var(--ef-soft) !important; }
+.email-item.active { background: var(--ef-soft) !important; box-shadow: inset 3px 0 0 var(--ef-blue); }
+.email-item.unread .email-item-from, .email-item.unread .email-item-subject { color: var(--ef-navy) !important; font-weight: 700; }
+.email-item-from { color: var(--ef-navy) !important; }
+.email-item-subject { color: var(--ef-text) !important; }
+.email-item-date { color: #9aa4b2 !important; }
+
+/* ---- Detail view ---- */
+.detail-header { background: #fbfcfe !important; border-bottom: 1px solid var(--ef-border) !important; }
+.btn-back { background: var(--ef-soft) !important; color: var(--ef-blue-dark) !important; border: none !important; border-radius: 10px !important; font-weight: 700; }
+.btn-back:hover { background: var(--ef-blue) !important; color: #fff !important; }
+
+/* ---- Modals ---- */
+.modal-content { border-radius: 18px !important; box-shadow: 0 30px 80px rgba(16,35,58,0.28) !important; }
+
+/* Scrollbars */
+.folder-list::-webkit-scrollbar, .email-list::-webkit-scrollbar { width: 8px; }
+.folder-list::-webkit-scrollbar-thumb, .email-list::-webkit-scrollbar-thumb { background: #d7dfea; border-radius: 8px; }
