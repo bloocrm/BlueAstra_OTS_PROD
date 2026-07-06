@@ -21,7 +21,7 @@
         <!-- Sidebar -->
         <div class="email-sidebar">
             <div class="sidebar-header">
-                <h2>📧 Bloo Mail</h2>
+                <h2>Bloo<span>Mail</span></h2>
                 <button class="btn-compose" id="btnCompose">✍️ Compose</button>
             </div>
 
@@ -140,9 +140,9 @@
                         <div class="detail-actions">
                             <button class="btn-icon" id="btnMarkRead" title="Mark as Read">✓</button>
                             <button class="btn-icon" id="btnStar" title="Star">⭐</button>
-                            <button class="btn-icon" id="btnReply" title="Reply">↩️</button>
-                            <button class="btn-icon" id="btnReplyAll" title="Reply All">↩️↩️</button>
-                            <button class="btn-icon" id="btnForward" title="Forward">↪️</button>
+                            <button class="btn-reply-action" id="btnReply" title="Reply">↩️ Reply</button>
+                            <button class="btn-reply-action" id="btnReplyAll" title="Reply All">↩️ Reply All</button>
+                            <button class="btn-reply-action" id="btnForward" title="Forward">↪️ Forward</button>
                             <button class="btn-icon" id="btnDelete" title="Delete">🗑️</button>
                         </div>
                     </div>
@@ -342,6 +342,10 @@
                     <div class="form-group">
                         <label>Body:</label>
                         <textarea id="replyBodyInput" class="form-control compose-textarea" style="min-height: 200px;"></textarea>
+                    </div>
+                    <div class="form-group" id="replyAttachmentsSection" style="display:none;">
+                        <label>Attachments <small style="color:#8a93a3;">(remove any you don't want to send)</small></label>
+                        <div id="replyAttachmentsList" class="reply-attachments-list"></div>
                     </div>
                 </form>
             </div>

@@ -409,6 +409,23 @@ class EmailClient {
 
         this.currentEmail = email;
 
+        // Mark as read — the list row should no longer appear bold/unread
+        if (!email.read) {
+            email.read = true;
+            const row = document.querySelector(`.email-item[data-email-id="${emailId}"]`);
+            if (row) row.classList.remove('unread');
+            if (typeof this.updateFolderCounts === 'function') { try { this.updateFolderCounts(); } catch (e) {} }
+            // best-effort persist to the server
+            try {
+                const tok = localStorage.getItem('authToken');
+                fetch(`/api/email/${emailId}/read`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...(tok ? { Authorization: 'Bearer ' + tok } : {}) },
+                    body: JSON.stringify({ read: true })
+                });
+            } catch (e) {}
+        }
+
         document.getElementById('emailListContainer').style.display = 'none';
         document.getElementById('emailDetailContainer').style.display = 'flex';
 
@@ -604,19 +621,48 @@ class EmailClient {
         document.getElementById('replyBodyInput').value =
             `\n\n---------- Original Message ----------\nFrom: ${email.from}\nDate: ${new Date(email.date).toLocaleString()}\nSubject: ${email.subject}\n\n${email.body}`;
 
+        // Carry the original email's attachments (user can remove any before sending)
+        this.replyAttachments = (email.attachments || []).map(a => ({
+            filename: a.filename || a.name || 'attachment',
+            size: a.size, mimeType: a.mimeType, attachmentId: a.attachmentId || a.id || ''
+        }));
+        this.renderReplyAttachments();
+
         document.getElementById('replyModal').classList.add('active');
 
         // Store reply mode
         document.getElementById('replyModal').dataset.mode = mode;
     }
 
+    renderReplyAttachments() {
+        const section = document.getElementById('replyAttachmentsSection');
+        const list = document.getElementById('replyAttachmentsList');
+        if (!section || !list) return;
+        const atts = this.replyAttachments || [];
+        if (!atts.length) { section.style.display = 'none'; list.innerHTML = ''; return; }
+        section.style.display = 'block';
+        list.innerHTML = atts.map((a, i) => `
+            <div class="reply-attachment-chip">
+                <span>📎 ${this.truncate(a.filename, 28)}${a.size ? ` · ${(a.size / 1024).toFixed(0)} KB` : ''}</span>
+                <button type="button" class="reply-attach-remove" title="Remove attachment" onclick="emailClient.removeReplyAttachment(${i})">✕</button>
+            </div>`).join('');
+    }
+
+    removeReplyAttachment(index) {
+        if (!this.replyAttachments) return;
+        this.replyAttachments.splice(index, 1);
+        this.renderReplyAttachments();
+    }
+
     closeReplyModal() {
         document.getElementById('replyModal').classList.remove('active');
+        this.replyAttachments = [];
     }
 
     async sendReply() {
         const body = document.getElementById('replyBodyInput').value;
         const subject = `Re: ${this.currentEmail.subject}`;
+        const attachments = this.replyAttachments || [];
 
         if (!body) {
             this.showToast('Reply cannot be empty', 'error');
@@ -627,7 +673,7 @@ class EmailClient {
             const response = await fetch(`/api/email/reply/${this.currentEmail.id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subject, body })
+                body: JSON.stringify({ subject, body, attachments })
             });
 
             if (response.ok) {

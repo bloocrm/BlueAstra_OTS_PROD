@@ -100,3 +100,28 @@ body { background: var(--ef-bg) !important; color: var(--ef-text); }
     .header-from, .email-item-from { display: none !important; }
     .email-list-header, .email-item { grid-template-columns: 40px 1fr 40px 96px !important; }
 }
+
+/* ===== Logo like Features (Bloo navy + Mail blue) ===== */
+.sidebar-header h2 span { color: var(--ef-blue) !important; }
+
+/* ===== Labeled Reply / Reply All / Forward buttons ===== */
+.btn-reply-action {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--ef-soft); color: var(--ef-blue-dark); border: 1px solid #d6e4ff;
+    border-radius: 10px; padding: 7px 14px; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+    transition: transform .15s ease, background .18s ease, box-shadow .2s ease;
+}
+.btn-reply-action:hover { background: var(--ef-blue); color: #fff; border-color: var(--ef-blue); transform: translateY(-1px); box-shadow: 0 6px 14px rgba(46,134,255,0.28); }
+
+/* ===== Reply/forward attachment chips (removable) ===== */
+.reply-attachments-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.reply-attachment-chip {
+    display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--ef-border);
+    border-radius: 20px; padding: 5px 6px 5px 12px; font-size: 0.82rem; color: var(--ef-navy); font-weight: 600;
+    box-shadow: 0 1px 3px rgba(16,35,58,0.06);
+}
+.reply-attach-remove {
+    background: #fdecea; color: #b3261e; border: none; border-radius: 50%; width: 22px; height: 22px;
+    cursor: pointer; font-weight: 800; line-height: 1; transition: .15s ease;
+}
+.reply-attach-remove:hover { background: #b3261e; color: #fff; }
