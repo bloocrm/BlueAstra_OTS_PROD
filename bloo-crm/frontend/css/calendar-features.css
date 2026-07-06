@@ -1,0 +1,69 @@
+/*
+  Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
+  Proprietary software. Unauthorized copying or use by any means or technology
+  (including AI tools) is strictly prohibited.
+*/
+/* ============================================================
+   CALENDAR — Features-page look & feel (Hubstaff style) +
+   national-holiday markers. Loaded last.
+   ============================================================ */
+:root {
+    --cf-blue: #2E86FF; --cf-blue-dark: #1666d8; --cf-navy: #16233a;
+    --cf-text: #4a5568; --cf-soft: #eef4ff; --cf-border: #e6ecf5;
+    --cf-bg: #f4f7fc; --cf-holiday: #e11d48;
+}
+
+body { background: var(--cf-bg) !important; color: var(--cf-text); }
+
+/* ---- Sidebar ---- */
+.calendar-sidebar { background: #fff !important; border-right: 1px solid var(--cf-border) !important; }
+.sidebar-header { border-bottom: 1px solid var(--cf-border) !important; }
+.sidebar-header h2 { color: var(--cf-navy) !important; font-weight: 800; letter-spacing: -.3px; }
+
+/* ---- Mini calendar (month view) ---- */
+.mini-calendar { background: #fff !important; border: 1px solid var(--cf-border) !important; border-radius: 14px !important; box-shadow: 0 6px 20px rgba(16,35,58,0.06); padding: 12px !important; }
+.mini-day { border-radius: 9px !important; transition: background .15s ease, color .15s ease; position: relative; }
+.mini-day:hover { background: var(--cf-soft) !important; color: var(--cf-navy) !important; }
+.mini-day.today { background: var(--cf-blue) !important; color: #fff !important; font-weight: 700; }
+.mini-day.selected { outline: 2px solid var(--cf-blue); outline-offset: -2px; }
+/* National holidays */
+.mini-day.mini-holiday { color: var(--cf-holiday) !important; font-weight: 800; }
+.mini-day.mini-holiday::after { content: ""; position: absolute; left: 50%; bottom: 3px; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--cf-holiday); }
+.mini-day.today.mini-holiday { color: #fff !important; }
+.mini-day.today.mini-holiday::after { background: #fff; }
+
+.btn-today { background: var(--cf-blue) !important; color: #fff !important; border: none !important; border-radius: 10px !important; font-weight: 700; box-shadow: 0 6px 16px rgba(46,134,255,0.28); }
+.btn-today:hover { background: var(--cf-blue-dark) !important; }
+
+/* ---- Upcoming events ---- */
+.upcoming-events-section h4 { color: var(--cf-navy) !important; }
+.upcoming-event-item { border-radius: 10px !important; border-left: 3px solid var(--cf-blue); background: #fff !important; box-shadow: 0 2px 8px rgba(16,35,58,0.05); transition: transform .15s ease, box-shadow .2s ease; }
+.upcoming-event-item:hover { transform: translateX(2px); box-shadow: 0 6px 16px rgba(16,35,58,0.10); }
+.upcoming-event-item .upcoming-event-title { color: var(--cf-navy) !important; font-weight: 700; }
+.upcoming-event-item .upcoming-event-time { color: #9aa4b2 !important; }
+.upcoming-event-item.upcoming-holiday { border-left-color: var(--cf-holiday); background: #fff5f7 !important; }
+.upcoming-event-item.upcoming-holiday .upcoming-event-title { color: var(--cf-holiday) !important; }
+
+/* ---- Main area ---- */
+.calendar-main { background: var(--cf-bg) !important; }
+.calendar-header { background: #fff !important; border-bottom: 1px solid var(--cf-border) !important; box-shadow: 0 1px 3px rgba(16,35,58,0.04); }
+.calendar-header h1, .month-year-display h1 { color: var(--cf-navy) !important; letter-spacing: -.5px; }
+.year-badge { background: var(--cf-soft) !important; color: var(--cf-blue) !important; border-radius: 20px; font-weight: 700; }
+.btn-month-nav { background: #fff !important; border: 1px solid var(--cf-border) !important; border-radius: 10px !important; color: var(--cf-navy) !important; font-weight: 600; transition: .18s ease; }
+.btn-month-nav:hover { background: var(--cf-soft) !important; border-color: var(--cf-blue) !important; color: var(--cf-blue-dark) !important; transform: translateY(-1px); }
+.view-btn { border-radius: 9px !important; }
+.view-btn.active { background: var(--cf-blue) !important; color: #fff !important; box-shadow: 0 4px 12px rgba(46,134,255,0.28); }
+
+/* ---- Month grid ---- */
+.day-cell { border-color: var(--cf-border) !important; transition: background .12s ease; }
+.day-cell:hover { background: var(--cf-soft) !important; }
+.day-cell.today { background: var(--cf-soft) !important; box-shadow: inset 0 0 0 2px var(--cf-blue); }
+
+/* ---- Buttons / modal ---- */
+.btn-icon-small { background: #fff !important; border: 1px solid var(--cf-border) !important; border-radius: 9px !important; transition: .18s ease; }
+.btn-icon-small:hover { background: var(--cf-soft) !important; border-color: var(--cf-blue) !important; }
+.modal-content { border-radius: 18px !important; box-shadow: 0 30px 80px rgba(16,35,58,0.28) !important; }
+
+/* Scrollbars */
+.calendar-sidebar ::-webkit-scrollbar { width: 8px; }
+.calendar-sidebar ::-webkit-scrollbar-thumb { background: #d7dfea; border-radius: 8px; }

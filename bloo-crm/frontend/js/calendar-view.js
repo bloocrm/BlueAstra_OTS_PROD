@@ -692,6 +692,38 @@ class CalendarView {
         });
     }
 
+    // ----- US national holidays -----
+    usHolidays(year) {
+        const nth = (m, weekday, n) => {
+            const d = new Date(year, m, 1); let count = 0;
+            while (true) { if (d.getDay() === weekday) { count++; if (count === n) return new Date(year, m, d.getDate()); } d.setDate(d.getDate() + 1); }
+        };
+        const lastWeekday = (m, weekday) => { const d = new Date(year, m + 1, 0); while (d.getDay() !== weekday) d.setDate(d.getDate() - 1); return new Date(year, m, d.getDate()); };
+        return [
+            { date: new Date(year, 0, 1), name: "New Year's Day" },
+            { date: nth(0, 1, 3), name: "Martin Luther King Jr. Day" },
+            { date: nth(1, 1, 3), name: "Presidents' Day" },
+            { date: lastWeekday(4, 1), name: "Memorial Day" },
+            { date: new Date(year, 5, 19), name: "Juneteenth" },
+            { date: new Date(year, 6, 4), name: "Independence Day" },
+            { date: nth(8, 1, 1), name: "Labor Day" },
+            { date: nth(9, 1, 2), name: "Columbus Day" },
+            { date: new Date(year, 10, 11), name: "Veterans Day" },
+            { date: nth(10, 4, 4), name: "Thanksgiving Day" },
+            { date: new Date(year, 11, 25), name: "Christmas Day" }
+        ];
+    }
+    holidayMap(year) {
+        this._holidayCache = this._holidayCache || {};
+        if (!this._holidayCache[year]) {
+            const map = {};
+            this.usHolidays(year).forEach(h => { map[this.formatDateKey(h.date)] = h.name; });
+            this._holidayCache[year] = map;
+        }
+        return this._holidayCache[year];
+    }
+    holidayName(date) { return this.holidayMap(date.getFullYear())[this.formatDateKey(date)] || null; }
+
     renderMiniCalendar() {
         const month = this.miniCalendarDate.getMonth();
         const year = this.miniCalendarDate.getFullYear();
@@ -736,6 +768,9 @@ class CalendarView {
             if (this.isToday(date)) cell.classList.add('today');
             if (this.isSameDay(date, this.currentDate)) cell.classList.add('selected');
 
+            const hol = this.holidayName(date);
+            if (hol) { cell.classList.add('mini-holiday'); cell.title = '🇺🇸 ' + hol; }
+
             cell.addEventListener('click', () => {
                 this.currentDate = date;
                 this.renderCalendar();
@@ -756,38 +791,38 @@ class CalendarView {
     }
 
     loadUpcomingEvents() {
-        const today = new Date();
-        const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const horizon = new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000); // next 60 days
 
-        const upcomingEvents = Array.from(this.events.values())
-            .filter(evt => {
-                const eventDate = new Date(evt.startDate);
-                return eventDate >= today && eventDate <= nextWeek;
-            })
-            .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
-            .slice(0, 5);
+        const items = [];
+        // User's synced events
+        Array.from(this.events.values()).forEach(evt => {
+            const d = new Date(evt.startDate);
+            if (d >= today && d <= horizon) items.push({ date: d, title: evt.title, type: 'event', event: evt });
+        });
+        // Upcoming US national holidays
+        [...new Set([today.getFullYear(), horizon.getFullYear()])].forEach(y => {
+            this.usHolidays(y).forEach(h => { if (h.date >= today && h.date <= horizon) items.push({ date: h.date, title: h.name, type: 'holiday' }); });
+        });
+
+        items.sort((a, b) => a.date - b.date);
+        const top = items.slice(0, 8);
 
         const container = document.getElementById('upcomingEventsList');
         if (!container) return;
         container.innerHTML = '';
+        if (!top.length) { container.innerHTML = '<p style="text-align:center;color:#888;">No upcoming events</p>'; return; }
 
-        if (upcomingEvents.length === 0) {
-            container.innerHTML = '<p style="text-align:center;color:#666;">No upcoming events</p>';
-            return;
-        }
-
-        upcomingEvents.forEach(event => {
+        top.forEach(it => {
             const item = document.createElement('div');
-            item.className = 'upcoming-event-item';
-
-            item.innerHTML = `
-                <div class="upcoming-event-title">${event.title}</div>
-                <div class="upcoming-event-time">${this.formatDate(new Date(event.startDate))}</div>
-            `;
-
-            item.style.borderLeftColor = this.getProviderColor(event.provider);
-            item.addEventListener('click', () => this.showEventDetail(event));
-
+            item.className = 'upcoming-event-item' + (it.type === 'holiday' ? ' upcoming-holiday' : '');
+            const t = document.createElement('div'); t.className = 'upcoming-event-title'; t.textContent = (it.type === 'holiday' ? '🇺🇸 ' : '') + it.title;
+            const tm = document.createElement('div'); tm.className = 'upcoming-event-time'; tm.textContent = this.formatDate(it.date);
+            item.appendChild(t); item.appendChild(tm);
+            if (it.type === 'event' && it.event) {
+                item.style.borderLeftColor = this.getProviderColor(it.event.provider);
+                item.addEventListener('click', () => this.showEventDetail(it.event));
+            }
             container.appendChild(item);
         });
     }
