@@ -380,15 +380,16 @@ class EmailClient {
         div.dataset.emailId = email.id;
 
         const date = new Date(email.date);
-        const dateStr = date.toLocaleDateString() === new Date().toLocaleDateString() ?
-            date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) :
-            date.toLocaleDateString();
+        const dateStr = isNaN(date) ? '' : date.toLocaleDateString();
+        const timeStr = isNaN(date) ? '' : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const attachIcon = email.hasAttachments ? '<span title="Has attachments">📎</span>' : '';
 
         div.innerHTML = `
             <input type="checkbox" class="email-item-checkbox" data-email-id="${email.id}">
             <div class="email-item-from">${this.truncate(email.from || 'Unknown', 20)}</div>
             <div class="email-item-subject">${this.truncate(email.subject || '(No subject)', 40)}</div>
-            <div class="email-item-date">${dateStr}</div>
+            <div class="email-item-attach">${attachIcon}</div>
+            <div class="email-item-date">${dateStr}<div class="email-item-time">${timeStr}</div></div>
         `;
 
         div.querySelector('.email-item-checkbox').addEventListener('change', (e) => {

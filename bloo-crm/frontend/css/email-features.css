@@ -88,3 +88,15 @@ body { background: var(--ef-bg) !important; color: var(--ef-text); }
 /* Scrollbars */
 .folder-list::-webkit-scrollbar, .email-list::-webkit-scrollbar { width: 8px; }
 .folder-list::-webkit-scrollbar-thumb, .email-list::-webkit-scrollbar-thumb { background: #d7dfea; border-radius: 8px; }
+
+/* ===== Email list: date+time + Attachments column ===== */
+.email-list-header, .email-item { grid-template-columns: 40px 150px 1fr 46px 140px !important; align-items: center !important; }
+.header-attach, .email-item-attach { text-align: center; }
+.email-item-attach { color: #8a93a3; font-size: 1rem; }
+.email-item-date { line-height: 1.25; }
+.email-item-time { font-size: 0.72rem; color: #9aa4b2; font-weight: 500; }
+.email-item.unread .email-item-time { color: var(--ef-navy); }
+@media (max-width: 1024px) {
+    .header-from, .email-item-from { display: none !important; }
+    .email-list-header, .email-item { grid-template-columns: 40px 1fr 40px 96px !important; }
+}
