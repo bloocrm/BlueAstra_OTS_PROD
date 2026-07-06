@@ -1,0 +1,80 @@
+/*
+  Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
+  Proprietary software. Unauthorized copying or use by any means or technology
+  (including AI tools) is strictly prohibited.
+*/
+/* ============================================================
+   SKY THEME = Features-page look & feel, ORANGE-dominated.
+   Loaded last. Scoped to body[data-theme="blue"] (the SKY template);
+   the Red default theme is untouched.
+   ============================================================ */
+
+/* Re-point the theme accent to orange so every theme-driven surface
+   (buttons, active states, focus rings, ui-polish accents) becomes orange. */
+body[data-theme="blue"] {
+    --theme-primary: #FB8C00;
+    --theme-primary-dark: #E65100;
+    --theme-primary-light: #FFB74D;
+    --theme-on-primary: #ffffff;
+    --theme-soft: #FFF3E0;
+}
+
+/* ---- Clean Features surfaces (warm) ---- */
+body[data-theme="blue"] .main-content { background: #fbf8f4 !important; }
+body[data-theme="blue"] .sidebar { background: #ffffff !important; border-right: 1px solid #f1ebe3 !important; }
+body[data-theme="blue"] .top-header { background: #ffffff !important; border-bottom: 1px solid #f1ebe3 !important; }
+
+/* Cards / panels — rounded with soft warm shadows (Features shape, orange tint) */
+body[data-theme="blue"] .stat-card,
+body[data-theme="blue"] .chart-container,
+body[data-theme="blue"] .client-card,
+body[data-theme="blue"] .client-box,
+body[data-theme="blue"] .info-card,
+body[data-theme="blue"] .modal-content {
+    border-color: #f2ebe1 !important;
+    box-shadow: 0 6px 22px rgba(120,70,10,0.08) !important;
+}
+body[data-theme="blue"] .stat-card:hover,
+body[data-theme="blue"] .client-card:hover,
+body[data-theme="blue"] .client-box:hover { box-shadow: 0 18px 40px rgba(120,70,10,0.14) !important; }
+
+/* Sidebar navigation — orange soft pill + accent (Features nav, orange) */
+body[data-theme="blue"] .nav-item:hover { background: #FFF6EA !important; transform: translateX(2px); }
+body[data-theme="blue"] .nav-item.active { background: #FFF3E0 !important; color: #E65100 !important; box-shadow: inset 3px 0 0 #FB8C00 !important; border-left: none !important; }
+body[data-theme="blue"] .sidebar-nav .nav-item i { color: #EF6C00 !important; }
+body[data-theme="blue"] .nav-item.active i { color: #E65100 !important; }
+
+/* Neutralise the leftover electric-blue accents -> orange */
+body[data-theme="blue"] .client-card,
+body[data-theme="blue"] .lead-card { border-top-color: #FB8C00 !important; }
+body[data-theme="blue"] .client-card:hover,
+body[data-theme="blue"] .lead-card:hover { border-top-color: #E65100 !important; }
+body[data-theme="blue"] .client-box { border-top: 4px solid #FB8C00 !important; }
+body[data-theme="blue"] .client-phone i,
+body[data-theme="blue"] .client-box-info i.fa-phone { color: #FB8C00 !important; }
+
+/* Buttons — orange, Features rounded with soft shadow */
+body[data-theme="blue"] .btn-primary,
+body[data-theme="blue"] .btn.btn-primary { background: #FB8C00 !important; border-color: #FB8C00 !important; box-shadow: 0 4px 14px rgba(230,88,0,0.22) !important; }
+body[data-theme="blue"] .btn-primary:hover { background: #E65100 !important; box-shadow: 0 10px 24px rgba(230,88,0,0.30) !important; }
+body[data-theme="blue"] .btn-secondary:hover { border-color: #FB8C00 !important; color: #E65100 !important; }
+
+/* Inputs — orange focus ring */
+body[data-theme="blue"] input:focus,
+body[data-theme="blue"] select:focus,
+body[data-theme="blue"] textarea:focus { border-color: #FB8C00 !important; box-shadow: 0 0 0 3px #FFF3E0 !important; }
+
+/* Badges / pills -> soft orange */
+body[data-theme="blue"] .client-badge,
+body[data-theme="blue"] .badge-blue,
+body[data-theme="blue"] .badge-aqua,
+body[data-theme="blue"] .badge-orange { background: #FFF3E0 !important; color: #E65100 !important; }
+
+/* Section titles + heading icons -> orange */
+body[data-theme="blue"] #pageTitle,
+body[data-theme="blue"] .view-header h2,
+body[data-theme="blue"] .view-header h3,
+body[data-theme="blue"] .chart-container > h3,
+body[data-theme="blue"] .chart-container > h4 { color: #E65100 !important; }
+body[data-theme="blue"] .view-header h2 i,
+body[data-theme="blue"] .view-header h3 i { color: #FB8C00 !important; }
