@@ -576,8 +576,10 @@ class EmailClient {
         if (!confirm('Are you sure you want to delete this email?')) return;
 
         try {
+            const tok = localStorage.getItem('authToken');
             const response = await fetch(`/api/email/${emailId}/delete`, {
-                method: 'POST'
+                method: 'POST',
+                headers: tok ? { Authorization: `Bearer ${tok}` } : {}
             });
 
             if (response.ok) {

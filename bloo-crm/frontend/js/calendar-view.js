@@ -207,8 +207,13 @@ class CalendarView {
                 calendarId: conn.id
             };
 
-            const response = await fetch(`${this.apiBase}/calendar/events`, {
-                method: 'POST',
+            // Update the existing event when editing; otherwise create a new one.
+            const editing = this.editingEventId;
+            const url = editing
+                ? `${this.apiBase}/calendar/events/${editing}`
+                : `${this.apiBase}/calendar/events`;
+            const response = await fetch(url, {
+                method: editing ? 'PUT' : 'POST',
                 headers: this._authHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify(eventData)
             });
@@ -216,18 +221,20 @@ class CalendarView {
             const result = await response.json();
 
             if (result.status === 'success') {
-                this.events.set(result.event._id, {
-                    id: result.event._id,
-                    ...result.event,
-                    startDate: new Date(result.event.startDate),
-                    endDate: new Date(result.event.endDate)
+                const ev = result.event;
+                this.events.set(ev._id, {
+                    id: ev._id,
+                    ...ev,
+                    startDate: new Date(ev.startDate),
+                    endDate: new Date(ev.endDate)
                 });
-                this.showToast('Event created successfully', 'success');
+                this.showToast(editing ? 'Event updated successfully' : 'Event created successfully', 'success');
+                this.editingEventId = null;
                 this.closeEventModal();
                 this.renderCalendar();
                 this.loadUpcomingEvents();
             } else {
-                this.showToast(result.error || 'Failed to create event', 'error');
+                this.showToast(result.error || (editing ? 'Failed to update event' : 'Failed to create event'), 'error');
             }
         } catch (error) {
             console.error('Error saving event:', error);
@@ -523,6 +530,7 @@ class CalendarView {
         const modal = document.getElementById('eventModal');
         const form = document.getElementById('eventForm');
         if (form) form.reset();
+        this.editingEventId = null;   // opening for a NEW event unless an edit sets this after
 
         if (date) {
             const dateStr = date.toISOString().split('T')[0];
@@ -933,6 +941,12 @@ class CalendarView {
         const event = this.events.get(eventId);
         if (!event) return;
 
+        // Open first (openEventModal resets the form + clears editingEventId), THEN
+        // populate and mark edit mode — otherwise the reset would wipe our values.
+        this.closeEventDetailModal();
+        this.openEventModal();
+        this.editingEventId = eventId;
+
         document.getElementById('eventTitle').value = event.title;
         document.getElementById('eventDescription').value = event.description || '';
         document.getElementById('eventLocation').value = event.location || '';
@@ -948,9 +962,8 @@ class CalendarView {
 
         document.getElementById('eventAllDay').checked = event.allDay;
         document.getElementById('eventRecurrence').value = event.recurrence;
-
-        this.closeEventDetailModal();
-        this.openEventModal();
+        const calSel = document.getElementById('eventCalendar');
+        if (calSel && event.connectionId) calSel.value = event.connectionId;
     }
 
     saveSettings() {

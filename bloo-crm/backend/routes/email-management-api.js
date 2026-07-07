@@ -17,6 +17,7 @@ const fs = require('fs');
 const Email = require('../models/Email');
 const EmailAccount = require('../models/EmailAccount');
 const EmailAttachment = require('../models/EmailAttachment');
+const { verifyToken } = require('../middleware/auth');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -57,6 +58,10 @@ const upload = multer({
 // =====================================================
 // EMAIL ACCOUNT MANAGEMENT
 // =====================================================
+
+// All email-management routes require authentication; the user is taken from
+// the token (req.userId), and per-email actions are scoped to the owner.
+router.use(verifyToken);
 
 router.post('/email/accounts', async (req, res) => {
   try {
@@ -391,7 +396,7 @@ router.get('/email/:emailId', async (req, res, next) => {
   // treating them as an id (which would throw a CastError → 500).
   if (!/^[a-f\d]{24}$/i.test(emailId)) return next();
   try {
-    const email = await Email.findById(emailId);
+    const email = await Email.findOne({ _id: emailId, userId: req.userId });
 
     if (!email) {
       return res.status(404).json({ error: 'Email not found' });
@@ -421,8 +426,8 @@ router.post('/email/:emailId/read', async (req, res) => {
     const { emailId } = req.params;
     const { read } = req.body;
 
-    const email = await Email.findByIdAndUpdate(
-      emailId,
+    const email = await Email.findOneAndUpdate(
+      { _id: emailId, userId: req.userId },
       { isRead: read, updatedAt: new Date() },
       { new: true }
     );
@@ -476,8 +481,8 @@ router.post('/email/:emailId/delete', async (req, res) => {
   try {
     const { emailId } = req.params;
 
-    const email = await Email.findByIdAndUpdate(
-      emailId,
+    const email = await Email.findOneAndUpdate(
+      { _id: emailId, userId: req.userId },
       { folder: 'trash', deletedAt: new Date(), updatedAt: new Date() },
       { new: true }
     );
