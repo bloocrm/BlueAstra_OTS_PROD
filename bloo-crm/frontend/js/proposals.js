@@ -105,7 +105,7 @@ async function proGenerate() {
                     <button class="btn btn-sm btn-secondary" onclick="proSaveGeneratedDoc()"><i class="fas fa-database"></i> Save to Documents</button>
                     <button class="btn btn-sm" style="background:linear-gradient(135deg,#7C4DFF,#B388FF);color:#fff;border:none;" onclick="proToBrochure()"><i class="fas fa-wand-magic-sparkles"></i> Convert to Brochure</button>
                 </div>
-                <div class="pro-brochure-ask">💡 Want to turn this ${escPr(res.type || _proType)} into a designed brochure? <a href="#" onclick="proToBrochure();return false;">Convert with Brochure Papa →</a></div>
+                <div class="pro-brochure-ask">💡 Want to turn this ${escPr(res.type || _proType)} into a designed brochure? <a href="#" onclick="proToBrochure();return false;">Convert to Brochure →</a></div>
                 <div style="font-size:0.72rem;color:#aaa;margin-top:6px;">${res.source === 'ai' ? 'AI-generated' : 'Offline template (enable OpenAI for a tailored version)'} · Saving to Documents compresses &amp; stores it in the cloud.</div>
             </div>`;
     } catch (e) { el.innerHTML = `<p class="empty-state">Generation failed: ${escPr(e.message)}</p>`; }
@@ -188,9 +188,9 @@ function proDownloadPdf() {
     showNotification('Downloaded PDF — a compressed copy was saved to Documents.', 'success');
 }
 
-// Ask / convert the generated template into a brochure via Brochure Papa
+// Ask / convert the generated template into a designed brochure
 function proToBrochure() {
-    if (typeof openBrochurePapa !== 'function') { showNotification('Brochure Papa is unavailable.', 'error'); return; }
+    if (typeof openBrochurePapa !== 'function') { showNotification('Convert to Brochure is unavailable.', 'error'); return; }
     openBrochurePapa();
     setTimeout(() => {
         const t = document.getElementById('bpTopic');

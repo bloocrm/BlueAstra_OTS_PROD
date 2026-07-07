@@ -50,7 +50,7 @@ async function brochurePapaGenerate() {
     } catch (e) {
         msg.className = 'msg err'; msg.style.display = 'block';
         msg.textContent = /not configured/i.test(e.message)
-            ? 'Brochure Papa is not configured yet. Ask your administrator to add the brochure API key.'
+            ? 'Convert to Brochure is not configured yet. Ask your administrator to add the brochure API key.'
             : (e.message || 'Could not generate brochure.');
     } finally {
         btn.disabled = false; btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Brochure';
