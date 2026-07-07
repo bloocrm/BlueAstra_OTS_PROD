@@ -4,10 +4,8 @@
   (including AI tools) is strictly prohibited.
 */
 /* =====================================================
-   BROCHURE PAPA — AI brochure generation via Gamma (frontend)
+   BROCHURE PAPA — AI brochure generation via Beautiful.ai (frontend)
    ===================================================== */
-
-let _bpPoll = null;
 
 function _bpShow(id) {
     ['bpForm', 'bpProgress', 'bpResult'].forEach(v => {
@@ -20,11 +18,9 @@ function openBrochurePapa() {
     document.getElementById('brochurePapaModal').classList.add('active');
 }
 function closeBrochurePapa() {
-    if (_bpPoll) { clearInterval(_bpPoll); _bpPoll = null; }
     document.getElementById('brochurePapaModal').classList.remove('active');
 }
 function brochurePapaReset() {
-    if (_bpPoll) { clearInterval(_bpPoll); _bpPoll = null; }
     const m = document.getElementById('bpMsg'); if (m) m.style.display = 'none';
     _bpShow('bpForm');
 }
@@ -36,38 +32,25 @@ async function brochurePapaGenerate() {
     msg.style.display = 'none';
     if (!topic) { msg.className = 'msg err'; msg.style.display = 'block'; msg.textContent = 'Please describe what the brochure is about.'; return; }
     const body = {
-        topic, audience: v('bpAudience'), tone: v('bpTone'), format: v('bpFormat'),
-        cards: parseInt(v('bpCards'), 10) || 6, details: v('bpDetails')
+        topic, audience: v('bpAudience'), tone: v('bpTone'), details: v('bpDetails')
     };
     const btn = document.getElementById('bpGenBtn');
     btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
     try {
+        // Beautiful.ai returns the finished deck immediately.
         const res = await apiRequest('/brochure/generate', { method: 'POST', body });
-        if (res.url && !res.pending) { _bpShowResult(res); return; }
-        // poll until ready
+        if (res.url) { _bpShowResult(res); return; }
+        // No URL yet — deck is still being designed in the Beautiful.ai workspace.
         _bpShow('bpProgress');
-        _bpPollStatus(res.generationId);
+        document.getElementById('bpProgressText').textContent = 'Your deck is being designed — check your Beautiful.ai workspace in a moment.';
     } catch (e) {
         msg.className = 'msg err'; msg.style.display = 'block';
         msg.textContent = /not configured/i.test(e.message)
-            ? 'Brochure Papa (Gamma) is not configured yet. Ask your administrator to add the GAMMA_API_KEY.'
+            ? 'Brochure Papa (Beautiful.ai) is not configured yet. Ask your administrator to add the BEAUTIFULAI_API_KEY.'
             : (e.message || 'Could not generate brochure.');
     } finally {
         btn.disabled = false; btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Brochure';
     }
-}
-
-function _bpPollStatus(generationId) {
-    let tries = 0;
-    _bpPoll = setInterval(async () => {
-        tries++;
-        if (tries > 24) { clearInterval(_bpPoll); _bpPoll = null; document.getElementById('bpProgressText').textContent = 'Still working — please try again shortly.'; return; }
-        try {
-            const st = await apiRequest('/brochure/status/' + encodeURIComponent(generationId), { method: 'GET' });
-            if (st.status === 'completed' && st.url) { clearInterval(_bpPoll); _bpPoll = null; _bpShowResult(st); }
-            else if (st.status === 'failed') { clearInterval(_bpPoll); _bpPoll = null; brochurePapaReset(); showNotification('Brochure generation failed. Please try again.', 'error'); }
-        } catch (e) { /* keep polling */ }
-    }, 5000);
 }
 
 function _bpShowResult(r) {

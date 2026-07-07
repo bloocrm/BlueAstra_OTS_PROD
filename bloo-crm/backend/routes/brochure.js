@@ -4,15 +4,15 @@
   (including AI tools) is strictly prohibited.
 */
 /* =====================================================
-   BROCHURE PAPA — AI brochure generation via Gamma (gamma.app)
-   Uses Gamma's Generations API. Requires GAMMA_API_KEY on the server;
-   returns 503 (not configured) gracefully when the key is absent.
+   BROCHURE PAPA — AI brochure/deck generation via Beautiful.ai
+   Uses Beautiful.ai's generatePresentation API. Requires BEAUTIFULAI_API_KEY
+   on the server; returns 503 (not configured) gracefully when absent.
    ===================================================== */
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/auth');
 
-const GAMMA_BASE = (process.env.GAMMA_API_URL || 'https://public-api.gamma.app/v0.2').replace(/\/+$/, '');
+const BEAUTIFULAI_BASE = (process.env.BEAUTIFULAI_API_URL || 'https://www.beautiful.ai/api/v1').replace(/\/+$/, '');
 
 router.use(verifyToken);
 
@@ -27,16 +27,17 @@ function buildPrompt(b) {
 
 // Availability / config check for the UI
 router.get('/status', (req, res) => {
-  res.json({ configured: !!process.env.GAMMA_API_KEY, provider: 'Gamma', name: 'Brochure Papa' });
+  res.json({ configured: !!process.env.BEAUTIFULAI_API_KEY, provider: 'Beautiful.ai', name: 'Brochure Papa' });
 });
 
-// Kick off a brochure generation
+// Kick off a brochure generation. Beautiful.ai returns a fully designed deck
+// (playerUrl) synchronously — no polling required.
 router.post('/generate', async (req, res) => {
-  const key = process.env.GAMMA_API_KEY;
+  const key = process.env.BEAUTIFULAI_API_KEY;
   if (!key) {
     return res.status(503).json({
       error: 'Brochure Papa not configured',
-      message: 'Brochure Papa uses Gamma. Add a GAMMA_API_KEY on the server (from your Gamma Pro/Business account) to enable brochure generation.'
+      message: 'Brochure Papa uses Beautiful.ai. Add a BEAUTIFULAI_API_KEY on the server (from your Beautiful.ai account) to enable brochure generation.'
     });
   }
   try {
@@ -45,50 +46,31 @@ router.post('/generate', async (req, res) => {
     if (!topic) return res.status(400).json({ error: 'Please describe what the brochure is about.' });
 
     const payload = {
-      inputText: buildPrompt(b),
-      textMode: 'generate',
-      format: b.format || 'document',        // document | presentation | social
-      numCards: Math.min(Math.max(parseInt(b.cards, 10) || 6, 1), 20),
-      exportAs: 'pdf'
+      prompt: buildPrompt(b).slice(0, 10000),   // API caps prompt at 10,000 chars
+      imageSource: 'ai'
     };
-    if (b.theme) payload.themeName = b.theme;
+    if (b.theme) payload.themeId = b.theme;
+    if (b.language) payload.language = b.language;
 
-    const resp = await fetch(`${GAMMA_BASE}/generations`, {
+    const resp = await fetch(`${BEAUTIFULAI_BASE}/generatePresentation`, {
       method: 'POST',
-      headers: { 'X-API-KEY': key, 'Content-Type': 'application/json' },
+      headers: { 'X-Api-Key': key, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     const data = await resp.json().catch(() => ({}));
-    if (!resp.ok) return res.status(502).json({ error: 'Gamma generation failed', message: data.message || `Gamma responded ${resp.status}` });
+    if (!resp.ok) return res.status(502).json({ error: 'Beautiful.ai generation failed', message: data.message || `Beautiful.ai responded ${resp.status}` });
 
-    const generationId = data.generationId || data.id;
-    if (!generationId) return res.status(502).json({ error: 'Gamma did not return a generation id' });
+    if (data.status === 'failed') return res.status(502).json({ error: 'Beautiful.ai generation failed', message: (data.warnings && data.warnings.join('; ')) || 'The deck could not be generated.' });
 
-    // Return immediately; the client polls /status/:id for the finished brochure.
-    return res.json({ status: data.status || 'pending', generationId, pending: (data.status !== 'completed'), url: data.gammaUrl || data.url || null });
+    return res.json({
+      status: data.status || 'completed',
+      pending: false,
+      url: data.playerUrl || data.url || null,
+      presentationId: data.presentationId || null,
+      title: data.title || null
+    });
   } catch (e) {
     return res.status(502).json({ error: 'Brochure generation error', message: e.message });
-  }
-});
-
-// Poll a generation's status -> returns the brochure URL when ready
-router.get('/status/:id', async (req, res) => {
-  const key = process.env.GAMMA_API_KEY;
-  if (!key) return res.status(503).json({ error: 'Brochure Papa not configured' });
-  try {
-    const resp = await fetch(`${GAMMA_BASE}/generations/${encodeURIComponent(req.params.id)}`, {
-      headers: { 'X-API-KEY': key }
-    });
-    const d = await resp.json().catch(() => ({}));
-    if (!resp.ok) return res.status(502).json({ error: 'Status check failed', message: d.message || `Gamma responded ${resp.status}` });
-    res.json({
-      status: d.status || 'pending',
-      pending: d.status !== 'completed' && d.status !== 'failed',
-      url: d.gammaUrl || d.url || null,
-      pdfUrl: d.pdfUrl || (d.exportUrls && d.exportUrls.pdf) || null
-    });
-  } catch (e) {
-    res.status(502).json({ error: 'Status check error', message: e.message });
   }
 });
 

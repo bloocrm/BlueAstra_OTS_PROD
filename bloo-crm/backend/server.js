@@ -264,7 +264,7 @@ app.use('/api/knowledge', knowledgeRoutes);
 const teamRoutes = require('./routes/team');
 app.use('/api/team', teamRoutes);
 
-// Brochure Papa — AI brochure generation via Gamma
+// Brochure Papa — AI brochure generation via Beautiful.ai
 const brochureRoutes = require('./routes/brochure');
 app.use('/api/brochure', brochureRoutes);
 
