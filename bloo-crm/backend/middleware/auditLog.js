@@ -10,8 +10,11 @@ const { v4: uuidv4 } = require('uuid');
 // Audit logging middleware - captures all requests
 const auditLogger = (Model) => {
   return async (req, res, next) => {
-    // Assign request ID
+    // Assign request ID; capture start time and the FULL path up front, since
+    // req.path mutates as the request descends into mounted routers.
     req.requestId = uuidv4();
+    req._startTime = Date.now();
+    const fullPath = (req.originalUrl || req.url || req.path || '').split('?')[0];
 
     // Store original send function
     const originalSend = res.send;
@@ -24,18 +27,18 @@ const auditLogger = (Model) => {
         userId: req.userId || null,
         userEmail: req.userEmail || null,
         method: req.method,
-        path: req.path,
-        query: Object.keys(req.query).length > 0 ? req.query : null,
+        path: fullPath,
+        query: (req.query && Object.keys(req.query).length > 0) ? req.query : null,
         statusCode: res.statusCode,
-        ipAddress: req.ip || req.connection.remoteAddress,
+        ipAddress: req.ip || (req.connection && req.connection.remoteAddress) || null,
         userAgent: req.get('user-agent'),
         timestamp: new Date(),
-        duration: Date.now() - req._startTime,
+        responseTime: Date.now() - req._startTime,
         success: res.statusCode < 400
       };
 
-      // Log sensitive operations asynchronously
-      if (req.method !== 'GET' && Model) {
+      // Persist mutating requests only (enum-valid methods; skips GET/HEAD/OPTIONS)
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) && Model) {
         Model.create(auditEntry).catch(err => {
           console.error('[AUDIT LOG ERROR]', {
             requestId: req.requestId,
@@ -58,9 +61,6 @@ const auditLogger = (Model) => {
       res.send = originalSend;
       return res.send(data);
     };
-
-    // Track request start time
-    req._startTime = Date.now();
 
     next();
   };
