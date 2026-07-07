@@ -7,21 +7,28 @@
 */
 /* =====================================================
    CALENDAR EVENT API ROUTES
+   All routes require auth; the user is taken from the token (req.userId),
+   never from client input, and every query is scoped to that user so one
+   account can't read/modify another's events.
    ===================================================== */
 
 const express = require('express');
 const router = express.Router();
 const CalendarEvent = require('../models/CalendarEvent');
+const { verifyToken } = require('../middleware/auth');
+
+router.use(verifyToken);
 
 // Create new event
 router.post('/calendar/events', async (req, res) => {
   try {
-    const { userId, title, description, startDate, endDate, allDay, location, attendees, color, recurrence, recurrenceEnd, reminder, connectionId, provider, calendarId } = req.body;
+    const userId = req.userId;
+    const { title, description, startDate, endDate, allDay, location, attendees, color, recurrence, recurrenceEnd, reminder, connectionId, provider, calendarId } = req.body;
 
-    if (!userId || !title || !startDate || !endDate || !connectionId || !provider) {
+    if (!title || !startDate || !endDate || !connectionId || !provider) {
       return res.status(400).json({
         error: 'Missing required fields',
-        required: ['userId', 'title', 'startDate', 'endDate', 'connectionId', 'provider']
+        required: ['title', 'startDate', 'endDate', 'connectionId', 'provider']
       });
     }
 
@@ -47,30 +54,18 @@ router.post('/calendar/events', async (req, res) => {
 
     await event.save();
 
-    res.status(201).json({
-      status: 'success',
-      message: 'Event created successfully',
-      event: event.toJSON()
-    });
+    res.status(201).json({ status: 'success', message: 'Event created successfully', event: event.toJSON() });
   } catch (error) {
     console.error('Event creation error:', error);
-    res.status(500).json({
-      error: 'Failed to create event',
-      message: error.message
-    });
+    res.status(500).json({ error: 'Failed to create event', message: error.message });
   }
 });
 
-// Get events for user
+// Get events for the authenticated user
 router.get('/calendar/events', async (req, res) => {
   try {
-    const { userId, from, to, connectionId, provider, status } = req.query;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'userId is required' });
-    }
-
-    let query = { userId };
+    const { from, to, connectionId, provider, status } = req.query;
+    let query = { userId: req.userId };
 
     if (connectionId) query.connectionId = connectionId;
     if (provider) query.provider = provider;
@@ -82,55 +77,30 @@ router.get('/calendar/events', async (req, res) => {
       if (to) query.startDate.$lte = new Date(to);
     }
 
-    const events = await CalendarEvent.find(query)
-      .sort({ startDate: 1 })
-      .lean();
-
-    res.json({
-      status: 'success',
-      count: events.length,
-      events
-    });
+    const events = await CalendarEvent.find(query).sort({ startDate: 1 }).lean();
+    res.json({ status: 'success', count: events.length, events });
   } catch (error) {
     console.error('Failed to fetch events:', error);
-    res.status(500).json({
-      error: 'Failed to fetch events',
-      message: error.message
-    });
+    res.status(500).json({ error: 'Failed to fetch events', message: error.message });
   }
 });
 
-// Get single event
+// Get single event (owned by the user)
 router.get('/calendar/events/:eventId', async (req, res) => {
   try {
-    const { eventId } = req.params;
-
-    const event = await CalendarEvent.findById(eventId);
-
-    if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
-    }
-
-    res.json({
-      status: 'success',
-      event: event.toJSON()
-    });
+    const event = await CalendarEvent.findOne({ _id: req.params.eventId, userId: req.userId });
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+    res.json({ status: 'success', event: event.toJSON() });
   } catch (error) {
     console.error('Failed to fetch event:', error);
-    res.status(500).json({
-      error: 'Failed to fetch event',
-      message: error.message
-    });
+    res.status(500).json({ error: 'Failed to fetch event', message: error.message });
   }
 });
 
-// Update event
+// Update event (owned by the user)
 router.put('/calendar/events/:eventId', async (req, res) => {
   try {
-    const { eventId } = req.params;
     const updateData = req.body;
-
-    // Don't allow direct modification of certain fields
     delete updateData._id;
     delete updateData.userId;
     delete updateData.createdAt;
@@ -138,100 +108,60 @@ router.put('/calendar/events/:eventId', async (req, res) => {
     if (updateData.startDate) updateData.startDate = new Date(updateData.startDate);
     if (updateData.endDate) updateData.endDate = new Date(updateData.endDate);
     if (updateData.recurrenceEnd) updateData.recurrenceEnd = new Date(updateData.recurrenceEnd);
-
     updateData.updatedAt = new Date();
 
-    const event = await CalendarEvent.findByIdAndUpdate(
-      eventId,
+    const event = await CalendarEvent.findOneAndUpdate(
+      { _id: req.params.eventId, userId: req.userId },
       updateData,
       { new: true, runValidators: true }
     );
 
-    if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
-    }
-
-    res.json({
-      status: 'success',
-      message: 'Event updated successfully',
-      event: event.toJSON()
-    });
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+    res.json({ status: 'success', message: 'Event updated successfully', event: event.toJSON() });
   } catch (error) {
     console.error('Event update error:', error);
-    res.status(500).json({
-      error: 'Failed to update event',
-      message: error.message
-    });
+    res.status(500).json({ error: 'Failed to update event', message: error.message });
   }
 });
 
-// Delete event
+// Delete event (owned by the user)
 router.delete('/calendar/events/:eventId', async (req, res) => {
   try {
-    const { eventId } = req.params;
-
-    const event = await CalendarEvent.findByIdAndDelete(eventId);
-
-    if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
-    }
-
-    res.json({
-      status: 'success',
-      message: 'Event deleted successfully'
-    });
+    const event = await CalendarEvent.findOneAndDelete({ _id: req.params.eventId, userId: req.userId });
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+    res.json({ status: 'success', message: 'Event deleted successfully' });
   } catch (error) {
     console.error('Event deletion error:', error);
-    res.status(500).json({
-      error: 'Failed to delete event',
-      message: error.message
-    });
+    res.status(500).json({ error: 'Failed to delete event', message: error.message });
   }
 });
 
 // Get events by date range
 router.get('/calendar/events-range', async (req, res) => {
   try {
-    const { userId, from, to } = req.query;
-
-    if (!userId || !from || !to) {
-      return res.status(400).json({
-        error: 'userId, from, and to are required'
-      });
-    }
+    const { from, to } = req.query;
+    if (!from || !to) return res.status(400).json({ error: 'from and to are required' });
 
     const events = await CalendarEvent.find({
-      userId,
+      userId: req.userId,
       startDate: { $gte: new Date(from), $lte: new Date(to) }
     }).sort({ startDate: 1 });
 
-    res.json({
-      status: 'success',
-      count: events.length,
-      events: events.map(e => e.toJSON())
-    });
+    res.json({ status: 'success', count: events.length, events: events.map(e => e.toJSON()) });
   } catch (error) {
     console.error('Failed to fetch events:', error);
-    res.status(500).json({
-      error: 'Failed to fetch events',
-      message: error.message
-    });
+    res.status(500).json({ error: 'Failed to fetch events', message: error.message });
   }
 });
 
 // Search events
 router.get('/calendar/search', async (req, res) => {
   try {
-    const { userId, query, connectionId } = req.query;
-
-    if (!userId || !query) {
-      return res.status(400).json({
-        error: 'userId and query are required'
-      });
-    }
+    const { query, connectionId } = req.query;
+    if (!query) return res.status(400).json({ error: 'query is required' });
 
     let searchQuery = {
-      userId,
+      userId: req.userId,
       $or: [
         { title: { $regex: query, $options: 'i' } },
         { description: { $regex: query, $options: 'i' } },
@@ -239,38 +169,23 @@ router.get('/calendar/search', async (req, res) => {
         { 'attendees.email': { $regex: query, $options: 'i' } }
       ]
     };
+    if (connectionId) searchQuery.connectionId = connectionId;
 
-    if (connectionId) {
-      searchQuery.connectionId = connectionId;
-    }
-
-    const events = await CalendarEvent.find(searchQuery)
-      .sort({ startDate: -1 })
-      .limit(50);
-
-    res.json({
-      status: 'success',
-      count: events.length,
-      results: events.map(e => e.toJSON())
-    });
+    const events = await CalendarEvent.find(searchQuery).sort({ startDate: -1 }).limit(50);
+    res.json({ status: 'success', count: events.length, results: events.map(e => e.toJSON()) });
   } catch (error) {
     console.error('Search error:', error);
-    res.status(500).json({
-      error: 'Search failed',
-      message: error.message
-    });
+    res.status(500).json({ error: 'Search failed', message: error.message });
   }
 });
 
 // Bulk sync events from external provider
 router.post('/calendar/sync-events', async (req, res) => {
   try {
-    const { userId, events, connectionId, provider } = req.body;
-
-    if (!userId || !events || !Array.isArray(events)) {
-      return res.status(400).json({
-        error: 'userId and events array are required'
-      });
+    const userId = req.userId;
+    const { events, connectionId, provider } = req.body;
+    if (!events || !Array.isArray(events)) {
+      return res.status(400).json({ error: 'events array is required' });
     }
 
     const syncedEvents = [];
@@ -278,14 +193,9 @@ router.post('/calendar/sync-events', async (req, res) => {
 
     for (const eventData of events) {
       try {
-        let event = await CalendarEvent.findOne({
-          externalId: eventData.externalId,
-          provider,
-          connectionId
-        });
+        let event = await CalendarEvent.findOne({ externalId: eventData.externalId, provider, connectionId, userId });
 
         if (event) {
-          // Update existing event
           Object.assign(event, {
             title: eventData.title,
             description: eventData.description,
@@ -299,7 +209,6 @@ router.post('/calendar/sync-events', async (req, res) => {
           });
           await event.save();
         } else {
-          // Create new event
           event = new CalendarEvent({
             userId,
             title: eventData.title,
@@ -338,31 +247,18 @@ router.post('/calendar/sync-events', async (req, res) => {
     });
   } catch (error) {
     console.error('Bulk sync error:', error);
-    res.status(500).json({
-      error: 'Failed to sync events',
-      message: error.message
-    });
+    res.status(500).json({ error: 'Failed to sync events', message: error.message });
   }
 });
 
-// Delete events by connection (when disconnecting a calendar)
+// Delete events by connection (when disconnecting a calendar) — scoped to the user
 router.delete('/calendar/connection/:connectionId', async (req, res) => {
   try {
-    const { connectionId } = req.params;
-
-    const result = await CalendarEvent.deleteMany({ connectionId });
-
-    res.json({
-      status: 'success',
-      message: `Deleted ${result.deletedCount} events`,
-      deletedCount: result.deletedCount
-    });
+    const result = await CalendarEvent.deleteMany({ connectionId: req.params.connectionId, userId: req.userId });
+    res.json({ status: 'success', message: `Deleted ${result.deletedCount} events`, deletedCount: result.deletedCount });
   } catch (error) {
     console.error('Deletion error:', error);
-    res.status(500).json({
-      error: 'Failed to delete events',
-      message: error.message
-    });
+    res.status(500).json({ error: 'Failed to delete events', message: error.message });
   }
 });
 

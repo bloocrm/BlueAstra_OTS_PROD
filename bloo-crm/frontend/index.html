@@ -2757,6 +2757,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                 <button class="close-btn" onclick="closeModal('emailSyncConfigModal')">&times;</button>
             </div>
             <form onsubmit="handleEmailSync(event)">
+                <input type="hidden" id="emailSyncProvider">
                 <div class="sync-instructions">
                     <h3>Configure Email Sync</h3>
                     <p>Select sync options and start downloading your emails.</p>

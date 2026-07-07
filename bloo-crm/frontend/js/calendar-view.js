@@ -122,10 +122,16 @@ class CalendarView {
     // BACKEND API METHODS
     // =====================================================
 
+    _authHeaders(extra) {
+        const token = localStorage.getItem('authToken');
+        return Object.assign({}, extra || {}, token ? { Authorization: `Bearer ${token}` } : {});
+    }
+
     async loadAllEvents() {
         try {
             const response = await fetch(
-                `${this.apiBase}/calendar/events?userId=${this.userId}`
+                `${this.apiBase}/calendar/events?userId=${this.userId}`,
+                { headers: this._authHeaders() }
             );
             const data = await response.json();
             if (data.status === 'success') {
@@ -203,7 +209,7 @@ class CalendarView {
 
             const response = await fetch(`${this.apiBase}/calendar/events`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: this._authHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify(eventData)
             });
 
@@ -237,7 +243,8 @@ class CalendarView {
             if (!confirm('Are you sure you want to delete this event?')) return;
 
             const response = await fetch(`${this.apiBase}/calendar/events/${eventId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: this._authHeaders()
             });
 
             const result = await response.json();
@@ -259,7 +266,7 @@ class CalendarView {
 
     async loadConnections() {
         try {
-            const response = await fetch(`${this.apiBase}/calendar/connections`);
+            const response = await fetch(`${this.apiBase}/calendar/connections`, { headers: this._authHeaders() });
             const data = await response.json();
             if (data.status === 'success') {
                 this.connections = data.connections;
@@ -279,7 +286,8 @@ class CalendarView {
 
         try {
             const response = await fetch(
-                `${this.apiBase}/calendar/search?userId=${this.userId}&query=${encodeURIComponent(query)}`
+                `${this.apiBase}/calendar/search?userId=${this.userId}&query=${encodeURIComponent(query)}`,
+                { headers: this._authHeaders() }
             );
             const data = await response.json();
 
