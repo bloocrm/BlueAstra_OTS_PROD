@@ -60,17 +60,62 @@ router.post('/generate', async (req, res) => {
     const data = await resp.json().catch(() => ({}));
     if (!resp.ok) return res.status(502).json({ error: 'Beautiful.ai generation failed', message: data.message || `Beautiful.ai responded ${resp.status}` });
 
-    if (data.status === 'failed') return res.status(502).json({ error: 'Beautiful.ai generation failed', message: (data.warnings && data.warnings.join('; ')) || 'The deck could not be generated.' });
+    if (data.status === 'failed') return res.status(502).json({ error: 'Brochure generation failed', message: (data.warnings && data.warnings.join('; ')) || 'The brochure could not be generated.' });
 
+    // White-labeled: return only an internal handle + title. The client renders
+    // and exports everything inside BlooCRM via /export — no external URL leaks.
     return res.json({
       status: data.status || 'completed',
       pending: false,
-      url: data.playerUrl || data.url || null,
-      presentationId: data.presentationId || null,
+      brochureId: data.presentationId || null,
       title: data.title || null
     });
   } catch (e) {
     return res.status(502).json({ error: 'Brochure generation error', message: e.message });
+  }
+});
+
+// Strip any external-brand prefix from an exported file name (white-labeling).
+function cleanFileName(name, format, title) {
+  let n = String(name || '').replace(/^\s*beautiful\.?ai\s*[-–—:]\s*/i, '').trim();
+  if (!n) n = `${(title || 'Brochure').replace(/[^\w.-]+/g, '-').replace(/^-+|-+$/g, '') || 'Brochure'}.${format}`;
+  return n;
+}
+
+// Export a generated brochure and stream the file through BlooCRM so the browser
+// never contacts the external design service. format = 'pdf' | 'pptx'.
+router.post('/export', async (req, res) => {
+  const key = process.env.BEAUTIFULAI_API_KEY;
+  if (!key) return res.status(503).json({ error: 'Brochure Papa not configured' });
+  const brochureId = String((req.body && (req.body.brochureId || req.body.presentationId)) || '').trim();
+  let format = String((req.body && req.body.format) || 'pdf').toLowerCase();
+  if (format !== 'pdf' && format !== 'pptx') format = 'pdf';
+  if (!brochureId) return res.status(400).json({ error: 'Missing brochure id.' });
+  try {
+    // 1) Ask the design service for a signed export URL.
+    const metaResp = await fetch(`${BEAUTIFULAI_BASE}/exportPresentation`, {
+      method: 'POST',
+      headers: { 'X-Api-Key': key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ presentationId: brochureId, format })
+    });
+    const meta = await metaResp.json().catch(() => ({}));
+    if (!metaResp.ok || !meta.downloadUrl) {
+      return res.status(502).json({ error: 'Export failed', message: meta.message || `Export responded ${metaResp.status}` });
+    }
+    // 2) Fetch the file server-side (signed URL needs no auth header).
+    const fileResp = await fetch(meta.downloadUrl);
+    if (!fileResp.ok) return res.status(502).json({ error: 'Export download failed', message: `File responded ${fileResp.status}` });
+    const buf = Buffer.from(await fileResp.arrayBuffer());
+    const fileName = cleanFileName(meta.fileName, format, req.body && req.body.title);
+    const disposition = (req.body && req.body.download) ? 'attachment' : 'inline';
+    res.setHeader('Content-Type', format === 'pdf'
+      ? 'application/pdf'
+      : 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+    res.setHeader('Content-Disposition', `${disposition}; filename="${fileName.replace(/"/g, '')}"`);
+    res.setHeader('Cache-Control', 'no-store');
+    return res.send(buf);
+  } catch (e) {
+    return res.status(502).json({ error: 'Export error', message: e.message });
   }
 });
 

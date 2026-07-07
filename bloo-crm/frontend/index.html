@@ -1471,7 +1471,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                 <!-- Proposals: RFI / RFQ / RFP -->
                 <!-- Brochure Papa (Beautiful.ai) Modal -->
                 <div id="brochurePapaModal" class="modal">
-                    <div class="modal-content" style="max-width:560px;">
+                    <div class="modal-content" id="bpModalContent" style="max-width:560px;">
                         <div class="modal-header">
                             <h2><i class="fas fa-wand-magic-sparkles"></i> Brochure Papa <span style="font-size:0.7rem;color:#8a93a3;font-weight:600;">powered by Beautiful.ai</span></h2>
                             <button class="close-btn" onclick="closeBrochurePapa()">&times;</button>
@@ -1497,13 +1497,30 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             <h3 style="color:var(--theme-primary);margin:8px 0;">Brochure Papa is designing…</h3>
                             <p style="color:#888;" id="bpProgressText">This can take up to a minute.</p>
                         </div>
-                        <div id="bpResult" style="display:none;text-align:center;padding:20px;">
-                            <div style="font-size:40px;">✅</div>
-                            <h3 style="color:var(--theme-primary);margin:8px 0;">Your brochure is ready!</h3>
-                            <div class="modal-actions" style="justify-content:center;">
-                                <a id="bpOpenLink" href="#" target="_blank" class="btn btn-primary"><i class="fas fa-external-link-alt"></i> Open brochure</a>
-                                <a id="bpPdfLink" href="#" target="_blank" class="btn btn-secondary" style="display:none;"><i class="fas fa-file-pdf"></i> Download PDF</a>
-                                <button class="btn btn-secondary" onclick="brochurePapaReset()">Make another</button>
+                        <!-- Brochure Studio — in-house viewer/editor (no external URLs) -->
+                        <div id="bpResult" style="display:none;padding:6px 2px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+                                <h3 style="color:var(--theme-primary);margin:0;"><i class="fas fa-swatchbook"></i> Brochure Studio <span id="bpStudioTitle" style="font-size:0.8rem;color:#6b7280;font-weight:500;"></span></h3>
+                                <button class="btn btn-sm btn-secondary" onclick="brochurePapaReset()"><i class="fas fa-rotate-left"></i> Make another</button>
+                            </div>
+                            <div id="bpStudioMsg" class="msg" style="display:none;margin-bottom:8px;"></div>
+                            <div id="bpPreviewWrap" style="position:relative;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;min-height:280px;">
+                                <div id="bpPreviewLoading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#6b7280;gap:8px;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size:26px;"></i>
+                                    <span>Preparing your brochure preview…</span>
+                                </div>
+                                <iframe id="bpPreviewFrame" title="Brochure preview" style="width:100%;height:56vh;border:0;display:none;"></iframe>
+                            </div>
+                            <div class="modal-actions" style="justify-content:flex-start;flex-wrap:wrap;gap:8px;margin-top:12px;">
+                                <button class="btn btn-primary" onclick="bpDownload('pptx')"><i class="fas fa-file-powerpoint"></i> Download PPT</button>
+                                <button class="btn btn-secondary" onclick="bpDownload('pdf')"><i class="fas fa-file-pdf"></i> Download PDF</button>
+                                <button class="btn btn-secondary" onclick="bpSaveWord()"><i class="fas fa-file-word"></i> Save as Word</button>
+                                <button class="btn btn-secondary" onclick="bpSaveToProposals('pptx')"><i class="fas fa-database"></i> Save to Proposals</button>
+                            </div>
+                            <div style="margin-top:12px;padding-top:10px;border-top:1px dashed #e5e7eb;font-size:0.85rem;color:#6b7280;">
+                                <i class="fas fa-pen-to-square"></i> Edited the deck offline? Re-upload it to keep it with this proposal:
+                                <input type="file" id="bpReupload" style="display:none;" accept=".ppt,.pptx,.pdf,.doc,.docx" onchange="bpReuploadToProposals()">
+                                <button class="btn btn-sm btn-secondary" style="margin-left:6px;" onclick="document.getElementById('bpReupload').click()"><i class="fas fa-upload"></i> Upload edited file → Proposals</button>
                             </div>
                         </div>
                     </div>
