@@ -15,7 +15,12 @@ const helmet = require('helmet');
 const dotenv = require('dotenv');
 const path = require('path');
 const session = require('express-session');
+const mongoSanitize = require('express-mongo-sanitize');
+const hpp = require('hpp');
 const connectDB = require('./config/db');
+const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
+const { auditLogger } = require('./middleware/auditLog');
+const AuditLog = require('./models/AuditLog');
 
 // Load environment variables
 dotenv.config();
@@ -60,13 +65,27 @@ app.use('/api/payments/stripe/webhook', express.raw({ type: '*/*' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// Neutralize NoSQL operator injection ($ / .) in any input. Sanitize in place so
+// we never reassign Express's read-only req.query getter.
+app.use((req, _res, next) => {
+  ['body', 'params', 'query'].forEach(k => { if (req[k]) mongoSanitize.sanitize(req[k]); });
+  next();
+});
+// Strip HTTP parameter pollution (duplicate query/body params)
+app.use(hpp());
+
 // Session (used by the OAuth flow to hold the CSRF state across the redirect)
 app.set('trust proxy', 1);
 app.use(session({
   secret: process.env.SESSION_SECRET || 'bloo-crm-session-secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, httpOnly: true, maxAge: 30 * 60 * 1000 }
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // HTTPS-only cookie in prod
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 30 * 60 * 1000
+  }
 }));
 
 // Request logging middleware
@@ -74,6 +93,15 @@ app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
+
+// Audit trail: persist every mutating (non-GET) request to MongoDB
+app.use(auditLogger(AuditLog));
+
+// ---- Rate limiting ----
+// Strict limiter on credential endpoints (brute-force / account-enumeration guard)
+app.use(['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/auth/mfa/login'], authLimiter);
+// General API abuse guard
+app.use('/api', apiLimiter);
 
 // =====================================================
 // ROUTES

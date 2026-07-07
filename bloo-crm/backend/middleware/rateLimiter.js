@@ -34,10 +34,11 @@ const authLimiter = rateLimit({
   }
 });
 
-// General API rate limiter: 100 requests per minute per user
+// General API rate limiter: generous per-minute cap (per user when authenticated,
+// else per IP) — an abuse/DoS guard that won't trip normal SPA usage.
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 100, // 100 requests
+  max: parseInt(process.env.API_RATE_LIMIT, 10) || 300,
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many requests. Please slow down.'
