@@ -77,7 +77,7 @@ class CalendarView {
 
         // Settings tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
+            btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
         });
 
         // Search
@@ -85,7 +85,7 @@ class CalendarView {
 
         // View toggle
         document.querySelectorAll('.view-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchView(e.target.dataset.view));
+            btn.addEventListener('click', () => this.switchView(btn.dataset.view));
         });
 
         // Sync modal
@@ -639,17 +639,16 @@ class CalendarView {
 
     switchView(view) {
         this.currentView = view;
-        document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
+        // Highlight by data attribute (no reliance on the global `event`, which is undefined in Firefox)
+        document.querySelectorAll('.view-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
         this.renderCalendar();
     }
 
     switchTab(tabName) {
         document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-
+        // Highlight by data attribute (no reliance on the global `event`, undefined in Firefox)
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
         document.getElementById(`${tabName}Tab`)?.classList.add('active');
-        event.target.classList.add('active');
     }
 
     // =====================================================

@@ -88,10 +88,14 @@ async function buildCrmContext(userId) {
 async function callOpenAI(messages, { json = false, maxTokens = 500 } = {}) {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return null;
+  // Bound the call so a slow/hung provider can't stall the request indefinitely.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), parseInt(process.env.OPENAI_TIMEOUT_MS, 10) || 15000);
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      signal: controller.signal,
       body: JSON.stringify({
         model: process.env.OPENAI_CHAT_MODEL || 'gpt-4o-mini',
         messages,
@@ -104,6 +108,7 @@ async function callOpenAI(messages, { json = false, maxTokens = 500 } = {}) {
     const data = await resp.json();
     return data.choices?.[0]?.message?.content || null;
   } catch (e) { console.warn('OpenAI call failed:', e.message); return null; }
+  finally { clearTimeout(timer); }
 }
 
 // ---------- Assistant chat ----------

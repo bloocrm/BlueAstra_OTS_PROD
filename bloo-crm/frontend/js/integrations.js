@@ -153,13 +153,23 @@ async function renderIntegrationSet(list, containerId, noteId, connectedNote, mi
     }).join('');
 }
 
+// Re-render whichever integration panels are on the current page (each renderer
+// no-ops when its container is absent), so a connect/disconnect updates the
+// panel the user is actually looking at — not just the HR one.
+function refreshIntegrationPanels() {
+    renderIntegrations();
+    if (typeof renderProposalIntegrations === 'function') renderProposalIntegrations();
+    if (typeof renderVendorIntegrations === 'function') renderVendorIntegrations();
+    if (typeof renderSourcingIntegrations === 'function') renderSourcingIntegrations();
+}
+
 async function connectIntegration(tool, name) {
     const workspace = prompt(`Connect ${name}\n\nEnter your ${name} workspace/board name (optional):`) || '';
     const apiKey = prompt(`Enter your ${name} API key / token to connect (kept private):`) || '';
     try {
         await apiRequest('/integrations/connect', { method: 'POST', body: { tool, workspace, apiKey } });
         showNotification(`${name} connected!`, 'success');
-        renderIntegrations();
+        refreshIntegrationPanels();
     } catch (e) {
         if ((e.message || '').toLowerCase().includes('rocket')) showNotification('This integration requires the Rocket AI+ plan.', 'error');
         else showNotification(`Could not connect: ${e.message}`, 'error');
@@ -171,7 +181,7 @@ async function disconnectIntegration(tool) {
     try {
         await apiRequest('/integrations/disconnect', { method: 'POST', body: { tool } });
         showNotification('Disconnected', 'success');
-        renderIntegrations();
+        refreshIntegrationPanels();
     } catch (e) { showNotification(`Could not disconnect: ${e.message}`, 'error'); }
 }
 
