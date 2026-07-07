@@ -1469,6 +1469,24 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                 </div>
 
                 <!-- Proposals: RFI / RFQ / RFP -->
+                <!-- Proposal Bucket Modal -->
+                <div id="proBucketModal" class="modal">
+                    <div class="modal-content" style="max-width:820px;">
+                        <div class="modal-header">
+                            <h2><i class="fas fa-box-archive"></i> Proposal Bucket <span id="proBucketSummary" style="font-size:0.72rem;color:#8a93a3;font-weight:500;"></span></h2>
+                            <button class="close-btn" onclick="closeProposalBucket()">&times;</button>
+                        </div>
+                        <p style="color:#666;margin:0 0 12px;">Everything you've developed and saved under Proposals — templates and documents across RFI, RFQ &amp; RFP — with the date &amp; time each was stored.</p>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+                            <button class="btn btn-sm btn-primary" id="proBucketFilterAll" onclick="proBucketFilter('all')">All</button>
+                            <button class="btn btn-sm btn-secondary" id="proBucketFilterproposal" onclick="proBucketFilter('proposal')">Proposals</button>
+                            <button class="btn btn-sm btn-secondary" id="proBucketFilterdocument" onclick="proBucketFilter('document')">Documents</button>
+                            <input type="text" id="proBucketSearch" placeholder="Search title / type…" oninput="proBucketRender()" style="flex:1;min-width:160px;padding:8px;border:1px solid #ddd;border-radius:6px;">
+                        </div>
+                        <div id="proBucketList" class="activity-list" style="max-height:60vh;overflow:auto;"><p class="empty-state">Loading…</p></div>
+                    </div>
+                </div>
+
                 <!-- Convert to Brochure Modal -->
                 <div id="brochurePapaModal" class="modal">
                     <div class="modal-content" id="bpModalContent" style="max-width:560px;">
@@ -1531,6 +1549,7 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                         <h3><i class="fas fa-file-signature"></i> Proposals — RFI / RFQ / RFP</h3>
                     </div>
                     <div class="proposals-toolbar">
+                        <button class="btn btn-sm btn-primary" onclick="openProposalBucket()"><i class="fas fa-box-archive"></i> View Proposal Bucket</button>
                         <button class="btn btn-sm" onclick="openBrochurePapa()" style="background:linear-gradient(135deg,#7C4DFF,#B388FF);color:#fff;border:none;"><i class="fas fa-wand-magic-sparkles"></i> Convert to Brochure</button>
                         <button class="btn btn-sm btn-secondary" onclick="proAssignEmployeeTop()"><i class="fas fa-user-plus"></i> Assign Employee <span class="pro-lock">🔒</span></button>
                         <button class="btn btn-sm btn-primary" onclick="proSendTo('lead')"><i class="fas fa-paper-plane"></i> Send to Lead <span class="pro-lock">🔒</span></button>

@@ -314,4 +314,81 @@ async function proDeleteDoc(id) {
     catch (e) { showNotification(e.message, 'error'); }
 }
 
+// ===== Proposal Bucket — consolidated store of everything saved under Proposals =====
+let _proBucket = [];
+let _proBucketKind = 'all';
+
+async function openProposalBucket() {
+    document.getElementById('proBucketModal').classList.add('active');
+    const list = document.getElementById('proBucketList');
+    list.innerHTML = '<p class="empty-state">Loading…</p>';
+    proBucketFilter('all');
+    try {
+        const res = await apiRequest('/proposals/bucket', { method: 'GET' });
+        _proBucket = res.items || [];
+        const c = res.counts || { proposals: 0, documents: 0 };
+        const sum = document.getElementById('proBucketSummary');
+        if (sum) sum.textContent = `· ${res.count || 0} items (${c.proposals} proposals · ${c.documents} documents)`;
+        proBucketRender();
+    } catch (e) {
+        list.innerHTML = `<p class="empty-state">Could not load the bucket: ${escPr(e.message)}</p>`;
+    }
+}
+function closeProposalBucket() { document.getElementById('proBucketModal').classList.remove('active'); }
+
+function proBucketFilter(kind) {
+    _proBucketKind = kind;
+    ['all', 'proposal', 'document'].forEach(k => {
+        const b = document.getElementById('proBucketFilter' + k);
+        if (b) b.className = 'btn btn-sm ' + (k === kind ? 'btn-primary' : 'btn-secondary');
+    });
+    proBucketRender();
+}
+
+function _proBucketWhen(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) +
+        ' · ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+}
+
+function proBucketRender() {
+    const list = document.getElementById('proBucketList');
+    if (!list) return;
+    const q = (document.getElementById('proBucketSearch')?.value || '').trim().toLowerCase();
+    let items = _proBucket.slice();
+    if (_proBucketKind !== 'all') items = items.filter(i => i.kind === _proBucketKind);
+    if (q) items = items.filter(i => (`${i.title || ''} ${i.type || ''} ${i.id || ''}`).toLowerCase().includes(q));
+    if (!items.length) { list.innerHTML = '<p class="empty-state">Nothing stored yet.</p>'; return; }
+    list.innerHTML = items.map(i => {
+        const when = _proBucketWhen(i.storedAt);
+        const isProposal = i.kind === 'proposal';
+        const icon = isProposal ? 'fa-file-signature' : (i.source === 'generated' ? 'fa-file-lines' : 'fa-paperclip');
+        const bg = (isProposal || i.source === 'generated') ? 'blue-bg' : 'aqua-bg';
+        let actions;
+        if (isProposal) {
+            actions = `<button class="btn btn-sm btn-secondary" onclick="proView('${i.id}')"><i class="fas fa-eye"></i> View</button>`;
+        } else if (i.source === 'generated') {
+            actions = `<button class="btn btn-sm btn-primary" onclick="proDownloadDoc('${i.id}','word')"><i class="fas fa-file-word"></i> Word</button>
+                       <button class="btn btn-sm btn-secondary" onclick="proDownloadDoc('${i.id}','pdf')"><i class="fas fa-file-pdf"></i> PDF</button>`;
+        } else {
+            actions = `<a class="btn btn-sm btn-primary" href="${i.url}" target="_blank" download><i class="fas fa-download"></i> Download</a>`;
+        }
+        const meta = isProposal
+            ? `${i.type} · ${escPr(i.industry || '')} · ${escPr(i.status || '')}${i.assignedEmployee ? ' · ' + escPr(i.assignedEmployee) : ''}`
+            : `${escPr(i.type || '')} · ${i.source === 'generated' ? 'generated' : 'uploaded'}${i.size ? ' · ' + (i.size / 1024).toFixed(1) + ' KB' : ''}`;
+        return `
+        <div class="activity-item">
+            <div class="activity-icon ${bg}"><i class="fas ${icon}"></i></div>
+            <div class="activity-content" style="flex:1;">
+                <div class="activity-title">${escPr(i.title || i.id)}
+                    <span style="font-size:0.7em;color:#fff;background:${isProposal ? '#2d6cdf' : '#12b3a6'};padding:1px 7px;border-radius:9px;margin-left:6px;">${isProposal ? 'Proposal' : 'Document'}</span>
+                </div>
+                <div class="activity-time" style="color:#888;"><i class="far fa-clock"></i> Stored ${when} &nbsp;·&nbsp; ${meta} &nbsp;·&nbsp; <span style="color:#aaa;">${escPr(i.id)}</span></div>
+                <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">${actions}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
 function escPr(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); }

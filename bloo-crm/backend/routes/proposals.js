@@ -140,6 +140,35 @@ router.get('/', async (req, res) => {
     res.json({ status: 'success', count: proposals.length, proposals });
   } catch (e) { res.status(500).json({ error: 'Failed to list', message: e.message }); }
 });
+// Proposal Bucket — every saved proposal + stored document across all types,
+// each with its storage timestamp (createdAt), newest first.
+// NOTE: must stay above '/:proposalId' so the literal path isn't captured as an id.
+router.get('/bucket', async (req, res) => {
+  try {
+    const [proposals, documents] = await Promise.all([
+      Proposal.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(500).lean(),
+      ProposalDocument.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(500).lean()
+    ]);
+    const items = [
+      ...proposals.map(p => ({
+        kind: 'proposal', id: p.proposalId, type: p.type, title: p.title,
+        industry: p.industry, status: p.status, assignedEmployee: p.assignedEmployee || '',
+        storedAt: p.createdAt, updatedAt: p.updatedAt
+      })),
+      ...documents.map(d => ({
+        kind: 'document', id: d.docId, type: d.type, title: d.title || d.originalName,
+        source: d.source || 'upload', format: d.format || null, size: d.size || 0, url: d.url || null,
+        storedAt: d.createdAt, updatedAt: d.updatedAt
+      }))
+    ].sort((a, b) => new Date(b.storedAt) - new Date(a.storedAt));
+    res.json({
+      status: 'success', count: items.length,
+      counts: { proposals: proposals.length, documents: documents.length },
+      items
+    });
+  } catch (e) { res.status(500).json({ error: 'Failed to load proposal bucket', message: e.message }); }
+});
+
 router.get('/:proposalId', async (req, res) => {
   const p = await Proposal.findOne({ userId: req.userId, proposalId: req.params.proposalId }).lean();
   if (!p) return res.status(404).json({ error: 'Not found' });
