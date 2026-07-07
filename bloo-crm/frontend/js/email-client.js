@@ -512,8 +512,10 @@ class EmailClient {
         }
 
         try {
+            const fromEmail = (this.connections.find(c => c.id === from) || {}).email || '';
             const formData = new FormData();
             formData.append('connectionId', from);
+            formData.append('fromEmail', fromEmail);
             formData.append('to', to);
             formData.append('cc', cc);
             formData.append('bcc', bcc);
@@ -526,17 +528,20 @@ class EmailClient {
                 formData.append('attachments', files[i]);
             }
 
-            const response = await fetch('/api/email/send', {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/email/compose-send', {
                 method: 'POST',
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
                 body: formData
             });
+            const data = await response.json().catch(() => ({}));
 
             if (response.ok) {
-                this.showToast('Email sent successfully', 'success');
+                this.showToast(data.delivered === false ? 'Email logged (email service is in demo mode)' : 'Email sent successfully', data.delivered === false ? 'info' : 'success');
                 this.closeComposeModal();
                 this.loadEmails();
             } else {
-                this.showToast('Failed to send email', 'error');
+                this.showToast(data.message || data.error || 'Failed to send email', 'error');
             }
         } catch (error) {
             console.error('Failed to send email:', error);
@@ -571,7 +576,7 @@ class EmailClient {
         if (!confirm('Are you sure you want to delete this email?')) return;
 
         try {
-            const response = await fetch(`/api/email/delete/${emailId}`, {
+            const response = await fetch(`/api/email/${emailId}/delete`, {
                 method: 'POST'
             });
 
@@ -670,15 +675,19 @@ class EmailClient {
         }
 
         try {
-            const response = await fetch(`/api/email/reply/${this.currentEmail.id}`, {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/email/${this.currentEmail.id}/reply-send`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subject, body, attachments })
+                headers: Object.assign({ 'Content-Type': 'application/json' }, token ? { Authorization: `Bearer ${token}` } : {}),
+                body: JSON.stringify({ subject, body })
             });
+            const data = await response.json().catch(() => ({}));
 
             if (response.ok) {
-                this.showToast('Reply sent', 'success');
+                this.showToast(data.delivered === false ? 'Reply logged (email service is in demo mode)' : 'Reply sent', data.delivered === false ? 'info' : 'success');
                 this.closeReplyModal();
+            } else {
+                this.showToast(data.message || data.error || 'Failed to send reply', 'error');
             }
         } catch (error) {
             console.error('Failed to send reply:', error);

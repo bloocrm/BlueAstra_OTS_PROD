@@ -123,21 +123,25 @@ class EmailService {
      * Generic email send (used for policy publishing, etc.)
      * Always sends from the verified DEFAULT_FROM_EMAIL sender.
      */
-    async sendEmail({ to, subject, html, text, replyTo }) {
+    async sendEmail({ to, cc, bcc, subject, html, text, replyTo, fromName, attachments }) {
         if (!to) throw new Error('Recipient (to) is required');
         if (this.isDemoMode || !this.transporter) {
             console.log('📧 DEMO MODE - email would be sent to:', to, '| subject:', subject);
             return { success: true, mock: true, email: to };
         }
         const fromAddress = process.env.DEFAULT_FROM_EMAIL || 'noreply@bluocrm.com';
-        const result = await this.transporter.sendMail({
-            from: `"${process.env.DEFAULT_FROM_NAME || 'Bloo CRM'}" <${fromAddress}>`,
+        const mailOptions = {
+            from: `"${fromName || process.env.DEFAULT_FROM_NAME || 'Bloo CRM'}" <${fromAddress}>`,
             replyTo: replyTo || undefined,
             to,
+            cc: cc || undefined,
+            bcc: bcc || undefined,
             subject: subject || '(no subject)',
             html: html || undefined,
             text: text || undefined
-        });
+        };
+        if (attachments && attachments.length) mailOptions.attachments = attachments;
+        const result = await this.transporter.sendMail(mailOptions);
         return { success: true, messageId: result.messageId, email: to };
     }
 

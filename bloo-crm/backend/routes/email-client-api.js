@@ -14,6 +14,8 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const Email = require('../models/Email');
+const EmailAccount = require('../models/EmailAccount');
+const emailService = require('../utils/email-service');
 const { verifyToken } = require('../middleware/auth');
 
 // File upload configuration
@@ -23,6 +25,92 @@ const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } });
 // Email storage (in production, use database)
 let emailStorage = new Map();
 let sentEmails = new Map();
+
+// ---- Real outbound delivery via the app email service (Brevo SMTP) ----
+// Both routes require auth so the send endpoints can't be used as an open relay.
+
+// Compose & send a new email. Delivered from the verified sender with the
+// user's connected address as Reply-To; a copy is stored in the Sent folder.
+router.post('/email/compose-send', verifyToken, upload.array('attachments', 5), async (req, res) => {
+  try {
+    const { connectionId, fromEmail, to, cc, bcc, subject, body } = req.body;
+    if (!to || !subject || !body) {
+      return res.status(400).json({ error: 'Missing required fields: to, subject, body' });
+    }
+    const attachments = (req.files || []).map(f => ({ filename: f.originalname, content: f.buffer, contentType: f.mimetype }));
+    const result = await emailService.sendEmail({
+      to, cc: cc || undefined, bcc: bcc || undefined,
+      subject, html: String(body).replace(/\n/g, '<br>'), text: body,
+      replyTo: fromEmail || undefined,
+      fromName: fromEmail ? String(fromEmail).split('@')[0] : undefined,
+      attachments
+    });
+
+    // Best-effort: record in the Sent folder so it appears in the client.
+    try {
+      const account = await EmailAccount.findOne({ userId: req.userId, provider: connectionId });
+      await Email.create({
+        userId: req.userId,
+        accountId: account ? account._id : undefined,
+        from: { email: fromEmail || (account && account.email) || '', name: fromEmail || '' },
+        to: String(to).split(/[,;]/).map(e => ({ email: e.trim() })).filter(e => e.email),
+        cc: cc ? String(cc).split(/[,;]/).map(e => ({ email: e.trim() })).filter(e => e.email) : [],
+        subject, body, bodyPlain: body,
+        folder: 'sent', isDraft: false, isRead: true,
+        provider: connectionId || (account && account.provider),
+        sentDate: new Date(), hasAttachments: attachments.length > 0
+      });
+    } catch (persistErr) { console.warn('compose-send: sent-copy not stored:', persistErr.message); }
+
+    if (result && result.mock) return res.json({ status: 'success', delivered: false, demo: true, message: 'SMTP not configured — email logged in demo mode.' });
+    return res.json({ status: 'success', delivered: true, messageId: result.messageId, message: 'Email sent.' });
+  } catch (e) {
+    console.error('compose-send error:', e);
+    return res.status(500).json({ error: 'Failed to send email', message: e.message });
+  }
+});
+
+// Reply to an existing (Mongo-backed) email; delivered via the email service.
+router.post('/email/:emailId/reply-send', verifyToken, async (req, res) => {
+  try {
+    const { emailId } = req.params;
+    const { subject, body } = req.body || {};
+    if (!body) return res.status(400).json({ error: 'Reply body is required' });
+
+    const original = await Email.findById(emailId);
+    if (!original) return res.status(404).json({ error: 'Original email not found' });
+    const recipient = original.from && original.from.email;
+    if (!recipient) return res.status(400).json({ error: 'Original sender address not found' });
+
+    let replyTo;
+    if (original.accountId) { const acc = await EmailAccount.findById(original.accountId); if (acc) replyTo = acc.email; }
+
+    const subj = (subject || `Re: ${original.subject || ''}`).trim();
+    const result = await emailService.sendEmail({
+      to: recipient, subject: subj,
+      html: String(body).replace(/\n/g, '<br>'), text: body,
+      replyTo: replyTo || undefined
+    });
+
+    try {
+      await Email.create({
+        userId: req.userId, accountId: original.accountId,
+        from: { email: replyTo || '', name: '' },
+        to: [{ email: recipient, name: (original.from && original.from.name) || '' }],
+        subject: subj, body, bodyPlain: body,
+        inReplyTo: original.messageId, threadId: original.threadId || original._id.toString(),
+        folder: 'sent', isDraft: false, isRead: true,
+        provider: original.provider, sentDate: new Date()
+      });
+    } catch (persistErr) { console.warn('reply-send: sent-copy not stored:', persistErr.message); }
+
+    if (result && result.mock) return res.json({ status: 'success', delivered: false, demo: true, message: 'SMTP not configured — reply logged in demo mode.' });
+    return res.json({ status: 'success', delivered: true, messageId: result.messageId, message: 'Reply sent.' });
+  } catch (e) {
+    console.error('reply-send error:', e);
+    return res.status(500).json({ error: 'Failed to send reply', message: e.message });
+  }
+});
 
 // Send Email Route
 router.post('/email/send', upload.array('attachments', 5), async (req, res) => {
