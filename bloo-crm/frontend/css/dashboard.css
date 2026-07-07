@@ -4446,7 +4446,7 @@
     padding: 24px 26px;
     background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-dark));
     color: #fff;
-    border-radius: 0.75rem 0.75rem 0 0;
+    border-radius: 18px 18px 0 0;
 }
 .modal-hero .close-btn {
     position: absolute; top: 12px; right: 14px;

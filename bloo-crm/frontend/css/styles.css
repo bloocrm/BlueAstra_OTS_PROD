@@ -408,16 +408,26 @@ h4 { font-size: 1.25rem; }
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem;
-    border-bottom: 2px solid var(--light-gray);
+    padding: 20px 24px;
+    border-bottom: none;
+    border-radius: 0.75rem 0.75rem 0 0;
     position: sticky;
     top: 0;
-    background: var(--white);
+    z-index: 5;
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-dark));
+    color: #fff;
 }
 
 .modal-header h2 {
     margin: 0;
+    color: #fff;
+    font-size: 1.25rem;
 }
+
+.modal-header h2 i { color: #fff; }
+
+/* Small subtitle/summary spans in a header stay readable on the gradient */
+.modal-header h2 span[style*="color"] { color: rgba(255,255,255,0.88) !important; }
 
 .close-btn {
     background: none;
@@ -436,6 +446,10 @@ h4 { font-size: 1.25rem; }
 .close-btn:hover {
     color: var(--text-dark);
 }
+
+/* Close button sits on the gradient header */
+.modal-header .close-btn { color: rgba(255,255,255,0.92); }
+.modal-header .close-btn:hover { color: #fff; }
 
 .modal-content form {
     padding: 1.5rem;
