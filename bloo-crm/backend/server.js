@@ -21,6 +21,7 @@ const connectDB = require('./config/db');
 const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
 const { auditLogger } = require('./middleware/auditLog');
 const AuditLog = require('./models/AuditLog');
+const { buildMap, canonicalRedirect, serveClean } = require('./middleware/cleanUrls');
 
 // Load environment variables
 dotenv.config();
@@ -102,6 +103,10 @@ app.use(auditLogger(AuditLog));
 app.use(['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/auth/mfa/login'], authLimiter);
 // General API abuse guard
 app.use('/api', apiLimiter);
+
+// Clean URLs / canonical redirects: /page.html -> /page, strip trailing slash,
+// index.html -> dir. (Bypasses /api & /health; leaves *-callback.html untouched.)
+app.use(canonicalRedirect);
 
 // =====================================================
 // ROUTES
@@ -320,6 +325,9 @@ app.use('/proposal-docs', express.static(path.join(__dirname, 'uploads', 'propos
 const frontendPath = path.join(__dirname, '..', 'frontend');
 const outerLayerPath = path.join(__dirname, '..', '..', 'outer-layer');
 
+// Map extensionless page URLs (e.g. /features) to their .html file, once at startup.
+const cleanUrlMap = buildMap([frontendPath, outerLayerPath]);
+
 // Public landing page is the marketing Features page; the app (login + CRM)
 // lives at /app. These routes run before the static middleware so "/" is the
 // Features page rather than the app's index.html.
@@ -333,6 +341,9 @@ app.use(express.static(outerLayerPath));
 
 // Marketing website home also available at /home (and /website).
 app.get(['/home', '/website'], (req, res) => res.sendFile(path.join(outerLayerPath, 'index.html')));
+
+// Serve extensionless clean URLs (/features -> Features.html) before the SPA fallback
+app.get('*', serveClean(cleanUrlMap));
 
 // SPA fallback: any non-API GET returns the app index.html
 app.get('*', (req, res, next) => {
