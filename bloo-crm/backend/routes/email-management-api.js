@@ -385,10 +385,12 @@ router.get('/email/folder/:folder', async (req, res) => {
   }
 });
 
-router.get('/email/:emailId', async (req, res) => {
+router.get('/email/:emailId', async (req, res, next) => {
+  const { emailId } = req.params;
+  // Let literal sibling routes (/email/search, /email/stats, …) match instead of
+  // treating them as an id (which would throw a CastError → 500).
+  if (!/^[a-f\d]{24}$/i.test(emailId)) return next();
   try {
-    const { emailId } = req.params;
-
     const email = await Email.findById(emailId);
 
     if (!email) {

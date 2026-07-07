@@ -35,7 +35,7 @@ function getClientById(clientId) {
 }
 
 function _authToken() {
-    try { return sessionStorage.getItem('authToken'); } catch (e) { return null; }
+    try { return localStorage.getItem('authToken') || sessionStorage.getItem('authToken'); } catch (e) { return null; }
 }
 
 function _backendAvailable() { return !!_authToken(); }

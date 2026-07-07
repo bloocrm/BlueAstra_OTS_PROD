@@ -99,7 +99,8 @@ router.get('/active', asyncHandler(async (req, res) => {
   const session = await MeetingRoomSession.findActiveSession(req.userId);
 
   if (!session) {
-    throw new NotFoundError('Active meeting room session');
+    // No active session is a normal state, not a server error.
+    return successResponse(res, null, 'No active meeting room session');
   }
 
   // Record heartbeat

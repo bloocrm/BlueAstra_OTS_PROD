@@ -733,7 +733,7 @@ function loadThirdPartyIntegrations() {
                             <button class="btn btn-sm btn-secondary" onclick="syncIntegration('${provider.id}')">
                                 <i class="fas fa-sync"></i> Sync Now
                             </button>
-                            <button class="btn btn-sm btn-secondary" onclick="disconnectIntegration('${provider.id}')">
+                            <button class="btn btn-sm btn-secondary" onclick="disconnectComplianceIntegration('${provider.id}')">
                                 <i class="fas fa-unlink"></i> Disconnect
                             </button>
                         </div>
@@ -904,8 +904,9 @@ function syncIntegration(providerId) {
     }, 1500);
 }
 
-// Disconnect integration
-function disconnectIntegration(providerId) {
+// Disconnect integration (compliance-specific; renamed to avoid colliding with
+// integrations.js's global disconnectIntegration which handles PM/HR tools)
+function disconnectComplianceIntegration(providerId) {
     if (!confirm('Are you sure you want to disconnect this integration?')) {
         return;
     }

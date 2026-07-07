@@ -21,7 +21,9 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
+      // Linear-time pattern (no nested quantifiers → no catastrophic backtracking / ReDoS);
+      // also accepts modern TLDs of any length (.info, .online, .tech, …).
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email']
     },
     password: {
       type: String,

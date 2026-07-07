@@ -139,8 +139,8 @@ const smtpProviderSchema = new mongoose.Schema(
       dayResetTime: Date
     },
 
-    // Error Tracking
-    errors: [{
+    // Error Tracking (renamed from reserved Mongoose path 'errors')
+    errorLog: [{
       timestamp: Date,
       error: String,
       code: String,
