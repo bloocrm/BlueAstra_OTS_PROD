@@ -93,13 +93,15 @@ function closeProfileModal() {
 function renderProfileView() {
     const u = _profileUser();
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || '—'; };
-    set('pvName', u.name);
-    set('pvEmail', u.email);
+    // Colorful hero header
+    set('pvHeroName', u.name || 'My Profile');
+    const emailEl = document.getElementById('pvHeroEmail'); if (emailEl) emailEl.textContent = u.email || '';
+    set('pvHeroPlan', PLAN_LABELS[u.plan] || u.plan || 'Basic CRM');
+    const hav = document.getElementById('pvHeroAvatar');
+    if (hav) hav.src = u.avatar || AVATAR_PLACEHOLDER;
+    // Detail rows
     set('pvPhone', u.phone);
     set('pvCompany', u.company);
-    set('pvPlan', PLAN_LABELS[u.plan] || u.plan || 'Basic CRM');
-    const av = document.getElementById('pvAvatar');
-    if (av) av.src = u.avatar || AVATAR_PLACEHOLDER;
     applyTopAvatar();
 }
 

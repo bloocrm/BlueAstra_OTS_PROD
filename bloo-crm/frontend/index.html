@@ -362,22 +362,22 @@
 
             <!-- Profile Modal -->
             <div id="profileModal" class="modal">
-                <div class="modal-content" style="max-width:540px;">
-                    <div class="modal-header">
-                        <h2><i class="fas fa-id-card"></i> My Profile</h2>
+                <div class="modal-content" style="max-width:600px;">
+                    <div class="modal-hero">
                         <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+                        <img id="pvHeroAvatar" class="modal-hero-avatar" src="https://via.placeholder.com/96" alt="Profile photo">
+                        <div class="modal-hero-info">
+                            <h2 id="pvHeroName">My Profile</h2>
+                            <div class="hero-sub" id="pvHeroEmail"></div>
+                            <span class="hero-plan" id="pvHeroPlan">Basic CRM</span>
+                        </div>
                     </div>
 
+                    <div class="modal-hero-body">
                     <!-- Read-only view -->
                     <div id="profileView">
-                        <div style="text-align:center;margin-bottom:16px;">
-                            <img id="pvAvatar" src="https://via.placeholder.com/96" alt="Profile photo" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--theme-soft);">
-                        </div>
-                        <div class="profile-row"><span class="profile-label">Full Name</span><span class="profile-val" id="pvName">—</span></div>
-                        <div class="profile-row"><span class="profile-label">Email</span><span class="profile-val" id="pvEmail">—</span></div>
                         <div class="profile-row"><span class="profile-label">Contact Number</span><span class="profile-val" id="pvPhone">—</span></div>
                         <div class="profile-row"><span class="profile-label">Company</span><span class="profile-val" id="pvCompany">—</span></div>
-                        <div class="profile-row"><span class="profile-label">Plan</span><span class="profile-val" id="pvPlan">—</span></div>
                         <div class="profile-row">
                             <span class="profile-label">Multi-Factor Authentication <span id="pvMfa" style="font-size:0.78rem;font-weight:700;color:#8a93a3;">—</span></span>
                             <label class="mfa-switch" title="Enable / disable MFA">
@@ -414,17 +414,23 @@
                             </div>
                         </form>
                     </div>
+                    </div><!-- /modal-hero-body -->
                 </div>
             </div>
 
             <!-- MFA / Security Modal -->
             <div id="mfaModal" class="modal">
-                <div class="modal-content" style="max-width:600px;">
-                    <div class="modal-header">
-                        <h2><i class="fas fa-shield-alt"></i> Two-Factor Authentication (MFA)</h2>
+                <div class="modal-content" style="max-width:620px;">
+                    <div class="modal-hero">
                         <button class="close-btn" onclick="closeMfaModal()">&times;</button>
+                        <div class="modal-hero-icon">🛡️</div>
+                        <div class="modal-hero-info">
+                            <h2>Two-Factor Authentication</h2>
+                            <div class="hero-sub">Add a strong second layer of security to your account</div>
+                        </div>
                     </div>
 
+                    <div class="modal-hero-body">
                     <!-- Method chooser / status -->
                     <div id="mfaMethods">
                         <div id="mfaEnabledBanner" style="display:none;background:#eafaf1;border:1px solid #b8ead0;color:#1b7a43;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-weight:600;">
@@ -482,6 +488,7 @@
                         <div id="mfaBackupCodes" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f7f9fc;border-radius:10px;padding:14px;font-family:monospace;font-weight:700;margin:12px 0;"></div>
                         <div class="modal-actions"><button class="btn btn-primary" onclick="closeMfaModal()">Done</button></div>
                     </div>
+                    </div><!-- /modal-hero-body -->
                 </div>
             </div>
 
