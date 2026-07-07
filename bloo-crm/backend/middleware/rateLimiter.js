@@ -7,10 +7,12 @@
 */
 const rateLimit = require('express-rate-limit');
 
-// Auth limiter: 5 attempts per 15 minutes per IP
+// Auth limiter: caps credential attempts per IP over 15 min. Low enough to stop
+// automated brute force (which needs hundreds/thousands of tries) but tolerant of
+// shared office IPs and honest retries.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts
+  max: parseInt(process.env.AUTH_RATE_LIMIT, 10) || 20,
   message: {
     error: 'TOO_MANY_LOGIN_ATTEMPTS',
     message: 'Too many login attempts. Please try again in 15 minutes.'
