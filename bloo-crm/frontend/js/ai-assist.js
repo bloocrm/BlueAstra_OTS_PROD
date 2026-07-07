@@ -33,7 +33,8 @@
         const s = document.createElement('style');
         s.id = 'aiAssistStyles';
         s.textContent = `
-        #aiAssistFab{position:fixed;bottom:22px;right:22px;z-index:99998;background:#cc0000;color:#fff;border:none;border-radius:30px;padding:12px 18px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.25);display:flex;align-items:center;gap:8px;font-size:0.95rem;}
+        #aiAssistFab{position:fixed;bottom:22px;right:22px;z-index:99998;background:#cc0000;color:#fff;border:none;border-radius:30px;padding:12px 18px;font-weight:700;cursor:grab;box-shadow:0 6px 18px rgba(0,0,0,0.25);display:flex;align-items:center;gap:8px;font-size:0.95rem;touch-action:none;user-select:none;-webkit-user-select:none;}
+        #aiAssistFab.aa-dragging{cursor:grabbing;box-shadow:0 12px 28px rgba(0,0,0,0.35);opacity:0.96;}
         #aiAssistFab:hover{background:#a30000;}
         #aiAssistPanel{position:fixed;top:0;right:-420px;width:390px;max-width:92vw;height:100%;background:#fff;z-index:99999;box-shadow:-4px 0 24px rgba(0,0,0,0.2);transition:right .28s ease;display:flex;flex-direction:column;}
         #aiAssistPanel.open{right:0;}
@@ -53,8 +54,9 @@
         const fab = document.createElement('button');
         fab.id = 'aiAssistFab';
         fab.innerHTML = '<i class="fas fa-robot"></i> AI Assist';
-        fab.onclick = openAssist;
+        fab.title = 'Drag to move · click to open';
         document.body.appendChild(fab);
+        makeFabDraggable(fab);
 
         const panel = document.createElement('div');
         panel.id = 'aiAssistPanel';
@@ -71,6 +73,74 @@
             fab.style.display = onAiInsights ? 'none' : 'flex';
             if (onAiInsights) panel.classList.remove('open');
         }, 700);
+    }
+
+    // Let the user drag the AI Assist button anywhere; remember where they left it.
+    function makeFabDraggable(fab) {
+        const KEY = 'aiAssistFabPos';
+        let dragging = false, moved = false, startX = 0, startY = 0, offX = 0, offY = 0;
+
+        function clampAndPlace(left, top) {
+            const r = fab.getBoundingClientRect();
+            const maxLeft = window.innerWidth - r.width - 4;
+            const maxTop = window.innerHeight - r.height - 4;
+            left = Math.max(4, Math.min(left, Math.max(4, maxLeft)));
+            top = Math.max(4, Math.min(top, Math.max(4, maxTop)));
+            fab.style.left = left + 'px';
+            fab.style.top = top + 'px';
+            fab.style.right = 'auto';
+            fab.style.bottom = 'auto';
+            return { left, top };
+        }
+
+        // Restore a saved position (once the button has a measurable size)
+        try {
+            const p = JSON.parse(localStorage.getItem(KEY) || 'null');
+            if (p && isFinite(p.left) && isFinite(p.top)) {
+                requestAnimationFrame(() => clampAndPlace(p.left, p.top));
+            }
+        } catch (e) {}
+
+        fab.addEventListener('pointerdown', function (e) {
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            dragging = true; moved = false;
+            const r = fab.getBoundingClientRect();
+            offX = e.clientX - r.left; offY = e.clientY - r.top;
+            startX = e.clientX; startY = e.clientY;
+            try { fab.setPointerCapture(e.pointerId); } catch (_) {}
+        });
+
+        fab.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            if (!moved && (Math.abs(e.clientX - startX) > 4 || Math.abs(e.clientY - startY) > 4)) {
+                moved = true; fab.classList.add('aa-dragging');
+            }
+            if (moved) { e.preventDefault(); clampAndPlace(e.clientX - offX, e.clientY - offY); }
+        });
+
+        function endDrag(e) {
+            if (!dragging) return;
+            dragging = false;
+            fab.classList.remove('aa-dragging');
+            try { fab.releasePointerCapture(e.pointerId); } catch (_) {}
+            if (moved) {
+                const r = fab.getBoundingClientRect();
+                try { localStorage.setItem(KEY, JSON.stringify({ left: r.left, top: r.top })); } catch (_) {}
+            }
+        }
+        fab.addEventListener('pointerup', endDrag);
+        fab.addEventListener('pointercancel', endDrag);
+
+        // A real click (not a drag) opens the assistant
+        fab.addEventListener('click', function (e) {
+            if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; return; }
+            openAssist();
+        });
+
+        // Keep it on-screen if the window is resized
+        window.addEventListener('resize', function () {
+            if (fab.style.left) clampAndPlace(parseFloat(fab.style.left), parseFloat(fab.style.top));
+        });
     }
 
     function section(title, icon, items, color) {
