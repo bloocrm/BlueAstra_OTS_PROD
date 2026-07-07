@@ -83,9 +83,11 @@ const validators = {
   communication: {
     create: [
       body('type').isIn(['email', 'phone', 'meeting', 'message']).withMessage('Valid type is required'),
-      body('subject').notEmpty().trim().escape().withMessage('Subject is required'),
+      body('subject').optional().trim().escape(),
       body('content').notEmpty().trim().escape().withMessage('Content is required'),
-      body('clientId').notEmpty().isMongoId().withMessage('Valid client ID is required'),
+      // A communication may be linked to a client or a lead, or neither (free-form log).
+      body('clientId').optional().isMongoId().withMessage('Valid client ID is required'),
+      body('leadId').optional().isMongoId().withMessage('Valid lead ID is required'),
       body('status').optional().isIn(['draft', 'sent', 'scheduled', 'completed']).withMessage('Invalid status')
     ],
     update: [

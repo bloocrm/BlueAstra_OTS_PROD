@@ -9,43 +9,73 @@
    COMMUNICATIONS MANAGEMENT
    ===================================================== */
 
-// Handle add communication form submission
-function handleAddCommunication(event) {
-    event.preventDefault();
-    
-    const contactId = document.getElementById('commContact').value;
-    const contactName = getContactName(contactId);
-    
-    const commData = {
-        contactId: contactId,
-        contactName: contactName,
-        type: document.getElementById('commType').value,
-        dateTime: document.getElementById('commDateTime').value,
-        duration: parseInt(document.getElementById('commDuration').value) || 0,
-        communicatedWith: document.getElementById('commWith').value,
-        notes: document.getElementById('commNotes').value
+// Map the UI communication type to the backend enum (and back)
+function mapCommTypeToApi(t) { return ({ call: 'phone', other: 'message' })[t] || (['email', 'phone', 'meeting', 'message'].includes(t) ? t : 'message'); }
+function mapCommTypeToUi(t) { return t === 'phone' ? 'call' : (t || 'other'); }
+
+// Convert a backend communication document to the shape the UI renders
+function mapApiCommToUi(d) {
+    const cf = d.customFields || {};
+    return {
+        id: d._id || d.id,
+        contactId: cf.contactId || d.clientId || d.leadId || '',
+        contactName: cf.contactName || (d.subject || '').replace(/^.*with\s+/i, '') || 'Contact',
+        type: cf.uiType || mapCommTypeToUi(d.type),
+        dateTime: cf.dateTime || d.meetingDate || d.createdAt,
+        duration: d.meetingDuration || 0,
+        communicatedWith: cf.communicatedWith || (d.notes || '').replace(/^With:\s*/, ''),
+        notes: d.content || ''
     };
-    
-    // Add communication to storage
-    const communication = addCommunication(commData);
-    
-    // Show success message
-    showNotification(`Communication logged successfully!`, 'success');
-    
-    // Close modal and reload communications
-    closeModal('addCommunicationModal');
-    loadCommunicationsList();
-    
-    // Update dashboard stats
-    loadDashboardStats();
-    loadRecentActivities();
 }
 
-// Load communications list
-function loadCommunicationsList() {
-    const communications = getCommunications();
+// Handle add communication form submission — persists to the backend
+async function handleAddCommunication(event) {
+    event.preventDefault();
+
+    const contactId = document.getElementById('commContact').value;
+    const contactName = getContactName(contactId);
+    const uiType = document.getElementById('commType').value;
+    const dateTime = document.getElementById('commDateTime').value;
+    const duration = parseInt(document.getElementById('commDuration').value) || 0;
+    const communicatedWith = document.getElementById('commWith').value;
+    const notes = document.getElementById('commNotes').value;
+
+    const payload = {
+        type: mapCommTypeToApi(uiType),
+        subject: `${capitalizeFirst(uiType || 'note')} with ${contactName}`,
+        content: notes || '(no summary provided)',
+        meetingDate: dateTime || undefined,
+        meetingDuration: duration || undefined,
+        notes: communicatedWith ? ('With: ' + communicatedWith) : undefined,
+        status: 'completed',
+        customFields: { contactId, contactName, communicatedWith, dateTime, uiType }
+    };
+
+    try {
+        await apiRequest('/communications', { method: 'POST', body: payload });
+        showNotification('Communication logged successfully!', 'success');
+        closeModal('addCommunicationModal');
+        await loadCommunicationsList();
+        if (typeof loadDashboardStats === 'function') loadDashboardStats();
+        if (typeof loadRecentActivities === 'function') loadRecentActivities();
+    } catch (e) {
+        showNotification('Could not save communication: ' + e.message, 'error');
+    }
+}
+
+// Load communications list from the backend (falls back to any local cache)
+async function loadCommunicationsList() {
     const container = document.getElementById('communicationsList');
-    
+    let communications = [];
+    try {
+        const res = await apiRequest('/communications?limit=1000', { method: 'GET' });
+        communications = (res.data || []).map(mapApiCommToUi);
+        // Keep the local cache in sync so synchronous consumers (stats, etc.) stay correct
+        try { const u = getCurrentUser(); u.communications = communications; saveCurrentUser(u); } catch (e) {}
+    } catch (e) {
+        communications = getCommunications();
+    }
+
     if (communications.length === 0) {
         container.innerHTML = '<p class="empty-state">No communications logged yet.</p>';
         return;
@@ -130,24 +160,20 @@ function editCommunication(commId) {
     showNotification('Edit feature coming soon!', 'info');
 }
 
-// Delete communication with confirmation
-function deleteCommunicationConfirm(commId) {
+// Delete communication with confirmation — removes it from the backend
+async function deleteCommunicationConfirm(commId) {
     const communications = getCommunications();
     const comm = communications.find(c => c.id === commId);
-    
     if (!comm) return;
-    
-    if (confirm(`Delete communication with ${comm.contactName}?`)) {
-        const user = getCurrentUser();
-        user.communications = user.communications.filter(c => c.id !== commId);
-        saveCurrentUser(user);
-        
-        logWorkflowActivity('communication_deleted', 
-            `Communication with ${comm.contactName} deleted`
-        );
-        
+
+    if (!confirm(`Delete communication with ${comm.contactName}?`)) return;
+    try {
+        await apiRequest('/communications/' + encodeURIComponent(commId), { method: 'DELETE' });
+        if (typeof logWorkflowActivity === 'function') logWorkflowActivity('communication_deleted', `Communication with ${comm.contactName} deleted`);
         showNotification('Communication deleted!', 'success');
-        loadCommunicationsList();
+        await loadCommunicationsList();
+    } catch (e) {
+        showNotification('Could not delete: ' + e.message, 'error');
     }
 }
 
