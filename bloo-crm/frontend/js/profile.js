@@ -10,7 +10,20 @@
 function toggleUserMenu(e) {
     if (e) e.stopPropagation();
     const m = document.getElementById('userMenu');
-    if (m) m.classList.toggle('open');
+    if (!m) return;
+    if (!m.classList.contains('open')) _fillUserMenuHead();
+    m.classList.toggle('open');
+}
+
+// Populate the colorful dropdown header from the signed-in user
+function _fillUserMenuHead() {
+    const u = _profileUser();
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set('umName', u.name || (document.getElementById('userName') && document.getElementById('userName').textContent) || 'User');
+    set('umEmail', u.email || '');
+    set('umPlan', PLAN_LABELS[u.plan] || u.plan || 'Basic CRM');
+    const av = document.getElementById('umAvatar');
+    if (av) av.src = u.avatar || 'https://via.placeholder.com/52';
 }
 
 // Close the dropdown when clicking anywhere outside it

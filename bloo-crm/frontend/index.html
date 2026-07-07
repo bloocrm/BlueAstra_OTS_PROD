@@ -343,8 +343,18 @@
                         <img id="topAvatar" src="https://via.placeholder.com/40" alt="Profile" class="profile-avatar">
                         <i class="fas fa-chevron-down" style="font-size:0.7rem;margin-left:4px;color:#999;"></i>
                         <div id="userMenu" class="user-menu">
-                            <a href="#" onclick="openProfileModal();return false;"><i class="fas fa-id-card"></i> View Profile</a>
-                            <a href="#" onclick="handleLogout();return false;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                            <div class="user-menu-head">
+                                <img id="umAvatar" src="https://via.placeholder.com/52" alt="Profile">
+                                <div class="user-menu-head-info">
+                                    <div id="umName" class="um-name">User</div>
+                                    <div id="umEmail" class="um-email"></div>
+                                    <span id="umPlan" class="um-plan">Basic CRM</span>
+                                </div>
+                            </div>
+                            <div class="user-menu-items">
+                                <a href="#" onclick="openProfileModal();return false;"><i class="fas fa-id-card"></i> View Profile</a>
+                                <a href="#" class="um-logout" onclick="handleLogout();return false;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                            </div>
                         </div>
                     </div>
                 </div>

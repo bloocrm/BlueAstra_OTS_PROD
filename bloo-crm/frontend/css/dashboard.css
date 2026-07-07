@@ -4391,18 +4391,53 @@
 
 /* ===== User dropdown menu + profile modal ===== */
 .user-menu {
-    display: none; position: absolute; top: 120%; right: 0; min-width: 190px;
-    background: #fff; border: 1px solid #e6ecf5; border-radius: 10px;
-    box-shadow: 0 12px 30px rgba(16,35,58,0.14); padding: 6px; z-index: 500;
+    display: none; position: absolute; top: 132%; right: 0;
+    width: 288px; min-width: 288px;
+    background: #fff; border: 1px solid #e6ecf5; border-radius: 16px;
+    box-shadow: 0 20px 46px rgba(16,35,58,0.24); padding: 0; z-index: 500;
+    overflow: hidden;
 }
-.user-menu.open { display: block; }
+.user-menu.open { display: block; animation: fadeIn 0.16s ease; }
+
+/* Colorful profile header inside the dropdown */
+.user-menu-head {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 20px 16px;
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-dark));
+    color: #fff;
+}
+.user-menu-head img {
+    width: 54px; height: 54px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+    border: 3px solid rgba(255,255,255,0.85);
+    box-shadow: 0 5px 14px rgba(0,0,0,0.20);
+    background: #fff;
+}
+.user-menu-head-info { min-width: 0; }
+.user-menu-head .um-name {
+    font-weight: 700; font-size: 1rem; line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.user-menu-head .um-email {
+    font-size: 0.78rem; opacity: 0.94; margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.user-menu-head .um-plan {
+    display: inline-block; margin-top: 8px;
+    font-size: 0.64rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+    background: rgba(255,255,255,0.26); color: #fff; padding: 3px 11px; border-radius: 20px;
+}
+
+/* Menu links — kept a comfortable distance from the left edge */
+.user-menu-items { padding: 12px 12px 14px; }
 .user-menu a {
-    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-    color: #16233a; text-decoration: none; font-size: 0.9rem; font-weight: 600;
-    border-radius: 8px;
+    display: flex; align-items: center; gap: 13px; padding: 12px 14px 12px 18px;
+    color: #16233a; text-decoration: none; font-size: 0.92rem; font-weight: 600;
+    border-radius: 11px; transition: background 0.15s, color 0.15s, transform 0.1s;
 }
-.user-menu a:hover { background: var(--theme-soft); color: var(--theme-primary); }
-.user-menu a i { width: 16px; color: var(--theme-primary); }
+.user-menu a:hover { background: var(--theme-soft); color: var(--theme-primary); transform: translateX(2px); }
+.user-menu a i { width: 20px; text-align: center; color: var(--theme-primary); font-size: 1rem; }
+.user-menu a.um-logout i { color: #e5484d; }
+.user-menu a.um-logout:hover { background: #fdecec; color: #e5484d; }
 
 .profile-row {
     display: flex; justify-content: space-between; gap: 14px; align-items: center;
