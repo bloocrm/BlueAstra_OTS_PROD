@@ -55,25 +55,17 @@ connectDB();
 // event handlers, inline styles, and external CDN scripts. Other helmet
 // protections (HSTS, noSniff, frameguard, etc.) remain enabled.
 app.use(helmet({
-  // A minimal CSP that adds real protection without breaking the inline-handler
-  // SPA, its CDN scripts, or the browser-side OAuth/meeting calls. (A full
-  // script-src policy would require enumerating every provider domain.)
-  contentSecurityPolicy: {
-    useDefaults: false,
-    directives: {
-      'object-src': ["'none'"],
-      'base-uri': ["'self'"],
-      'frame-ancestors': ["'self'"]
-    }
-  },
+  contentSecurityPolicy: false, // a tailored CSP is set manually below
   crossOriginEmbedderPolicy: false, // SPA loads cross-origin CDN scripts
   crossOriginResourcePolicy: false,
   hsts: { maxAge: 31536000, includeSubDomains: true } // 1 year (was 180 days)
 }));
 
-// Permissions-Policy: disable powerful browser features the CRM never uses.
-// (mic/camera/payment left unrestricted — used by meetings & Stripe.)
+// Minimal CSP (no default-src, so inline handlers / CDN scripts / browser-side
+// OAuth & meeting calls are unaffected) + Permissions-Policy disabling powerful
+// features the CRM never uses. mic/camera/payment left alone (meetings, Stripe).
 app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', "object-src 'none'; base-uri 'self'; frame-ancestors 'self'");
   res.setHeader('Permissions-Policy',
     'geolocation=(), usb=(), serial=(), bluetooth=(), magnetometer=(), accelerometer=(), gyroscope=(), midi=()');
   next();
