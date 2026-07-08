@@ -76,7 +76,7 @@ const passwordChangedEmailHTML = (name) => `
 const generateToken = (user) => {
   return jwt.sign(
     { id: user._id, email: user.email, name: user.name },
-    process.env.JWT_SECRET || 'your-secret-key',
+    process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE || '7d' }
   );
 };
@@ -87,7 +87,9 @@ router.post(
   [
     body('name').notEmpty().withMessage('Name is required'),
     body('email').isEmail().withMessage('Valid email is required'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    body('password')
+      .isStrongPassword({ minLength: 8, minLowercase: 1, minUppercase: 0, minNumbers: 1, minSymbols: 0 })
+      .withMessage('Password must be at least 8 characters and include at least one letter and one number'),
     body('phone').notEmpty().withMessage('Phone number is required'),
     body('company').optional()
   ],
@@ -203,7 +205,7 @@ router.post(
       if (user.mfaEnabled) {
         const mfaToken = jwt.sign(
           { id: user._id, mfa: 'pending' },
-          process.env.JWT_SECRET || 'your-secret-key',
+          process.env.JWT_SECRET,
           { expiresIn: '5m' }
         );
         return res.json({ message: 'MFA required', data: { mfaRequired: true, method: user.mfaMethod || 'totp', mfaToken } });
@@ -247,7 +249,7 @@ router.get('/profile', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id);
 
     if (!user) {
@@ -271,7 +273,7 @@ router.post('/refresh-token', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
       ignoreExpiration: true
     });
 
@@ -605,7 +607,7 @@ router.post('/mfa/login', async (req, res) => {
     const { mfaToken, code } = req.body || {};
     if (!mfaToken || !code) return res.status(400).json({ error: 'Please enter your authentication code.' });
     let decoded;
-    try { decoded = jwt.verify(mfaToken, process.env.JWT_SECRET || 'your-secret-key'); }
+    try { decoded = jwt.verify(mfaToken, process.env.JWT_SECRET); }
     catch (e) { return res.status(401).json({ error: 'Your login session expired. Please sign in again.' }); }
     if (decoded.mfa !== 'pending') return res.status(401).json({ error: 'Invalid MFA session.' });
     const u = await User.findById(decoded.id).select('+mfaSecret +mfaBackupCodes');
