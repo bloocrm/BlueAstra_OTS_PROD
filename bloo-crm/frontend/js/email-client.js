@@ -154,12 +154,17 @@ class EmailClient {
         for (const provider of ['outlook', 'gmail']) {
             const sso = mgr.ssoInstances[provider];
             if (!sso) continue;
-            try { await sso.checkExistingSession(); } catch (e) { /* not connected */ }
-            if (sso.isUserLoggedIn && sso.isUserLoggedIn()) {
+            try { await sso.checkExistingSession(); } catch (e) { /* token may be expired — still connected */ }
+            // Persist the connected email so it still shows after logout/login even
+            // once the access token has expired.
+            if (sso.userEmail) localStorage.setItem(`${provider}_email`, sso.userEmail);
+            // Connected = authenticated earlier and not yet disconnected (persistent).
+            const connected = sso.isConnected ? sso.isConnected() : (sso.isUserLoggedIn && sso.isUserLoggedIn());
+            if (connected) {
                 this.connections.push({
                     id: provider,
                     provider: provider,
-                    email: sso.userEmail || provider,
+                    email: sso.userEmail || localStorage.getItem(`${provider}_email`) || provider,
                     sso: sso
                 });
             }
@@ -795,16 +800,22 @@ class EmailClient {
         emailSection.innerHTML = '<h4>Email Providers</h4>';
 
         providers.forEach(provider => {
+            const mgr = window.emailManager;
+            const sso = mgr && mgr.ssoInstances && mgr.ssoInstances[provider.id];
+            const connected = !!(sso && sso.isConnected && sso.isConnected());
+            const email = connected ? ((sso && sso.userEmail) || localStorage.getItem(`${provider.id}_email`) || '') : '';
+
             const card = document.createElement('div');
             card.className = 'provider-card';
             card.innerHTML = `
                 <div class="provider-logo">${provider.icon}</div>
-                <div class="provider-name">${provider.name}</div>
-                <button class="btn-connect" data-provider="${provider.id}">Connect</button>
+                <div class="provider-name">${provider.name}${connected && email ? `<span style="display:block;font-size:11px;color:#16a34a;font-weight:600;">${email}</span>` : ''}</div>
+                <button class="btn-connect${connected ? ' btn-disconnect' : ''}" data-provider="${provider.id}"${connected ? ' style="background:#ef4444;border-color:#ef4444;color:#fff;"' : ''}>${connected ? 'Disconnect' : 'Connect'}</button>
             `;
             card.querySelector('.btn-connect').addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.connectProvider(provider.id);
+                if (connected) this.disconnectProvider(provider.id);
+                else this.connectProvider(provider.id);
             });
             emailSection.appendChild(card);
         });
@@ -865,6 +876,25 @@ class EmailClient {
 
     closeAddAccountModal() {
         document.getElementById('addAccountModal').classList.remove('active');
+    }
+
+    // Disconnect an email account: clear its OAuth tokens so it's no longer
+    // connected (until the user connects again). Stored emails stay in MongoDB.
+    disconnectProvider(providerId) {
+        try {
+            const mgr = window.emailManager;
+            const sso = mgr && mgr.ssoInstances && mgr.ssoInstances[providerId];
+            if (sso && sso.logout) sso.logout();               // clears tokens from localStorage
+            localStorage.removeItem(`${providerId}_email`);
+            if (this.currentAccount && this.currentAccount.provider === providerId) {
+                this.currentAccount = null;
+            }
+            this.showToast(`🔌 ${providerId.toUpperCase()} disconnected. Connect again anytime.`, 'info');
+            this.openAddAccountModal();   // re-render so the button flips back to "Connect"
+            this.loadConnections();
+        } catch (e) {
+            this.showToast(`❌ Could not disconnect: ${e.message}`, 'error');
+        }
     }
 
     async connectProvider(provider) {

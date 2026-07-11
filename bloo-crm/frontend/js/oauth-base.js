@@ -41,7 +41,7 @@ class OAuthBase {
             const { authorizationUrl, state } = await response.json();
 
             // Store state for verification
-            sessionStorage.setItem(`${this.providerId}_oauth_state`, state);
+            localStorage.setItem(`${this.providerId}_oauth_state`, state);
 
             if (authTab && !authTab.closed) {
                 authTab.location.href = authorizationUrl;   // send the new tab to the provider
@@ -70,7 +70,7 @@ class OAuthBase {
             }
 
             // Verify state
-            const storedState = sessionStorage.getItem(`${this.providerId}_oauth_state`);
+            const storedState = localStorage.getItem(`${this.providerId}_oauth_state`);
             if (state !== storedState) {
                 throw new Error('State mismatch - potential CSRF attack');
             }
@@ -111,17 +111,17 @@ class OAuthBase {
         this.isLoggedIn = true;
 
         // Store in session storage
-        sessionStorage.setItem(`${this.providerId}_access_token`, this.accessToken);
+        localStorage.setItem(`${this.providerId}_access_token`, this.accessToken);
         if (this.refreshToken) {
-            sessionStorage.setItem(`${this.providerId}_refresh_token`, this.refreshToken);
+            localStorage.setItem(`${this.providerId}_refresh_token`, this.refreshToken);
         }
-        sessionStorage.setItem(`${this.providerId}_expires_at`, this.tokenExpiresAt);
+        localStorage.setItem(`${this.providerId}_expires_at`, this.tokenExpiresAt);
     }
 
     loadStoredTokens() {
-        this.accessToken = sessionStorage.getItem(`${this.providerId}_access_token`);
-        this.refreshToken = sessionStorage.getItem(`${this.providerId}_refresh_token`);
-        this.tokenExpiresAt = parseInt(sessionStorage.getItem(`${this.providerId}_expires_at`)) || 0;
+        this.accessToken = localStorage.getItem(`${this.providerId}_access_token`);
+        this.refreshToken = localStorage.getItem(`${this.providerId}_refresh_token`);
+        this.tokenExpiresAt = parseInt(localStorage.getItem(`${this.providerId}_expires_at`)) || 0;
         this.isLoggedIn = this.accessToken && !this.isTokenExpired();
     }
 
@@ -188,6 +188,14 @@ class OAuthBase {
         return this.isLoggedIn && this.accessToken && !this.isTokenExpired();
     }
 
+    // Persistent connection status: true from the moment the user authenticates
+    // until they explicitly disconnect. Survives access-token expiry, tab close,
+    // and Bloo CRM logout/login (tokens live in localStorage, not the session).
+    isConnected() {
+        return !!(localStorage.getItem(`${this.providerId}_access_token`) ||
+                  localStorage.getItem(`${this.providerId}_refresh_token`));
+    }
+
     logout() {
         this.accessToken = null;
         this.refreshToken = null;
@@ -196,10 +204,10 @@ class OAuthBase {
         this.userEmail = null;
         this.isLoggedIn = false;
 
-        sessionStorage.removeItem(`${this.providerId}_access_token`);
-        sessionStorage.removeItem(`${this.providerId}_refresh_token`);
-        sessionStorage.removeItem(`${this.providerId}_expires_at`);
-        sessionStorage.removeItem(`${this.providerId}_oauth_state`);
+        localStorage.removeItem(`${this.providerId}_access_token`);
+        localStorage.removeItem(`${this.providerId}_refresh_token`);
+        localStorage.removeItem(`${this.providerId}_expires_at`);
+        localStorage.removeItem(`${this.providerId}_oauth_state`);
 
         this.emit('logout', { provider: this.providerId });
     }
