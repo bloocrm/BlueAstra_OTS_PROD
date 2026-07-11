@@ -222,6 +222,13 @@ app.use('/api/payments', paymentRoutes);
 const visitorRoutes = require('./routes/visitors');
 app.use('/api/visitors', visitorRoutes);
 
+// Secure server-side Microsoft (Outlook) mailbox OAuth — encrypted tokens in
+// MongoDB, per-user isolation, PKCE, server-side refresh + sync. Mounted at a
+// specific prefix before the bare-'/api' routers so the public OAuth callback is
+// not intercepted by their router-level verifyToken.
+const emailOAuthRoutes = require('./routes/email-oauth');
+app.use('/api/mailbox', emailOAuthRoutes);
+
 // =====================================================
 // EMAIL SYNC ROUTES
 // =====================================================

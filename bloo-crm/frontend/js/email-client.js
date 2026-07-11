@@ -150,30 +150,27 @@ class EmailClient {
             return;
         }
 
-        // Connections persisted server-side (encrypted, per user) — they follow the
-        // account across devices/browsers, not just the one it was connected in.
-        let serverConns = [];
-        try { const r = await this.apiCall('/email/link'); serverConns = (r && r.connections) || []; } catch (e) { /* fall back to local */ }
-
-        for (const provider of ['outlook', 'gmail']) {
-            const sso = mgr.ssoInstances[provider];
-            if (!sso) continue;
-            try { await sso.checkExistingSession(); } catch (e) { /* token may be expired */ }
-            const serverConn = serverConns.find(c => c.provider === provider);
-            // New device/browser: no local tokens yet — pull a valid one from the server.
-            if (serverConn && sso.hydrateFromServer && !(sso.isConnected && sso.isConnected())) {
-                try { await sso.hydrateFromServer(); } catch (e) { /* may need reauth */ }
-            }
-            if (sso.userEmail) localStorage.setItem(`${provider}_email`, sso.userEmail);
-            // Connected = authenticated earlier (server-persisted or local) and not disconnected.
-            const connected = !!serverConn || (sso.isConnected && sso.isConnected());
-            if (connected) {
+        // Outlook: SECURE server-side connection — encrypted tokens live in MongoDB
+        // (never in the browser). Source of truth = /api/mailbox/connections. This
+        // follows the account across devices and reflects revoked/expired status.
+        try {
+            const r = await this.apiCall('/mailbox/connections');
+            const mConn = ((r && r.connections) || []).find(c => c.provider === 'microsoft');
+            if (mConn) {
                 this.connections.push({
-                    id: provider,
-                    provider: provider,
-                    email: sso.userEmail || (serverConn && serverConn.email) || localStorage.getItem(`${provider}_email`) || provider,
-                    sso: sso
+                    id: 'outlook', provider: 'outlook', email: mConn.email,
+                    connectionId: mConn._id, serverSide: true, status: mConn.connectionStatus
                 });
+            }
+        } catch (e) { /* server list unavailable — falls through to stored emails */ }
+
+        // Gmail: client-side SSO (unchanged for now).
+        const g = mgr.ssoInstances['gmail'];
+        if (g) {
+            try { await g.checkExistingSession(); } catch (e) {}
+            if (g.userEmail) localStorage.setItem('gmail_email', g.userEmail);
+            if (g.isConnected && g.isConnected()) {
+                this.connections.push({ id: 'gmail', provider: 'gmail', email: g.userEmail || localStorage.getItem('gmail_email') || 'gmail', sso: g });
             }
         }
 
@@ -192,8 +189,9 @@ class EmailClient {
         this.currentAccount = connected || { id: provider, provider, email: provider, sso: null };
         await this.loadEmails();
 
-        // If the account is actually connected, refresh from the provider in the background
-        if (connected && connected.sso) {
+        // If the account is actually connected, refresh in the background
+        // (server-side for Outlook, client SSO for Gmail).
+        if (connected && (connected.serverSide ? connected.status === 'connected' : connected.sso)) {
             this.syncEmails();
         }
     }
@@ -767,6 +765,21 @@ class EmailClient {
             this.showToast('❌ No account selected. Connect Outlook or Gmail first (+).', 'error');
             return;
         }
+        // Outlook: server-side sync — the backend pulls all folders with its own
+        // stored token (nothing sensitive touches the browser).
+        if (this.currentAccount.serverSide && this.currentAccount.connectionId) {
+            this.showToast(`⏳ Syncing all folders of ${this.currentAccount.email}…`, 'info');
+            try {
+                const res = await this.apiCall(`/mailbox/connections/${this.currentAccount.connectionId}/sync`, { method: 'POST', body: { perFolder: 25 } });
+                this.showToast(`✅ Synced ${res.stored} email(s) into MongoDB.`, 'success');
+            } catch (e) {
+                if (String(e.message).includes('needs_reauth')) this.showToast('🔒 Please reconnect Outlook to keep syncing.', 'error');
+                else this.showToast(`❌ Sync failed: ${e.message}`, 'error');
+            }
+            await this.loadEmails();
+            return;
+        }
+
         const sso = this.currentAccount.sso;
         this.showToast(`⏳ Downloading all folders of ${this.currentAccount.email} into MongoDB…`, 'info');
         try {
@@ -889,11 +902,19 @@ class EmailClient {
     // connected (until the user connects again). Stored emails stay in MongoDB.
     async disconnectProvider(providerId) {
         try {
-            const mgr = window.emailManager;
-            const sso = mgr && mgr.ssoInstances && mgr.ssoInstances[providerId];
-            if (sso && sso.logout) sso.logout();               // clears local tokens
-            localStorage.removeItem(`${providerId}_email`);
-            try { await this.apiCall(`/email/link/${providerId}`, { method: 'DELETE' }); } catch (e) { /* server best-effort */ }
+            if (providerId === 'outlook') {
+                // Server-side connection: delete the encrypted record on the server.
+                const conn = this.connections.find(c => c.provider === 'outlook');
+                if (conn && conn.connectionId) {
+                    try { await this.apiCall(`/mailbox/connections/${conn.connectionId}`, { method: 'DELETE' }); } catch (e) { /* best-effort */ }
+                }
+            } else {
+                const mgr = window.emailManager;
+                const sso = mgr && mgr.ssoInstances && mgr.ssoInstances[providerId];
+                if (sso && sso.logout) sso.logout();               // clears local tokens
+                localStorage.removeItem(`${providerId}_email`);
+                try { await this.apiCall(`/email/link/${providerId}`, { method: 'DELETE' }); } catch (e) { /* server best-effort */ }
+            }
             this.connections = this.connections.filter(c => c.provider !== providerId);
             if (this.currentAccount && this.currentAccount.provider === providerId) {
                 this.currentAccount = null;
@@ -910,6 +931,28 @@ class EmailClient {
         try {
             if (!provider) {
                 throw new Error('Provider ID is required');
+            }
+
+            // Outlook: SECURE server-side OAuth. Ask the backend for the auth URL
+            // (per-attempt state + PKCE, tokens stay server-side) and open it in a
+            // new tab. The new tab is opened synchronously so it isn't popup-blocked.
+            if (provider === 'outlook') {
+                const authTab = window.open('about:blank', '_blank');
+                this.showToast('⏳ Opening Microsoft sign-in…', 'info');
+                try {
+                    const res = await this.apiCall('/mailbox/microsoft/connect');
+                    if (res && res.authUrl) {
+                        if (authTab && !authTab.closed) authTab.location.href = res.authUrl;
+                        else window.location.href = res.authUrl;
+                        this.closeAddAccountModal();
+                        return;
+                    }
+                    if (authTab && !authTab.closed) authTab.close();
+                    throw new Error((res && res.message) || 'Could not start Microsoft sign-in');
+                } catch (e) {
+                    if (authTab && !authTab.closed) authTab.close();
+                    throw e;
+                }
             }
 
             console.log(`🔐 Starting OAuth flow for provider: ${provider}`);
