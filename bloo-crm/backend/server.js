@@ -215,6 +215,13 @@ app.use('/api/workflow', workflowRoutes);
 const paymentRoutes = require('./routes/payments');
 app.use('/api/payments', paymentRoutes);
 
+// Website visitor consent + first-party analytics (public marketing site).
+// Mounted at a SPECIFIC prefix BEFORE the bare-'/api' routers below — several of
+// those (calendar-events-api, email-management-api) apply router-level verifyToken
+// to all '/api/*' traffic that reaches them, which would 401 this public endpoint.
+const visitorRoutes = require('./routes/visitors');
+app.use('/api/visitors', visitorRoutes);
+
 // =====================================================
 // EMAIL SYNC ROUTES
 // =====================================================
@@ -342,10 +349,6 @@ app.use('/api/proposals', proposalRoutes);
 // Project-management integrations (Rocket AI+ only)
 const integrationRoutes = require('./routes/integrations');
 app.use('/api/integrations', integrationRoutes);
-
-// Website visitor consent + first-party analytics (public marketing site)
-const visitorRoutes = require('./routes/visitors');
-app.use('/api/visitors', visitorRoutes);
 
 // =====================================================
 // STATIC FRONTEND
