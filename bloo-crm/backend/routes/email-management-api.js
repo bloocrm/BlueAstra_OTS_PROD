@@ -784,7 +784,10 @@ router.post('/email/link', async (req, res) => {
     account.email = email;
     if (accessToken) account.accessToken = accessToken;     // pre-save hook encrypts
     if (refreshToken) account.refreshToken = refreshToken;
-    if (expiresAt) account.tokenExpiresAt = new Date(expiresAt);
+    if (expiresAt) {
+      const exp = new Date(typeof expiresAt === 'string' && /^\d+$/.test(expiresAt) ? Number(expiresAt) : expiresAt);
+      if (!isNaN(exp.getTime())) account.tokenExpiresAt = exp;
+    }
     account.isActive = true;
     account.connectionDetails = { ...(account.connectionDetails || {}), connectedAt: (account.connectionDetails && account.connectionDetails.connectedAt) || new Date() };
     await account.save();
