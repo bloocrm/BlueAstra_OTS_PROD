@@ -55,7 +55,7 @@
 /* Blurred NYSE video background — the login card stays the highlight */
 .lp-bg-video {
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-    object-position: center 40%;   /* frame the NYSE facade + American flag */
+    object-position: center center;   /* frame the markets collage */
     z-index: 0; filter: blur(2.5px) brightness(0.98); transform: scale(1.03);
     pointer-events: none;
 }
