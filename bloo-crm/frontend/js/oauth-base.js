@@ -24,6 +24,10 @@ class OAuthBase {
     }
 
     async startOAuthFlow(scopes = []) {
+        // Open the new tab SYNCHRONOUSLY, inside the click gesture, so the browser
+        // doesn't block it as a popup (we navigate it once we have the auth URL).
+        // The Bloo CRM page itself is never redirected away.
+        const authTab = window.open('about:blank', '_blank');
         try {
             // Get OAuth configuration from backend
             const response = await fetch(`${this.apiBase}/auth/oauth-config/${this.providerId}`, {
@@ -39,9 +43,15 @@ class OAuthBase {
             // Store state for verification
             sessionStorage.setItem(`${this.providerId}_oauth_state`, state);
 
-            // Redirect to OAuth provider
-            window.location.href = authorizationUrl;
+            if (authTab && !authTab.closed) {
+                authTab.location.href = authorizationUrl;   // send the new tab to the provider
+                this.emit('oauth-opened', { provider: this.providerId });
+            } else {
+                // Tab was blocked — fall back to a same-tab redirect so auth still works.
+                window.location.href = authorizationUrl;
+            }
         } catch (error) {
+            if (authTab && !authTab.closed) authTab.close();
             console.error(`OAuth flow error for ${this.providerId}:`, error);
             this.emit('oauth-error', { error: error.message });
             throw error;

@@ -125,7 +125,13 @@ if (window.location.pathname.includes('outlook-callback')) {
         const sso = new OutlookSSO();
         try {
             await sso.handleCallback();
-            // Full-page OAuth redirect (not a popup) — return to the email client
+            // Opened in a new tab from the email client — tell it we're done and close.
+            if (window.opener && !window.opener.closed) {
+                try { window.opener.postMessage({ type: 'email-oauth-complete', provider: 'outlook', success: true }, window.location.origin); } catch (e) {}
+                window.close();
+                return;
+            }
+            // Fallback (opened directly / same tab): return to the email client.
             window.location.href = '/email-client.html';
         } catch (error) {
             console.error('Outlook callback error:', error);

@@ -107,7 +107,10 @@ if (window.location.pathname.includes('gmail-callback')) {
         const sso = new GmailSSO();
         try {
             await sso.handleCallback();
-            // Close callback window and return to main window
+            // Notify the email client (opener tab) then close this tab.
+            if (window.opener && !window.opener.closed) {
+                try { window.opener.postMessage({ type: 'email-oauth-complete', provider: 'gmail', success: true }, window.location.origin); } catch (e) {}
+            }
             window.close();
         } catch (error) {
             console.error('Gmail callback error:', error);

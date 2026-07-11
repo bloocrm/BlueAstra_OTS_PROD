@@ -73,6 +73,17 @@ class EmailClient {
         document.getElementById('btnAddAccount').addEventListener('click', () => this.openAddAccountModal());
         document.getElementById('btnCloseAccount').addEventListener('click', () => this.closeAddAccountModal());
 
+        // OAuth completed in the new tab → refresh connected accounts here (no page redirect).
+        window.addEventListener('message', (e) => {
+            if (e.origin !== window.location.origin) return;
+            const d = e.data || {};
+            if (d.type === 'email-oauth-complete' && d.success) {
+                this.showToast(`✅ ${(d.provider || 'Account').toUpperCase()} connected.`, 'success');
+                this.closeAddAccountModal();
+                this.loadConnections();
+            }
+        });
+
         // Settings
         document.getElementById('btnSettings').addEventListener('click', () => this.openSettingsModal());
         document.getElementById('btnCloseSettings').addEventListener('click', () => this.closeSettingsModal());
