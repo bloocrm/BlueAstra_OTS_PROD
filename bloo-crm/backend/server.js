@@ -343,6 +343,10 @@ app.use('/api/proposals', proposalRoutes);
 const integrationRoutes = require('./routes/integrations');
 app.use('/api/integrations', integrationRoutes);
 
+// Website visitor consent + first-party analytics (public marketing site)
+const visitorRoutes = require('./routes/visitors');
+app.use('/api/visitors', visitorRoutes);
+
 // =====================================================
 // STATIC FRONTEND
 // Serve the SPA from the backend so the whole app runs same-origin
