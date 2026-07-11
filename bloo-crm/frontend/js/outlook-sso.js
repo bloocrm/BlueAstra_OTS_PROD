@@ -56,33 +56,42 @@ class OutlookSSO extends OAuthBase {
         }
     }
 
-    async getSyncedEmails(maxResults = 50) {
-        try {
-            if (!this.isUserLoggedIn()) {
-                throw new Error('User not authenticated');
-            }
-
-            // Pull TEXT only (bodyPreview) + attachment METADATA (no contentBytes,
-            // so nothing — including images — is downloaded automatically).
-            const params = [
-                `$top=${maxResults}`,
-                `$orderby=receivedDateTime desc`,
-                `$select=id,subject,from,toRecipients,receivedDateTime,sentDateTime,bodyPreview,isRead,hasAttachments`,
-                `$expand=attachments($select=id,name,contentType,size)`
-            ].join('&');
-            const endpoint = `${this.config.apiUrl}/me/mailFolders/Inbox/messages?${params}`;
-            const response = await this.makeApiCall(endpoint);
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch emails: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            return data.value || [];
-        } catch (error) {
-            console.error('Error fetching Outlook emails:', error);
-            throw error;
+    async getSyncedEmails(maxPerFolder = 25) {
+        if (!this.isUserLoggedIn()) {
+            throw new Error('User not authenticated');
         }
+
+        // Pull every mailbox section. Each Graph well-known folder maps to our
+        // stored folder enum; each message is tagged with __folder so it lands in
+        // the right place in MongoDB / the client.
+        const folders = [
+            ['Inbox', 'inbox'],
+            ['SentItems', 'sent'],
+            ['Drafts', 'drafts'],
+            ['DeletedItems', 'trash'],
+            ['Archive', 'archive'],
+            ['JunkEmail', 'spam']
+        ];
+        // TEXT only (bodyPreview) + attachment METADATA — no contentBytes, so
+        // nothing (including images) is downloaded automatically.
+        const select = '$select=id,subject,from,toRecipients,receivedDateTime,sentDateTime,bodyPreview,isRead,hasAttachments';
+        const expand = '$expand=attachments($select=id,name,contentType,size)';
+
+        const all = [];
+        for (const [graphName, folderKey] of folders) {
+            try {
+                // No $orderby: it isn't valid for every folder (e.g. Drafts have no
+                // receivedDateTime); the store/read layer sorts by date anyway.
+                const endpoint = `${this.config.apiUrl}/me/mailFolders/${graphName}/messages?$top=${maxPerFolder}&${select}&${expand}`;
+                const response = await this.makeApiCall(endpoint);
+                if (!response.ok) continue;   // folder may not exist (e.g. Archive) — skip it
+                const data = await response.json();
+                (data.value || []).forEach(m => { m.__folder = folderKey; all.push(m); });
+            } catch (error) {
+                console.warn(`Outlook folder ${graphName} sync skipped:`, error.message);
+            }
+        }
+        return all;
     }
 
     async getEmailDetails(messageId) {

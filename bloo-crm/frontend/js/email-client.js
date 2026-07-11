@@ -280,7 +280,7 @@ class EmailClient {
         this.bindInfiniteScroll();
 
         try {
-            const res = await this.apiCall(`/emails?provider=${encodeURIComponent(this.currentAccount.provider)}&page=1&limit=30`);
+            const res = await this.apiCall(`/emails?provider=${encodeURIComponent(this.currentAccount.provider)}&folder=${encodeURIComponent(this.currentFolder)}&page=1&limit=30`);
             const docs = (res && res.emails) || [];
             this.hasMore = !!res.hasMore;
             emailList.innerHTML = '';
@@ -313,7 +313,7 @@ class EmailClient {
         this.loadingPage = true;
         this.page += 1;
         try {
-            const res = await this.apiCall(`/emails?provider=${encodeURIComponent(this.currentAccount.provider)}&page=${this.page}&limit=30`);
+            const res = await this.apiCall(`/emails?provider=${encodeURIComponent(this.currentAccount.provider)}&folder=${encodeURIComponent(this.currentFolder)}&page=${this.page}&limit=30`);
             const docs = (res && res.emails) || [];
             this.hasMore = !!res.hasMore;
             this.appendEmails(docs);
@@ -346,6 +346,7 @@ class EmailClient {
             const addr = m.from && m.from.emailAddress;
             return {
                 externalId: m.id,
+                folder: m.__folder || 'inbox',
                 from: (addr && addr.address) || '',
                 fromName: (addr && addr.name) || '',
                 to: (m.toRecipients && m.toRecipients[0] && m.toRecipients[0].emailAddress && m.toRecipients[0].emailAddress.address) || '',
@@ -744,7 +745,7 @@ class EmailClient {
             return;
         }
         const sso = this.currentAccount.sso;
-        this.showToast(`⏳ Downloading ${this.currentAccount.email} into MongoDB…`, 'info');
+        this.showToast(`⏳ Downloading all folders of ${this.currentAccount.email} into MongoDB…`, 'info');
         try {
             // Pull from the provider (Graph/Gmail) using the OAuth token...
             const raw = (sso && sso.getSyncedEmails) ? await sso.getSyncedEmails(25) : [];

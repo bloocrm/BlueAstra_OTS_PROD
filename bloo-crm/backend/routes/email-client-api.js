@@ -498,7 +498,8 @@ router.post('/email-store', verifyToken, async (req, res) => {
                             size: a.size || 0,
                             attachmentId: a.attachmentId || a.id || ''
                         })) : [],
-                        folder: 'inbox',
+                        folder: ['inbox', 'sent', 'drafts', 'trash', 'spam', 'archive'].includes(e.folder) ? e.folder : 'inbox',
+                        isDraft: e.folder === 'drafts',
                         syncedAt: new Date()
                     },
                     { upsert: true, new: true, setDefaultsOnInsert: true }
