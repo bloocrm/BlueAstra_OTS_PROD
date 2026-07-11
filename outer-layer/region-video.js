@@ -9,10 +9,10 @@
 (function () {
   'use strict';
 
-  var UK_SRC = 'https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/BlooCRM_Feature_Walkthrough_UK_1MB.mp4';
+  var UK_SRC = 'https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/BlooCRM_Feature_Walkthrough_UK.mp4';
   var UK_TYPE = 'video/mp4';
-  var US_SRC = 'https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/BlooCRM_Feature_Walkthrough_US_1MB.webm';
-  var US_TYPE = 'video/webm';
+  var US_SRC = 'https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/BlooCRM_Feature_Walkthrough_US.mp4';
+  var US_TYPE = 'video/mp4';
 
   // Middle-East countries sit in continent "AS" but belong to EMEA -> UK video.
   var MIDDLE_EAST = ['AE','SA','QA','KW','BH','OM','JO','LB','IL','IQ','IR','SY','YE','PS','TR'];
