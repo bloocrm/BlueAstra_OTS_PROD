@@ -247,6 +247,37 @@ function showLoading(show = true) {
   document.getElementById('paymentForm').style.display = show ? 'none' : 'block';
 }
 
+// If the payment link/gateway could not be started, capture whatever details we
+// have server-side and trigger a recovery email (best-effort, never blocks UI).
+function reportPaymentFailure(errorMessage) {
+  try {
+    const token = getAuthToken();
+    if (!token) return;
+    const g = (id) => (document.getElementById(id) || {}).value || '';
+    fetch(`${API_BASE_URL}/payments/report-failure`, {
+      method: 'POST', keepalive: true,
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({
+        plan: selectedPlan,
+        planName: (PLANS[selectedPlan] && PLANS[selectedPlan].name) || selectedPlan,
+        billingCycle: currentBillingCycle,
+        amount: (PLANS[selectedPlan] && PLANS[selectedPlan][currentBillingCycle]) || undefined,
+        paymentMethod: selectedPaymentMethod,
+        name: g('fullName'), email: g('email'), phone: g('phone'),
+        error: String(errorMessage || '').slice(0, 500)
+      })
+    }).catch(() => {});
+  } catch (e) { /* best-effort */ }
+}
+
+// The payment link itself failed to start: tell the user kindly + report it.
+function handlePaymentLinkFailure(msg) {
+  showLoading(false);
+  showError((msg || 'We could not start your payment right now.') +
+    " We've emailed you a link to try again — and you can reply to tell us what happened.");
+  reportPaymentFailure(msg);
+}
+
 // Process payment - First step: Collect billing info and route to OTP verification
 async function processPayment() {
   if (!validatePaymentForm()) return;
@@ -288,8 +319,7 @@ async function processPayment() {
       window.location.href = data.url;
       return;
     } catch (e) {
-      showLoading(false);
-      showError(e.message || 'Stripe checkout failed');
+      handlePaymentLinkFailure(e.message || 'Stripe checkout failed');
       return;
     }
   }
@@ -309,7 +339,7 @@ async function processPayment() {
       if (!resp.ok || !data.url) throw new Error(data.message || data.error || 'Could not start Instamojo payment');
       window.location.href = data.url;
       return;
-    } catch (e) { showLoading(false); showError(e.message || 'Instamojo payment failed'); return; }
+    } catch (e) { handlePaymentLinkFailure(e.message || 'Instamojo payment failed'); return; }
   }
 
   // --- PayU: get signed params and auto-submit a form to PayU's hosted checkout ---
@@ -331,7 +361,7 @@ async function processPayment() {
       document.body.appendChild(form);
       form.submit();
       return;
-    } catch (e) { showLoading(false); showError(e.message || 'PayU payment failed'); return; }
+    } catch (e) { handlePaymentLinkFailure(e.message || 'PayU payment failed'); return; }
   }
 
   try {
@@ -395,8 +425,7 @@ async function processPayment() {
 
   } catch (error) {
     console.error('Payment error:', error);
-    showError(error.message);
-    showLoading(false);
+    handlePaymentLinkFailure(error.message);
   }
 }
 

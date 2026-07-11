@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const paypal = require('paypal-rest-sdk');
 const Order = require('../models/Order');
 const User = require('../models/User');
+const PaymentAttempt = require('../models/PaymentAttempt');
 const emailService = require('../utils/email-service');
 const router = express.Router();
 
@@ -90,6 +91,70 @@ async function sendReceiptAndLoginEmail({ to, name, plan, billingCycle, amount, 
   } catch (e) {
     console.error('receipt email failed:', e.message);
   }
+}
+
+// Recovery email when the payment link/gateway couldn't be started. A warm,
+// Features-styled note: encouragement, the pricing plans, a "try again" link,
+// and an invitation to tell us what went wrong (issues@bloocrm.com).
+async function sendPaymentRecoveryEmail({ to, name, plan }) {
+  if (!to) return;
+  const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || 'https://bloocrm.com';
+  const safeName = String(name || 'there');
+  const tryAgainUrl = `${appUrl}/pages/payment${plan ? '?plan=' + encodeURIComponent(plan) : ''}`;
+  const mailto = 'mailto:issues@bloocrm.com?subject=' + encodeURIComponent('I could not complete my Bloo CRM payment');
+
+  const planCard = (title, price, per, blurb, highlight) => `
+    <td style="padding:8px;vertical-align:top;width:33.33%;">
+      <div style="border:${highlight ? '2px solid #2E86FF' : '1px solid #e6ecf5'};border-radius:14px;padding:18px 16px;background:#fff;">
+        <div style="font-weight:800;color:#16233a;font-size:15px;">${title}</div>
+        <div style="font-size:26px;font-weight:800;color:#2E86FF;margin:6px 0 0;letter-spacing:-.5px;">${price}<span style="font-size:13px;color:#8a93a3;font-weight:600;">${per}</span></div>
+        <div style="color:#4a5568;font-size:12.5px;margin-top:8px;line-height:1.5;">${blurb}</div>
+      </div>
+    </td>`;
+
+  const html = `
+    <div style="font-family:Segoe UI,Arial,sans-serif;background:#eef4ff;padding:28px;">
+      <div style="max-width:640px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(22,35,58,.08);">
+        <div style="background:linear-gradient(135deg,#2E86FF,#1666d8);padding:28px 32px;color:#fff;">
+          <div style="font-size:23px;font-weight:800;">Bloo<span style="opacity:.85;">CRM</span></div>
+          <div style="margin-top:8px;font-size:16px;opacity:.96;">We're sorry your payment didn't go through 💙</div>
+        </div>
+        <div style="padding:30px 32px;color:#334155;line-height:1.65;">
+          <p style="margin:0 0 14px;">Hi ${safeName},</p>
+          <p style="margin:0 0 14px;">It looks like something got in the way of completing your payment just now — and we're sorry for the hiccup. <strong>You haven't been charged.</strong> These things usually clear up on a second try, and your spot is still waiting for you.</p>
+          <p style="margin:0 0 18px;">Bloo CRM was built to give wealth &amp; advisory teams an unfair advantage — one calm place for clients, leads, communications, calendars, compliance and AI-assisted workflows, so you spend less time wrangling tools and more time growing relationships. We'd love to have you on board.</p>
+
+          <div style="font-weight:800;color:#16233a;font-size:15px;margin:6px 0 10px;">Choose the plan that fits your firm</div>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;"><tr>
+            ${planCard('BASIC', '$10', '/mo', 'Client &amp; lead management, workflows, email &amp; calendar, secure MFA login.', false)}
+            ${planCard('SWIFT AI+', '$99', '/mo', 'Everything in Basic + AI messaging, auto email routing, advanced workflows.', true)}
+            ${planCard('ROCKET AI+', '$199', '/mo', 'Unlimited AI, retention &amp; cross-sell, predictive analytics, custom apps.', false)}
+          </tr></table>
+          <p style="font-size:12px;color:#94a3b8;margin:8px 0 22px;">Billed per user. Yearly billing is charged as 10 months.</p>
+
+          <p style="text-align:center;margin:0 0 26px;">
+            <a href="${tryAgainUrl}" style="display:inline-block;background:#2E86FF;color:#fff;text-decoration:none;font-weight:700;padding:14px 32px;border-radius:10px;">Try your payment again</a>
+          </p>
+
+          <div style="background:#f8fafc;border:1px solid #e6ecf5;border-radius:14px;padding:18px 20px;">
+            <div style="font-weight:800;color:#16233a;margin-bottom:6px;">Can you tell us what went wrong?</div>
+            <div style="font-size:14px;color:#4a5568;">Understanding what stopped you helps us fix it for you and everyone after you. Please drop us a line — even one sentence helps:
+              <div style="margin-top:10px;"><a href="${mailto}" style="color:#2E86FF;font-weight:700;">issues@bloocrm.com</a></div>
+            </div>
+          </div>
+
+          <p style="margin:22px 0 0;font-size:13px;color:#94a3b8;">Whenever you're ready, we'll be right here. — The Bloo CRM Team</p>
+        </div>
+        <div style="background:#0f1b2e;color:#93a3bd;padding:16px 32px;font-size:12px;text-align:center;">© 2026 Blue Astra Technologies LLP · Bloo CRM · <a href="mailto:issues@bloocrm.com" style="color:#cfe0ff;">issues@bloocrm.com</a></div>
+      </div>
+    </div>`;
+
+  await emailService.sendEmail({
+    to,
+    fromName: 'Bloo CRM',
+    subject: "Sorry your Bloo CRM payment didn't go through — let's try again",
+    html
+  });
 }
 
 // Helper function to generate OTP
@@ -452,6 +517,53 @@ router.post('/resend-otp', verifyToken, async (req, res) => {
   }
 });
 
+
+// Report a failed payment *initiation* (the gateway link couldn't be started).
+// Stores whatever details we have and sends a recovery email (rate-limited).
+router.post('/report-failure', verifyToken, async (req, res) => {
+  try {
+    const b = req.body || {};
+    const email = String(b.email || req.userEmail || '').toLowerCase().trim();
+
+    const attempt = new PaymentAttempt({
+      userId: req.userId,
+      name: b.name,
+      email,
+      phone: b.phone,
+      plan: b.plan,
+      billingCycle: b.billingCycle,
+      amount: (b.amount != null && b.amount !== '') ? Number(b.amount) : undefined,
+      paymentMethod: b.paymentMethod,
+      stage: 'initiation-failed',
+      errorMessage: String(b.error || '').slice(0, 500)
+    });
+
+    // Rate-limit the recovery email to at most one per email per 15 minutes.
+    let sent = false;
+    if (email) {
+      const recent = await PaymentAttempt.findOne({
+        email, recoveryEmailSent: true,
+        createdAt: { $gt: new Date(Date.now() - 15 * 60 * 1000) }
+      });
+      if (!recent) {
+        try {
+          await sendPaymentRecoveryEmail({ to: email, name: b.name, plan: b.plan });
+          attempt.recoveryEmailSent = true;
+          attempt.recoveryEmailSentAt = new Date();
+          sent = true;
+        } catch (mailErr) {
+          console.error('recovery email failed:', mailErr.message);
+        }
+      }
+    }
+
+    await attempt.save();
+    return res.json({ status: 'ok', recoveryEmailSent: sent });
+  } catch (error) {
+    console.error('report-failure error:', error.message);
+    return res.status(200).json({ status: 'ok', recoveryEmailSent: false }); // never block the UX
+  }
+});
 
 router.post('/verify', verifyToken, async (req, res) => {
   try {
