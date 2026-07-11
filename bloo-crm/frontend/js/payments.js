@@ -226,12 +226,25 @@ function validatePaymentForm() {
 
 // Show error message
 function showError(message) {
+  // Primary: inline box at the bottom of the left column, next to the
+  // "I agree" checkboxes / Pay button — visible without scrolling to the top.
+  const inline = document.getElementById('inlineError');
+  const inlineText = document.getElementById('inlineErrorText');
+  if (inline && inlineText) {
+    inlineText.textContent = message;
+    inline.style.display = 'flex';
+    inline.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    clearTimeout(showError._t);
+    showError._t = setTimeout(() => { inline.style.display = 'none'; }, 8000);
+  }
+
+  // Fallback: the top banner (kept for any context without the inline box).
   const errorDiv = document.getElementById('errorMessage');
-  errorDiv.textContent = message;
-  errorDiv.style.display = 'block';
-  setTimeout(() => {
-    errorDiv.style.display = 'none';
-  }, 5000);
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    setTimeout(() => { errorDiv.style.display = 'none'; }, 6000);
+  }
 }
 
 // Show success message

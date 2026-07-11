@@ -78,10 +78,38 @@
             .payment-container { padding: 1rem; }
         }
 
+        .plan-section {
+            display: flex;
+            flex-direction: column;
+        }
+
         .plan-section h3 {
             color: var(--theme-primary);
             margin-bottom: 1rem;
             font-size: 1.2rem;
+        }
+
+        /* Inline validation/error box — sits at the bottom of the left column so it
+           lands next to the "I agree" checkboxes / Pay button (visible without
+           scrolling up to the top of the page). */
+        .inline-error {
+            display: none;
+            gap: 0.6rem;
+            align-items: flex-start;
+            margin-top: auto;
+            background: #ffebee;
+            border: 1px solid #f5b5b5;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+            border-radius: 0.6rem;
+            padding: 0.9rem 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .inline-error i { margin-top: 2px; flex-shrink: 0; }
+        @media (max-width: 768px) {
+            /* single column: keep it right above the consent/pay area */
+            .inline-error { margin-top: 1rem; }
         }
 
         .plan-selector {
@@ -422,6 +450,12 @@
                 <div class="security-notice">
                     <i class="fas fa-shield-alt"></i>
                     <div>Your payment is secured with industry-standard encryption. We never store your card details.</div>
+                </div>
+
+                <!-- Inline errors appear here, next to the "I agree" / Pay area on the right -->
+                <div class="inline-error" id="inlineError" role="alert" aria-live="assertive">
+                    <i class="fas fa-circle-exclamation"></i>
+                    <span id="inlineErrorText"></span>
                 </div>
             </div>
 
