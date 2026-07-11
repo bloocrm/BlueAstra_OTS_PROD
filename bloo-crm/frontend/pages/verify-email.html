@@ -1,0 +1,117 @@
+<!--
+  Copyright (c) 2026 Blue Astra Technologies LLP, India. All Rights Reserved.
+  This source code is the proprietary and confidential property of Blue Astra
+  Technologies LLP (India). Unauthorized copying, modification, distribution, or
+  use of this file or codebase, in whole or in part, by any means or technology
+  (including AI tools), is strictly prohibited without express written permission.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Verification — Bloo CRM</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+:root{ --blue:#2E86FF; --blue-dark:#1666d8; --navy:#16233a; --text:#4a5568; --soft:#eef4ff; }
+body{ background:#fff; color:var(--text); line-height:1.7; -webkit-font-smoothing:antialiased; }
+a{ text-decoration:none; }
+header{ background:rgba(255,255,255,.92); backdrop-filter:saturate(180%) blur(8px); padding:16px 7%; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 0 rgba(16,35,58,.08); position:sticky; top:0; z-index:100; }
+.logo{ font-size:26px; font-weight:800; color:var(--navy); } .logo span{ color:var(--blue); }
+.btn{ background:var(--blue); color:#fff; padding:13px 30px; border-radius:10px; font-weight:700; display:inline-block; transition:.2s; border:none; cursor:pointer; font-size:16px; }
+.btn:hover{ background:var(--blue-dark); transform:translateY(-1px); }
+.btn-ghost{ background:transparent; color:var(--blue); border:2px solid var(--blue); }
+.btn-ghost:hover{ background:var(--soft); }
+.stage{ min-height:calc(100vh - 68px); display:flex; align-items:center; justify-content:center; padding:48px 20px; background:linear-gradient(180deg,var(--soft),#fff); }
+.card{ background:#fff; width:100%; max-width:560px; border:1px solid #e6ecf5; border-radius:22px; box-shadow:0 30px 60px rgba(22,35,58,.14); padding:44px 40px; text-align:center; animation:rise .5s ease-out; }
+@keyframes rise{ from{ opacity:0; transform:translateY(18px); } to{ opacity:1; transform:translateY(0); } }
+.badge{ width:88px; height:88px; border-radius:50%; margin:0 auto 22px; display:flex; align-items:center; justify-content:center; font-size:44px; color:#fff; }
+.badge.ok{ background:linear-gradient(135deg,#22b473,#16915b); box-shadow:0 12px 26px rgba(34,180,115,.35); }
+.badge.err{ background:linear-gradient(135deg,#ef4444,#c62828); box-shadow:0 12px 26px rgba(239,68,68,.3); }
+h1{ font-size:32px; color:var(--navy); letter-spacing:-.5px; margin-bottom:8px; }
+.lead{ font-size:17px; color:var(--text); margin-bottom:24px; }
+.addr{ font-weight:800; color:var(--blue-dark); word-break:break-all; }
+.actions{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:8px; }
+.resend{ margin-top:22px; padding-top:20px; border-top:1px solid #e6ecf5; }
+.resend input{ width:100%; max-width:320px; padding:12px 14px; border:1px solid #dbe2ee; border-radius:10px; font-size:15px; margin-bottom:10px; }
+.resend input:focus{ outline:none; border-color:var(--blue); }
+.msg{ font-size:14px; margin-top:10px; min-height:20px; }
+footer{ background:#0f1b2e; color:#93a3bd; text-align:center; padding:22px; font-size:13px; } footer a{ color:#cfe0ff; font-weight:600; margin:0 6px; }
+@media(max-width:600px){ h1{ font-size:26px; } .card{ padding:32px 22px; } }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo">Bloo<span>CRM</span></div>
+    <a href="/app" class="btn btn-ghost">Login</a>
+</header>
+
+<div class="stage">
+    <!-- Success -->
+    <div class="card" id="okCard" style="display:none;">
+        <div class="badge ok"><i class="fas fa-check"></i></div>
+        <h1>Email Verified!</h1>
+        <p class="lead">Your email <span class="addr" id="okEmail"></span> has been verified and your account is now active. You can log in.</p>
+        <div class="actions">
+            <a href="/app" class="btn"><i class="fas fa-right-to-bracket"></i>&nbsp; Go to Login</a>
+        </div>
+    </div>
+
+    <!-- Invalid / expired -->
+    <div class="card" id="errCard" style="display:none;">
+        <div class="badge err"><i class="fas fa-link-slash"></i></div>
+        <h1>Link Invalid or Expired</h1>
+        <p class="lead">This verification link is invalid or has expired. Enter your email below and we'll send you a fresh verification link.</p>
+        <div class="resend">
+            <input type="email" id="resendEmail" placeholder="you@example.com" autocomplete="email">
+            <div class="actions">
+                <button class="btn" id="resendBtn"><i class="fas fa-paper-plane"></i>&nbsp; Send new link</button>
+                <a href="/app" class="btn btn-ghost">Back to Login</a>
+            </div>
+            <div class="msg" id="resendMsg"></div>
+        </div>
+    </div>
+</div>
+
+<footer>© 2026 Blue Astra Technologies LLP · <a href="/features">Features</a> · <a href="/enroll">Enroll</a> · <a href="/app">Login</a></footer>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('status');
+    const email = params.get('email') || '';
+
+    if (status === 'success') {
+        document.getElementById('okEmail').textContent = email || 'your email address';
+        document.getElementById('okCard').style.display = 'block';
+    } else {
+        document.getElementById('errCard').style.display = 'block';
+        if (email) document.getElementById('resendEmail').value = email;
+    }
+
+    const btn = document.getElementById('resendBtn');
+    if (btn) {
+        btn.addEventListener('click', async () => {
+            const val = (document.getElementById('resendEmail').value || '').trim();
+            const msg = document.getElementById('resendMsg');
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) { msg.style.color = '#c62828'; msg.textContent = 'Please enter a valid email address.'; return; }
+            btn.disabled = true; btn.innerHTML = 'Sending…';
+            try {
+                const base = (window.API_BASE_URL || '/api');
+                const resp = await fetch(`${base}/auth/resend-verification`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: val })
+                });
+                const d = await resp.json().catch(() => ({}));
+                msg.style.color = '#16915b';
+                msg.textContent = d.message || 'If an unverified account with that email exists, a new verification link has been sent.';
+            } catch (e) {
+                msg.style.color = '#c62828'; msg.textContent = 'Could not send right now. Please try again shortly.';
+            } finally {
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i>&nbsp; Send new link';
+            }
+        });
+    }
+</script>
+</body>
+</html>

@@ -134,7 +134,7 @@ app.use(auditLogger(AuditLog));
 
 // ---- Rate limiting ----
 // Strict limiter on credential endpoints (brute-force / account-enumeration guard)
-app.use(['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/auth/mfa/login'], authLimiter);
+app.use(['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/auth/mfa/login', '/api/auth/resend-verification'], authLimiter);
 // General API abuse guard
 app.use('/api', apiLimiter);
 

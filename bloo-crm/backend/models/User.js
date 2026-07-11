@@ -73,6 +73,8 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    emailVerificationToken: String,       // sha256 hash of the single-use link token
+    emailVerificationExpires: Date,
     isActive: {
       type: Boolean,
       default: true

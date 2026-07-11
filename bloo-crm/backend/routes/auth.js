@@ -72,6 +72,40 @@ const passwordChangedEmailHTML = (name) => `
     </div>
   </div>`;
 
+// Email-verification link email
+const verificationEmailHTML = (name, url) => `
+  <div style="font-family:Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#16233a;">
+    <div style="background:#2E86FF;color:#fff;padding:22px 24px;border-radius:12px 12px 0 0;">
+      <h2 style="margin:0;">Bloo CRM — Verify your email</h2>
+    </div>
+    <div style="border:1px solid #e6ecf5;border-top:none;padding:26px 24px;border-radius:0 0 12px 12px;">
+      <p>Hi ${name || 'there'},</p>
+      <p>Welcome to Bloo CRM! Please confirm your email address to activate your account. Click the button below — this link expires in <strong>24 hours</strong>.</p>
+      <p style="text-align:center;margin:26px 0;">
+        <a href="${url}" style="background:#2E86FF;color:#fff;text-decoration:none;font-weight:700;padding:13px 26px;border-radius:10px;display:inline-block;">Verify my email</a>
+      </p>
+      <p style="font-size:13px;color:#6b7688;">If the button doesn't work, copy and paste this link into your browser:<br><a href="${url}" style="color:#2E86FF;word-break:break-all;">${url}</a></p>
+      <p style="font-size:13px;color:#6b7688;">Once verified, you'll be able to log in to your account. If you didn't create a Bloo CRM account, you can safely ignore this email.</p>
+    </div>
+  </div>`;
+
+// Issue a fresh verification token, persist its hash, and email the link.
+async function sendVerificationEmail(user) {
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  user.emailVerificationToken = hashToken(rawToken);
+  user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+  await user.save({ validateBeforeSave: false });
+  const base = (process.env.APP_URL || 'https://bloocrm.com').replace(/\/+$/, '');
+  const verifyUrl = `${base}/api/auth/verify-email?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
+  await emailService.sendEmail({
+    to: user.email,
+    subject: 'Verify your email to activate your Bloo CRM account',
+    html: verificationEmailHTML(user.name, verifyUrl),
+    text: `Verify your Bloo CRM email (valid for 24 hours): ${verifyUrl}`
+  });
+  return verifyUrl;
+}
+
 // Generate JWT token
 const generateToken = (user) => {
   return jwt.sign(
@@ -125,14 +159,23 @@ router.post(
 
       await user.save();
 
-      // Generate token
+      // Send the email-verification link (login later requires a verified email).
+      try {
+        await sendVerificationEmail(user);
+      } catch (mailErr) {
+        console.error('Verification email send failed:', mailErr.message);
+      }
+
+      // Generate token (register-then-pay: the new user can proceed to checkout;
+      // logging in again later will require their email to be verified).
       const token = generateToken(user);
 
       res.status(201).json({
         message: 'User registered successfully',
         data: {
           user: user.toJSON(),
-          token
+          token,
+          emailVerificationRequired: true
         }
       });
     } catch (error) {
@@ -141,6 +184,58 @@ router.post(
         error: 'Registration failed',
         message: error.message
       });
+    }
+  }
+);
+
+// Email verification: the link in the email hits this endpoint, which marks the
+// account verified and redirects to a friendly landing page.
+router.get('/verify-email', async (req, res) => {
+  const base = (process.env.APP_URL || 'https://bloocrm.com').replace(/\/+$/, '');
+  try {
+    const token = String(req.query.token || '');
+    const email = String(req.query.email || '').toLowerCase().trim();
+    if (!token || !email) return res.redirect(302, `${base}/pages/verify-email?status=invalid`);
+
+    const user = await User.findOne({
+      email,
+      emailVerificationToken: hashToken(token),
+      emailVerificationExpires: { $gt: new Date() }
+    });
+    if (!user) return res.redirect(302, `${base}/pages/verify-email?status=invalid&email=${encodeURIComponent(email)}`);
+
+    user.emailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return res.redirect(302, `${base}/pages/verify-email?status=success&email=${encodeURIComponent(email)}`);
+  } catch (error) {
+    console.error('verify-email error:', error);
+    return res.redirect(302, `${base}/pages/verify-email?status=invalid`);
+  }
+});
+
+// Resend the verification link (generic response — never reveals account state).
+router.post(
+  '/resend-verification',
+  [body('email').isEmail().withMessage('A valid email is required')],
+  async (req, res) => {
+    const generic = { message: 'If an unverified account with that email exists, a new verification link has been sent.' };
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return res.status(400).json({ error: 'Please enter a valid email address.' });
+
+      const email = String(req.body.email).toLowerCase().trim();
+      const user = await User.findOne({ email });
+      if (!user || user.emailVerified) return res.json(generic);
+
+      try { await sendVerificationEmail(user); }
+      catch (mailErr) { console.error('Resend verification failed:', mailErr.message); }
+
+      return res.json(generic);
+    } catch (error) {
+      return res.json(generic);
     }
   }
 );
@@ -199,6 +294,18 @@ router.post(
       user.loginAttempts = 0;
       user.lockUntil = undefined;
       await user.save();
+
+      // Email-verification gate: an account whose email isn't verified yet must
+      // click the link we emailed before it can log in. (Existing accounts were
+      // migrated to verified at rollout, so they are unaffected.)
+      if (!user.emailVerified) {
+        return res.status(403).json({
+          error: 'Email not verified',
+          emailVerificationRequired: true,
+          email: user.email,
+          message: 'Please verify your email address. Click the verification link we emailed you, then log in.'
+        });
+      }
 
       // MFA gate: if enabled, don't issue a session token yet — require the
       // second factor via a short-lived MFA token.

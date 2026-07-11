@@ -63,7 +63,10 @@ async function apiRequest(path, { method = 'GET', body = null, auth = true } = {
             || (data.errors && data.errors[0] && (data.errors[0].msg || data.errors[0].message))
             || data.error
             || 'Request failed';
-        throw new Error(message);
+        const err = new Error(message);
+        err.data = data;          // keep the structured body (e.g. emailVerificationRequired)
+        err.status = response.status;
+        throw err;
     }
 
     return data;
@@ -111,7 +114,58 @@ async function handleLogin(event) {
         showNotification('Login successful!', 'success');
         showDashboard();
     } catch (error) {
+        // Unverified email — ask them to click the link we emailed, offer a resend.
+        if (error.data && error.data.emailVerificationRequired) {
+            showVerifyEmailPrompt(error.data.email || email);
+            return;
+        }
         showNotification(error.message || 'Invalid email or password!', 'error');
+    }
+}
+
+// Show the "verify your email" prompt on the login form + a resend button.
+function showVerifyEmailPrompt(email) {
+    showNotification('Please verify your email to log in.', 'info');
+    const form = document.getElementById('loginForm');
+    if (!form) return;
+
+    let banner = document.getElementById('verifyBanner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'verifyBanner';
+        banner.style.cssText = 'background:#fff7ed;border:1px solid #fdba74;color:#9a3412;border-radius:10px;padding:14px 16px;margin:0 0 16px;font-size:14px;line-height:1.5;text-align:left;';
+        form.insertBefore(banner, form.firstChild);
+    }
+    banner.innerHTML = '';
+
+    const title = document.createElement('div');
+    title.innerHTML = '<strong>Verify your email to continue</strong>';
+
+    const msg = document.createElement('div');
+    msg.style.margin = '6px 0 10px';
+    msg.innerHTML = "We've sent a verification link to <b></b>. Click it to activate your account, then log in.";
+    msg.querySelector('b').textContent = email;   // textContent avoids injection
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Resend verification email';
+    btn.style.cssText = 'background:#ea580c;color:#fff;border:none;border-radius:8px;padding:9px 15px;font-weight:600;cursor:pointer;';
+    btn.addEventListener('click', () => resendVerificationEmail(email, btn));
+
+    banner.appendChild(title); banner.appendChild(msg); banner.appendChild(btn);
+    banner.style.display = 'block';
+    banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function resendVerificationEmail(email, btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    try {
+        await apiRequest('/auth/resend-verification', { method: 'POST', auth: false, body: { email } });
+        showNotification('Verification email sent. Please check your inbox (and spam).', 'success');
+    } catch (e) {
+        showNotification('Could not resend right now. Please try again shortly.', 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Resend verification email'; }
     }
 }
 
