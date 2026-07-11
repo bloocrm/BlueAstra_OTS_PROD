@@ -93,6 +93,14 @@ async function handleLogin(event) {
         localStorage.setItem('authToken', token);
         localStorage.setItem('currentUser', JSON.stringify(user));
 
+        // Register-then-pay: an existing user who logged in from checkout returns there.
+        const dest = safeNextUrl(sessionStorage.getItem('postAuthRedirect'));
+        if (dest) {
+            sessionStorage.removeItem('postAuthRedirect');
+            window.location.href = dest;
+            return;
+        }
+
         // Member must pay for the plan chosen by their admin before entering the app
         if (user.paymentPending) {
             showNotification('Please complete payment for your plan to continue.', 'info');
@@ -140,6 +148,15 @@ async function handleRegister(event) {
         const { user, token } = result.data;
         localStorage.setItem('authToken', token);
         localStorage.setItem('currentUser', JSON.stringify(user));
+
+        // Register-then-pay: return to the checkout the visitor came from.
+        const dest = safeNextUrl(sessionStorage.getItem('postAuthRedirect'));
+        if (dest) {
+            sessionStorage.removeItem('postAuthRedirect');
+            showNotification(`Welcome ${name}! Taking you to secure checkout…`, 'success');
+            setTimeout(() => { window.location.href = dest; }, 900);
+            return;
+        }
 
         showNotification(`Welcome ${name}! Account created successfully!`, 'success');
         showDashboard();
@@ -233,10 +250,34 @@ function showNotification(message, type = 'info') {
     }, 4000);
 }
 
-// Check if user is logged in (valid backend token present)
+// Only same-site relative paths may be used as a post-auth redirect (guards
+// against open-redirect via the ?next / postAuthRedirect value).
+function safeNextUrl(v) {
+    return (typeof v === 'string' && /^\/(?!\/)/.test(v)) ? v : null;
+}
+
+// Check if user is logged in (valid backend token present) + handle register-then-pay.
 window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    const next = safeNextUrl(params.get('next'));
+    if (next) sessionStorage.setItem('postAuthRedirect', next);
+
     if (isLoggedIn()) {
+        // Already have an account — go straight to where we were headed (e.g. checkout).
+        const dest = safeNextUrl(sessionStorage.getItem('postAuthRedirect'));
+        if (dest) { sessionStorage.removeItem('postAuthRedirect'); window.location.href = dest; return; }
         showDashboard();
+        return;
+    }
+
+    // Not logged in and sent here to register (from the payment page): show sign-up.
+    if (params.get('auth') === 'register') {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        if (loginForm && registerForm) {
+            loginForm.classList.remove('active');
+            registerForm.classList.add('active');
+        }
     }
 });
 

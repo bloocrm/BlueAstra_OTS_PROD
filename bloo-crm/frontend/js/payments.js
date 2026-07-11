@@ -38,6 +38,15 @@ function initializePaymentPage() {
   const planFromUrl = params.get('plan');
   const isVerified = params.get('verified') === 'true';
 
+  // Restore the billing cycle (e.g. when returning from register-then-pay)
+  const billingFromUrl = params.get('billing');
+  if (billingFromUrl === 'yearly' || billingFromUrl === 'monthly') {
+    currentBillingCycle = billingFromUrl;
+    document.querySelectorAll('.billing-btn').forEach(b => {
+      b.classList.toggle('active', (b.getAttribute('onclick') || '').includes("'" + billingFromUrl + "'"));
+    });
+  }
+
   if (planFromUrl && PLANS[planFromUrl]) {
     selectedPlan = planFromUrl;
     selectPlan(planFromUrl);
@@ -241,10 +250,16 @@ async function processPayment() {
 
   const token = getAuthToken();
   if (!token) {
-    showError('Please login to continue with payment');
+    // Register-then-pay: send the visitor to sign-up, carrying the chosen plan +
+    // billing cycle so they return straight here to complete secure checkout.
+    showError('Create your account to continue to secure checkout…');
+    const rp = new URLSearchParams(window.location.search);
+    if (selectedPlan) rp.set('plan', selectedPlan);
+    rp.set('billing', currentBillingCycle);
+    const ret = '/pages/payment?' + rp.toString();
     setTimeout(() => {
-      window.location.href = '../../index.html#login';
-    }, 2000);
+      window.location.href = '/app?auth=register&next=' + encodeURIComponent(ret);
+    }, 1400);
     return;
   }
 
