@@ -6,6 +6,17 @@
   (including AI tools), is strictly prohibited without express written permission.
 */
 const mongoose = require('mongoose');
+const crypto = require('crypto');
+
+// Unique, human-readable payment-receipt number, e.g. BLOO-20260711-K3QF8A7C.
+// Combines the date + a base36 ms-timestamp tail + random hex — collision-safe.
+function generateReceiptNumber() {
+  const d = new Date();
+  const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+  const seq = Date.now().toString(36).toUpperCase().slice(-5);
+  const rand = crypto.randomBytes(3).toString('hex').toUpperCase();
+  return `BLOO-${ymd}-${seq}${rand}`;
+}
 
 const orderSchema = new mongoose.Schema(
   {
@@ -82,6 +93,13 @@ const orderSchema = new mongoose.Schema(
     errorCode: String,
     completedAt: Date,
     expiryDate: Date,
+    // Unique payment-receipt number, issued once the payment succeeds.
+    receiptNumber: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true
+    },
     receiptUrl: String,
     invoiceUrl: String,
     metadata: mongoose.Schema.Types.Mixed,
@@ -108,11 +126,15 @@ orderSchema.methods.isPaymentVerified = function () {
   return this.status === 'completed' && this.webhookVerified;
 };
 
+// Expose the generator for non-Order-flow payments (e.g. Stripe).
+orderSchema.statics.generateReceiptNumber = generateReceiptNumber;
+
 // Method to mark as completed
 orderSchema.methods.markCompleted = function () {
   this.status = 'completed';
   this.completedAt = new Date();
   this.webhookVerified = true;
+  if (!this.receiptNumber) this.receiptNumber = generateReceiptNumber();
   return this.save();
 };
 

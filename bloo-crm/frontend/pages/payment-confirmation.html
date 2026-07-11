@@ -68,6 +68,7 @@ footer{ background:#0f1b2e; color:#93a3bd; text-align:center; padding:22px; font
         <p class="lead">Thank you — your Bloo CRM subscription is now active.</p>
 
         <div class="summary" id="summaryBox">
+            <div class="row"><span>Receipt No.</span><span id="receiptNumber" style="color:var(--blue-dark);letter-spacing:.3px;">—</span></div>
             <div class="row"><span>Plan</span><span id="planName">—</span></div>
             <div class="row"><span>Billing cycle</span><span id="billingCycle">—</span></div>
             <div class="row"><span>Amount paid</span><span id="amountPaid">—</span></div>
@@ -126,11 +127,15 @@ footer{ background:#0f1b2e; color:#93a3bd; text-align:center; padding:22px; font
         })();
     }
 
-    function displaySuccessPage(orderId){
+    function displaySuccessPage(orderId, receiptNumber){
         const params = new URLSearchParams(window.location.search);
 
         // Email (the headline of this page)
         document.getElementById('userEmail').textContent = resolveEmail(params) || 'your registered email address';
+
+        // Unique payment receipt number (from the verify response or the URL)
+        const receipt = receiptNumber || params.get('receipt') || '';
+        document.getElementById('receiptNumber').textContent = receipt || '—';
 
         // Order + date
         document.getElementById('orderId').textContent = orderId || '—';
@@ -170,7 +175,7 @@ footer{ background:#0f1b2e; color:#93a3bd; text-align:center; padding:22px; font
                     const user = JSON.parse(localStorage.getItem('currentUser')) || {};
                     if(d.plan){ user.plan = d.plan; user.billingCycle = d.billingCycle || 'monthly'; localStorage.setItem('currentUser', JSON.stringify(user)); }
                 }catch(e){}
-                displaySuccessPage('STRIPE-' + sessionId.slice(-10).toUpperCase());
+                displaySuccessPage('STRIPE-' + sessionId.slice(-10).toUpperCase(), d.receiptNumber);
             } else {
                 displayErrorPage();
             }

@@ -39,7 +39,7 @@ const PRICING = {
 
 // Email the payer a receipt + a link to log in to Bloo CRM. Fire-and-forget:
 // never blocks or fails the payment response (errors are logged, not thrown).
-async function sendReceiptAndLoginEmail({ to, name, plan, billingCycle, amount, currency, orderId }) {
+async function sendReceiptAndLoginEmail({ to, name, plan, billingCycle, amount, currency, orderId, receiptNumber }) {
   if (!to) return;
   try {
     const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || 'https://bloocrm.com';
@@ -51,6 +51,7 @@ async function sendReceiptAndLoginEmail({ to, name, plan, billingCycle, amount, 
     const cycle = billingCycle ? billingCycle.charAt(0).toUpperCase() + billingCycle.slice(1) : '';
     const safeName = String(name || 'there');
     const rows = [
+      receiptNumber ? ['Receipt No.', receiptNumber] : null,
       ['Plan', planName + (cycle ? ` (${cycle})` : '')],
       amt ? ['Amount paid', amt] : null,
       orderId ? ['Order ID', orderId] : null
@@ -506,7 +507,8 @@ router.post('/verify', verifyToken, async (req, res) => {
       to: (order.customerDetails && order.customerDetails.email) || user.email,
       name: (order.customerDetails && order.customerDetails.name) || user.name,
       plan: order.plan, billingCycle: order.billingCycle,
-      amount: order.amount, currency: order.currency, orderId: order.orderId
+      amount: order.amount, currency: order.currency, orderId: order.orderId,
+      receiptNumber: order.receiptNumber
     });
 
     res.json({
@@ -514,7 +516,8 @@ router.post('/verify', verifyToken, async (req, res) => {
       data: {
         orderId: order.orderId,
         status: order.status,
-        plan: order.plan
+        plan: order.plan,
+        receiptNumber: order.receiptNumber
       }
     });
   } catch (error) {
@@ -579,7 +582,8 @@ router.get('/paypal-callback', verifyToken, async (req, res) => {
         to: (order.customerDetails && order.customerDetails.email) || user.email,
         name: (order.customerDetails && order.customerDetails.name) || user.name,
         plan: order.plan, billingCycle: order.billingCycle,
-        amount: order.amount, currency: order.currency, orderId: order.orderId
+        amount: order.amount, currency: order.currency, orderId: order.orderId,
+        receiptNumber: order.receiptNumber
       });
 
       // Redirect to confirmation page
@@ -588,7 +592,8 @@ router.get('/paypal-callback', verifyToken, async (req, res) => {
         data: {
           orderId: order.orderId,
           status: order.status,
-          plan: order.plan
+          plan: order.plan,
+          receiptNumber: order.receiptNumber
         }
       });
     });
@@ -795,6 +800,7 @@ router.get('/stripe/verify-session', verifyToken, async (req, res) => {
     const plan = s.metadata && s.metadata.plan;
     const billingCycle = (s.metadata && s.metadata.billingCycle) || 'monthly';
     let planActivated = false;
+    let receiptNumber = null;
 
     if (paid && plan) {
       const user = await User.findById(req.userId);
@@ -805,18 +811,45 @@ router.get('/stripe/verify-session', verifyToken, async (req, res) => {
         user.subscriptionStatus = 'active';
         await user.save();
         planActivated = true;
-
-        // Background: email the payer a receipt + a link to log in.
-        sendReceiptAndLoginEmail({
-          to: (s.customer_details && s.customer_details.email) || s.customer_email || user.email,
-          name: (s.customer_details && s.customer_details.name) || user.name,
-          plan, billingCycle,
-          amount: (s.amount_total != null ? s.amount_total / 100 : undefined),
-          currency: s.currency, orderId: 'STRIPE-' + String(sid).slice(-10).toUpperCase()
-        });
       }
+
+      // Store a receipt for this Stripe payment (idempotent by session id).
+      try {
+        let ord = await Order.findOne({ 'metadata.stripeSessionId': sid });
+        if (!ord) {
+          ord = new Order({
+            orderId: 'STRIPE-' + String(sid).slice(-14).toUpperCase(),
+            userId: req.userId,
+            plan, billingCycle,
+            amount: (s.amount_total != null ? s.amount_total / 100 : 0),
+            currency: String(s.currency || 'usd').toUpperCase(),
+            status: 'completed', completedAt: new Date(), webhookVerified: true,
+            paymentMethod: 'other',
+            receiptNumber: Order.generateReceiptNumber(),
+            metadata: { stripeSessionId: sid },
+            customerDetails: {
+              email: (s.customer_details && s.customer_details.email) || s.customer_email,
+              name: (s.customer_details && s.customer_details.name) || (user && user.name)
+            }
+          });
+          await ord.save();
+        }
+        receiptNumber = ord.receiptNumber;
+      } catch (e) {
+        console.error('stripe receipt store failed:', e.message);
+      }
+
+      // Background: email the payer a receipt + a link to log in.
+      sendReceiptAndLoginEmail({
+        to: (s.customer_details && s.customer_details.email) || s.customer_email || (user && user.email),
+        name: (s.customer_details && s.customer_details.name) || (user && user.name),
+        plan, billingCycle,
+        amount: (s.amount_total != null ? s.amount_total / 100 : undefined),
+        currency: s.currency, orderId: 'STRIPE-' + String(sid).slice(-10).toUpperCase(),
+        receiptNumber
+      });
     }
-    res.json({ status: 'success', paid, plan, billingCycle, amountTotal: s.amount_total, currency: s.currency, planActivated });
+    res.json({ status: 'success', paid, plan, billingCycle, amountTotal: s.amount_total, currency: s.currency, planActivated, receiptNumber });
   } catch (error) {
     console.error('verify-session error:', error);
     res.status(500).json({ error: 'Verification failed', message: error.message });

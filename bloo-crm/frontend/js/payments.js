@@ -462,7 +462,7 @@ async function verifyRazorpayPayment(response, token, orderId) {
     showSuccess('Payment successful! Redirecting to confirmation...');
 
     setTimeout(() => {
-      window.location.href = `../pages/payment-confirmation.html?orderId=${verifyData.data.orderId}&status=success`;
+      window.location.href = `../pages/payment-confirmation.html?orderId=${verifyData.data.orderId}&status=success&receipt=${encodeURIComponent(verifyData.data.receiptNumber || '')}`;
     }, 2000);
 
   } catch (error) {
@@ -510,7 +510,7 @@ function handlePayPalCallback() {
           user.plan = data.data.plan;
           localStorage.setItem('currentUser', JSON.stringify(user));
         }
-        window.location.href = `../pages/payment-confirmation.html?orderId=${data.data.orderId}&status=success`;
+        window.location.href = `../pages/payment-confirmation.html?orderId=${data.data.orderId}&status=success&receipt=${encodeURIComponent(data.data.receiptNumber || '')}`;
       } else {
         showError('Payment failed');
         showLoading(false);
