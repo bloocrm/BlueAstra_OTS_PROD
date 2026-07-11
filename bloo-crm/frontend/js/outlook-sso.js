@@ -125,6 +125,8 @@ if (window.location.pathname.includes('outlook-callback')) {
         const sso = new OutlookSSO();
         try {
             await sso.handleCallback();
+            try { await sso.getCurrentUser(); } catch (e) { /* email best-effort */ }
+            try { await sso.persistToServer(); } catch (e) { /* server persist best-effort */ }
             // Opened in a new tab from the email client — tell it we're done and close.
             if (window.opener && !window.opener.closed) {
                 try { window.opener.postMessage({ type: 'email-oauth-complete', provider: 'outlook', success: true }, window.location.origin); } catch (e) {}

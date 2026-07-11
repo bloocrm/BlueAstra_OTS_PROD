@@ -150,21 +150,28 @@ class EmailClient {
             return;
         }
 
-        // A provider is "connected" if it has a valid OAuth token (single source of truth)
+        // Connections persisted server-side (encrypted, per user) — they follow the
+        // account across devices/browsers, not just the one it was connected in.
+        let serverConns = [];
+        try { const r = await this.apiCall('/email/link'); serverConns = (r && r.connections) || []; } catch (e) { /* fall back to local */ }
+
         for (const provider of ['outlook', 'gmail']) {
             const sso = mgr.ssoInstances[provider];
             if (!sso) continue;
-            try { await sso.checkExistingSession(); } catch (e) { /* token may be expired — still connected */ }
-            // Persist the connected email so it still shows after logout/login even
-            // once the access token has expired.
+            try { await sso.checkExistingSession(); } catch (e) { /* token may be expired */ }
+            const serverConn = serverConns.find(c => c.provider === provider);
+            // New device/browser: no local tokens yet — pull a valid one from the server.
+            if (serverConn && sso.hydrateFromServer && !(sso.isConnected && sso.isConnected())) {
+                try { await sso.hydrateFromServer(); } catch (e) { /* may need reauth */ }
+            }
             if (sso.userEmail) localStorage.setItem(`${provider}_email`, sso.userEmail);
-            // Connected = authenticated earlier and not yet disconnected (persistent).
-            const connected = sso.isConnected ? sso.isConnected() : (sso.isUserLoggedIn && sso.isUserLoggedIn());
+            // Connected = authenticated earlier (server-persisted or local) and not disconnected.
+            const connected = !!serverConn || (sso.isConnected && sso.isConnected());
             if (connected) {
                 this.connections.push({
                     id: provider,
                     provider: provider,
-                    email: sso.userEmail || localStorage.getItem(`${provider}_email`) || provider,
+                    email: sso.userEmail || (serverConn && serverConn.email) || localStorage.getItem(`${provider}_email`) || provider,
                     sso: sso
                 });
             }
@@ -802,7 +809,7 @@ class EmailClient {
         providers.forEach(provider => {
             const mgr = window.emailManager;
             const sso = mgr && mgr.ssoInstances && mgr.ssoInstances[provider.id];
-            const connected = !!(sso && sso.isConnected && sso.isConnected());
+            const connected = this.connections.some(c => c.provider === provider.id) || !!(sso && sso.isConnected && sso.isConnected());
             const email = connected ? ((sso && sso.userEmail) || localStorage.getItem(`${provider.id}_email`) || '') : '';
 
             const card = document.createElement('div');
@@ -880,12 +887,14 @@ class EmailClient {
 
     // Disconnect an email account: clear its OAuth tokens so it's no longer
     // connected (until the user connects again). Stored emails stay in MongoDB.
-    disconnectProvider(providerId) {
+    async disconnectProvider(providerId) {
         try {
             const mgr = window.emailManager;
             const sso = mgr && mgr.ssoInstances && mgr.ssoInstances[providerId];
-            if (sso && sso.logout) sso.logout();               // clears tokens from localStorage
+            if (sso && sso.logout) sso.logout();               // clears local tokens
             localStorage.removeItem(`${providerId}_email`);
+            try { await this.apiCall(`/email/link/${providerId}`, { method: 'DELETE' }); } catch (e) { /* server best-effort */ }
+            this.connections = this.connections.filter(c => c.provider !== providerId);
             if (this.currentAccount && this.currentAccount.provider === providerId) {
                 this.currentAccount = null;
             }

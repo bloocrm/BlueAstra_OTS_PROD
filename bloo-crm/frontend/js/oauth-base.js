@@ -196,6 +196,48 @@ class OAuthBase {
                   localStorage.getItem(`${this.providerId}_refresh_token`));
     }
 
+    // Persist this connection to the server (encrypted, per Bloo CRM user) so it
+    // follows the account across devices/browsers — not just this browser.
+    async persistToServer() {
+        try {
+            const bearer = localStorage.getItem('authToken');
+            if (!bearer || !this.userEmail) return;
+            await fetch(`${this.apiBase}/email/link`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${bearer}` },
+                body: JSON.stringify({
+                    provider: this.providerId,
+                    email: this.userEmail,
+                    accessToken: this.accessToken || undefined,
+                    refreshToken: this.refreshToken || undefined,
+                    expiresAt: this.tokenExpiresAt || undefined
+                })
+            });
+        } catch (e) { console.warn(`persistToServer (${this.providerId}) failed:`, e.message); }
+    }
+
+    // Hydrate this SSO from the server-stored connection (e.g. a new device),
+    // fetching a valid (refreshed) access token. Returns true if connected.
+    async hydrateFromServer() {
+        try {
+            const bearer = localStorage.getItem('authToken');
+            if (!bearer) return false;
+            const resp = await fetch(`${this.apiBase}/email/link/${this.providerId}/token`, {
+                headers: { 'Authorization': `Bearer ${bearer}` }
+            });
+            if (!resp.ok) return false;
+            const d = await resp.json();
+            if (!d.accessToken) return false;
+            this.setTokens({
+                accessToken: d.accessToken,
+                refreshToken: this.refreshToken,
+                expiresAt: d.expiresAt ? new Date(d.expiresAt).getTime() : (Date.now() + 3300000)
+            });
+            if (d.email) { this.userEmail = d.email; localStorage.setItem(`${this.providerId}_email`, d.email); }
+            return true;
+        } catch (e) { return false; }
+    }
+
     logout() {
         this.accessToken = null;
         this.refreshToken = null;

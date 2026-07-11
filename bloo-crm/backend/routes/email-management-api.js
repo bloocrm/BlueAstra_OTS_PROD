@@ -737,4 +737,115 @@ router.get('/email/attachments/:emailId', async (req, res) => {
   }
 });
 
+// =====================================================
+// SERVER-SIDE EMAIL CONNECTION (OAuth tokens persisted per user, encrypted).
+// A connected mailbox follows the account across devices/browsers, not just the
+// browser it was connected in. All scoped to req.userId (from the token).
+// =====================================================
+
+// Refresh a provider access token using its refresh token + server-side app creds.
+// Best-effort: returns null if creds aren't configured or the refresh fails.
+async function refreshProviderToken(provider, refreshToken) {
+  if (!refreshToken) return null;
+  try {
+    if (provider === 'outlook' || provider === 'microsoft') {
+      const cid = process.env.MICROSOFT_CLIENT_ID || process.env.OUTLOOK_CLIENT_ID;
+      const secret = process.env.MICROSOFT_CLIENT_SECRET || process.env.OUTLOOK_CLIENT_SECRET;
+      const tenant = process.env.MICROSOFT_TENANT_ID || 'common';
+      if (!cid || !secret) return null;
+      const body = new URLSearchParams({ client_id: cid, client_secret: secret, grant_type: 'refresh_token', refresh_token: refreshToken, scope: 'offline_access Mail.Read User.Read' });
+      const r = await fetch(`https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+      const d = await r.json();
+      if (!r.ok) return null;
+      return { accessToken: d.access_token, refreshToken: d.refresh_token || refreshToken, expiresAt: Date.now() + (d.expires_in || 3600) * 1000 };
+    }
+    if (provider === 'gmail' || provider === 'google') {
+      const cid = process.env.GOOGLE_CLIENT_ID, secret = process.env.GOOGLE_CLIENT_SECRET;
+      if (!cid || !secret) return null;
+      const body = new URLSearchParams({ client_id: cid, client_secret: secret, grant_type: 'refresh_token', refresh_token: refreshToken });
+      const r = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+      const d = await r.json();
+      if (!r.ok) return null;
+      return { accessToken: d.access_token, refreshToken, expiresAt: Date.now() + (d.expires_in || 3600) * 1000 };
+    }
+  } catch (e) { console.error('refreshProviderToken error:', e.message); }
+  return null;
+}
+
+// Store / update the logged-in user's connection (upsert by provider). Tokens
+// are encrypted at rest by the EmailAccount pre-save hook.
+router.post('/email/link', async (req, res) => {
+  try {
+    const { provider, email, accessToken, refreshToken, expiresAt } = req.body || {};
+    if (!provider || !email) return res.status(400).json({ error: 'provider and email are required' });
+
+    let account = await EmailAccount.findOne({ userId: req.userId, provider });
+    if (!account) account = new EmailAccount({ userId: req.userId, provider });
+    account.email = email;
+    if (accessToken) account.accessToken = accessToken;     // pre-save hook encrypts
+    if (refreshToken) account.refreshToken = refreshToken;
+    if (expiresAt) account.tokenExpiresAt = new Date(expiresAt);
+    account.isActive = true;
+    account.connectionDetails = { ...(account.connectionDetails || {}), connectedAt: (account.connectionDetails && account.connectionDetails.connectedAt) || new Date() };
+    await account.save();
+
+    res.json({ status: 'success', provider, email });
+  } catch (error) {
+    console.error('email link store error:', error.message);
+    res.status(500).json({ error: 'Failed to store connection', message: error.message });
+  }
+});
+
+// List the user's connected providers (no tokens).
+router.get('/email/link', async (req, res) => {
+  try {
+    const accounts = await EmailAccount.find({ userId: req.userId, isActive: true })
+      .select('provider email connectionDetails createdAt').sort({ createdAt: -1 });
+    res.json({
+      status: 'success',
+      connections: accounts.map(a => ({ provider: a.provider, email: a.email, connectedAt: (a.connectionDetails && a.connectionDetails.connectedAt) || a.createdAt }))
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to list connections', message: error.message });
+  }
+});
+
+// Return a usable access token for the provider (decrypted; refreshed if expired).
+router.get('/email/link/:provider/token', async (req, res) => {
+  try {
+    const provider = req.params.provider;
+    const account = await EmailAccount.findOne({ userId: req.userId, provider, isActive: true });
+    if (!account) return res.status(404).json({ error: 'not_connected' });
+
+    let accessToken = account.getAccessToken();
+    const expired = account.tokenExpiresAt && account.tokenExpiresAt.getTime() <= Date.now();
+    if (expired || !accessToken) {
+      const refreshed = await refreshProviderToken(provider, account.getRefreshToken());
+      if (refreshed && refreshed.accessToken) {
+        account.accessToken = refreshed.accessToken;
+        if (refreshed.refreshToken) account.refreshToken = refreshed.refreshToken;
+        account.tokenExpiresAt = new Date(refreshed.expiresAt);
+        await account.save();
+        accessToken = refreshed.accessToken;
+      } else {
+        return res.status(409).json({ error: 'needs_reauth', message: 'Session expired — please reconnect.' });
+      }
+    }
+    res.json({ status: 'success', provider, email: account.email, accessToken, expiresAt: account.tokenExpiresAt });
+  } catch (error) {
+    console.error('email link token error:', error.message);
+    res.status(500).json({ error: 'Failed to get token', message: error.message });
+  }
+});
+
+// Disconnect: remove the stored connection until the user connects again.
+router.delete('/email/link/:provider', async (req, res) => {
+  try {
+    const r = await EmailAccount.deleteMany({ userId: req.userId, provider: req.params.provider });
+    res.json({ status: 'success', disconnected: req.params.provider, removed: r.deletedCount });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to disconnect', message: error.message });
+  }
+});
+
 module.exports = router;
