@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const paypal = require('paypal-rest-sdk');
 const Order = require('../models/Order');
 const User = require('../models/User');
+const emailService = require('../utils/email-service');
 const router = express.Router();
 
 // Store OTP attempts (in production, use Redis for better persistence)
@@ -35,6 +36,60 @@ const PRICING = {
   'swift-ai-plus': { monthly: 99, yearly: 990 },
   'rocket-ai-plus': { monthly: 199, yearly: 1990 }
 };
+
+// Email the payer a receipt + a link to log in to Bloo CRM. Fire-and-forget:
+// never blocks or fails the payment response (errors are logged, not thrown).
+async function sendReceiptAndLoginEmail({ to, name, plan, billingCycle, amount, currency, orderId }) {
+  if (!to) return;
+  try {
+    const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || 'https://bloocrm.com';
+    const loginUrl = `${appUrl}/app`;
+    const planNames = { basic: 'BASIC', 'swift-ai-plus': 'SWIFT AI+', 'rocket-ai-plus': 'ROCKET AI+' };
+    const planName = planNames[plan] || plan || 'your plan';
+    const cur = String(currency || 'USD').toUpperCase();
+    const amt = (amount != null && amount !== '') ? `${cur} ${amount}` : '';
+    const cycle = billingCycle ? billingCycle.charAt(0).toUpperCase() + billingCycle.slice(1) : '';
+    const safeName = String(name || 'there');
+    const rows = [
+      ['Plan', planName + (cycle ? ` (${cycle})` : '')],
+      amt ? ['Amount paid', amt] : null,
+      orderId ? ['Order ID', orderId] : null
+    ].filter(Boolean).map(([k, v]) =>
+      `<tr><td style="padding:8px 0;color:#64748b;">${k}</td><td style="padding:8px 0;text-align:right;font-weight:600;color:#16233a;">${v}</td></tr>`
+    ).join('');
+
+    const html = `
+      <div style="font-family:Segoe UI,Arial,sans-serif;background:#eef4ff;padding:28px;">
+        <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(22,35,58,.08);">
+          <div style="background:linear-gradient(135deg,#2E86FF,#1666d8);padding:26px 30px;color:#fff;">
+            <div style="font-size:22px;font-weight:800;">Bloo<span style="opacity:.85;">CRM</span></div>
+            <div style="margin-top:6px;font-size:15px;opacity:.95;">Payment successful 🎉</div>
+          </div>
+          <div style="padding:28px 30px;color:#334155;line-height:1.6;">
+            <p style="margin:0 0 14px;">Hi ${safeName},</p>
+            <p style="margin:0 0 18px;">Thank you — your payment has been received and your Bloo CRM subscription is now active.</p>
+            <table style="width:100%;border-collapse:collapse;border-top:1px solid #e6ecf5;border-bottom:1px solid #e6ecf5;margin-bottom:22px;">${rows}</table>
+            <p style="margin:0 0 18px;">You can log in to your account any time using the button below:</p>
+            <p style="text-align:center;margin:0 0 22px;">
+              <a href="${loginUrl}" style="display:inline-block;background:#2E86FF;color:#fff;text-decoration:none;font-weight:700;padding:14px 30px;border-radius:10px;">Log in to Bloo CRM</a>
+            </p>
+            <p style="margin:0 0 6px;font-size:13px;color:#94a3b8;">Or paste this link into your browser:<br><a href="${loginUrl}" style="color:#2E86FF;">${loginUrl}</a></p>
+            <p style="margin:18px 0 0;font-size:13px;color:#94a3b8;">This receipt was sent to ${to}. If you didn't make this payment, please contact us immediately.</p>
+          </div>
+          <div style="background:#0f1b2e;color:#93a3bd;padding:16px 30px;font-size:12px;text-align:center;">© 2026 Blue Astra Technologies LLP · Bloo CRM</div>
+        </div>
+      </div>`;
+
+    await emailService.sendEmail({
+      to,
+      fromName: 'Bloo CRM',
+      subject: 'Your Bloo CRM payment was successful — log in to get started',
+      html
+    });
+  } catch (e) {
+    console.error('receipt email failed:', e.message);
+  }
+}
 
 // Helper function to generate OTP
 function generateOTP() {
@@ -446,6 +501,14 @@ router.post('/verify', verifyToken, async (req, res) => {
     user.subscriptionStatus = 'active';
     await user.save();
 
+    // Background: email the payer a receipt + a link to log in.
+    sendReceiptAndLoginEmail({
+      to: (order.customerDetails && order.customerDetails.email) || user.email,
+      name: (order.customerDetails && order.customerDetails.name) || user.name,
+      plan: order.plan, billingCycle: order.billingCycle,
+      amount: order.amount, currency: order.currency, orderId: order.orderId
+    });
+
     res.json({
       message: 'Payment verified successfully',
       data: {
@@ -510,6 +573,14 @@ router.get('/paypal-callback', verifyToken, async (req, res) => {
 
       user.subscriptionStatus = 'active';
       await user.save();
+
+      // Background: email the payer a receipt + a link to log in.
+      sendReceiptAndLoginEmail({
+        to: (order.customerDetails && order.customerDetails.email) || user.email,
+        name: (order.customerDetails && order.customerDetails.name) || user.name,
+        plan: order.plan, billingCycle: order.billingCycle,
+        amount: order.amount, currency: order.currency, orderId: order.orderId
+      });
 
       // Redirect to confirmation page
       res.json({
@@ -734,6 +805,15 @@ router.get('/stripe/verify-session', verifyToken, async (req, res) => {
         user.subscriptionStatus = 'active';
         await user.save();
         planActivated = true;
+
+        // Background: email the payer a receipt + a link to log in.
+        sendReceiptAndLoginEmail({
+          to: (s.customer_details && s.customer_details.email) || s.customer_email || user.email,
+          name: (s.customer_details && s.customer_details.name) || user.name,
+          plan, billingCycle,
+          amount: (s.amount_total != null ? s.amount_total / 100 : undefined),
+          currency: s.currency, orderId: 'STRIPE-' + String(sid).slice(-10).toUpperCase()
+        });
       }
     }
     res.json({ status: 'success', paid, plan, billingCycle, amountTotal: s.amount_total, currency: s.currency, planActivated });

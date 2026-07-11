@@ -8,464 +8,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Confirmation - Bloo CRM</title>
-    <link rel="stylesheet" href="../css/dashboard.css">
-    <link rel="stylesheet" href="../css/themes.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="../js/theme.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .confirmation-container {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-            width: 100%;
-            padding: 3rem 2rem;
-            text-align: center;
-            animation: scaleIn 0.5s ease-out;
-        }
-
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .success-icon {
-            font-size: 5rem;
-            color: #4caf50;
-            margin-bottom: 1rem;
-            animation: bounceIn 0.8s ease-out;
-        }
-
-        @keyframes bounceIn {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        h1 {
-            font-size: 2rem;
-            color: #333;
-            margin-bottom: 0.5rem;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .confirmation-details {
-            background: #f9f9f9;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            margin: 2rem 0;
-            text-align: left;
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-
-        .detail-label {
-            color: #666;
-            font-weight: 500;
-        }
-
-        .detail-value {
-            color: #333;
-            font-weight: 600;
-        }
-
-        .order-id {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin: 1.5rem 0;
-            word-break: break-all;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            flex: 1;
-            min-width: 150px;
-            padding: 1rem;
-            border: none;
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-            border: 2px solid #e0e0e0;
-        }
-
-        .btn-secondary:hover {
-            background: #e8e8e8;
-        }
-
-        .invoice-section {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 2px solid #e0e0e0;
-        }
-
-        .invoice-section h3 {
-            color: #333;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-
-        .invoice-description {
-            color: #666;
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
-        }
-
-        .download-btn {
-            background: #f5f5f5;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            color: var(--theme-primary);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .download-btn:hover {
-            background: #e8e8e8;
-            color: var(--theme-primary-dark);
-        }
-
-        .features-highlight {
-            background: #e8f5e9;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            margin-top: 1.5rem;
-        }
-
-        .features-highlight h4 {
-            color: #2e7d32;
-            margin-bottom: 1rem;
-        }
-
-        .feature-list {
-            text-align: left;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-        }
-
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #2e7d32;
-            font-size: 0.9rem;
-        }
-
-        .feature-item i {
-            color: #4caf50;
-        }
-
-        .error-container {
-            background: #ffebee;
-            border-radius: 1rem;
-            padding: 3rem 2rem;
-            text-align: center;
-        }
-
-        .error-icon {
-            font-size: 5rem;
-            color: #f44336;
-            margin-bottom: 1rem;
-        }
-
-        .error-container h1 {
-            color: #c62828;
-            margin-bottom: 0.5rem;
-        }
-
-        .error-container p {
-            color: #d32f2f;
-            margin-bottom: 2rem;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Successful — Bloo CRM</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+:root{ --blue:#2E86FF; --blue-dark:#1666d8; --navy:#16233a; --text:#4a5568; --soft:#eef4ff; --green:#22b473; }
+body{ background:#fff; color:var(--text); line-height:1.7; -webkit-font-smoothing:antialiased; }
+a{ text-decoration:none; } img{ display:block; max-width:100%; }
+header{ background:rgba(255,255,255,.92); backdrop-filter:saturate(180%) blur(8px); padding:16px 7%; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 0 rgba(16,35,58,.08); position:sticky; top:0; z-index:100; }
+.logo{ font-size:26px; font-weight:800; color:var(--navy); } .logo span{ color:var(--blue); }
+.btn{ background:var(--blue); color:#fff; padding:13px 30px; border-radius:10px; font-weight:700; display:inline-block; transition:.2s; border:none; cursor:pointer; font-size:16px; }
+.btn:hover{ background:var(--blue-dark); transform:translateY(-1px); }
+.btn-ghost{ background:transparent; color:var(--blue); border:2px solid var(--blue); }
+.btn-ghost:hover{ background:var(--soft); }
+.stage{ min-height:calc(100vh - 68px); display:flex; align-items:center; justify-content:center; padding:48px 20px; background:linear-gradient(180deg,var(--soft),#fff); }
+.card{ background:#fff; width:100%; max-width:620px; border:1px solid #e6ecf5; border-radius:22px; box-shadow:0 30px 60px rgba(22,35,58,.14); padding:44px 40px; text-align:center; animation:rise .5s ease-out; }
+@keyframes rise{ from{ opacity:0; transform:translateY(18px); } to{ opacity:1; transform:translateY(0); } }
+.badge{ width:88px; height:88px; border-radius:50%; margin:0 auto 22px; display:flex; align-items:center; justify-content:center; font-size:44px; color:#fff; }
+.badge.ok{ background:linear-gradient(135deg,#22b473,#16915b); box-shadow:0 12px 26px rgba(34,180,115,.35); }
+.badge.err{ background:linear-gradient(135deg,#ef4444,#c62828); box-shadow:0 12px 26px rgba(239,68,68,.3); }
+h1{ font-size:34px; color:var(--navy); letter-spacing:-.5px; margin-bottom:8px; }
+.lead{ font-size:17px; color:var(--text); margin-bottom:24px; }
+.summary{ text-align:left; background:#f8fafc; border:1px solid #e6ecf5; border-radius:14px; padding:18px 20px; margin:0 auto 22px; }
+.summary .row{ display:flex; justify-content:space-between; padding:7px 0; color:var(--text); }
+.summary .row span:last-child{ font-weight:700; color:var(--navy); }
+.email-note{ background:var(--soft); border:1px dashed var(--blue); border-radius:14px; padding:18px 20px; margin:0 auto 24px; color:var(--navy); }
+.email-note i{ color:var(--blue); margin-right:6px; }
+.email-note .addr{ display:inline-block; font-weight:800; color:var(--blue-dark); word-break:break-all; }
+.redirect{ font-size:14px; color:#8a93a3; margin-top:16px; }
+.redirect b{ color:var(--navy); }
+.actions{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.spin{ width:44px; height:44px; border:4px solid #e6ecf5; border-top-color:var(--blue); border-radius:50%; animation:spin 1s linear infinite; margin:10px auto; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+footer{ background:#0f1b2e; color:#93a3bd; text-align:center; padding:22px; font-size:13px; } footer a{ color:#cfe0ff; font-weight:600; margin:0 6px; }
+@media(max-width:600px){ h1{ font-size:27px; } .card{ padding:32px 22px; } }
+</style>
 </head>
 <body>
-    <div id="successContainer" class="confirmation-container" style="display: none;">
-        <div class="success-icon">
-            <i class="fas fa-check-circle"></i>
-        </div>
 
+<header>
+    <div class="logo">Bloo<span>CRM</span></div>
+    <a href="/app" class="btn btn-ghost">Login</a>
+</header>
+
+<div class="stage">
+    <!-- Loading / verifying -->
+    <div class="card" id="loadingContainer">
+        <div class="spin"></div>
+        <h1 style="font-size:24px;">Confirming your payment…</h1>
+        <p class="lead" style="margin-bottom:0;">Please wait a moment.</p>
+    </div>
+
+    <!-- Success -->
+    <div class="card" id="successContainer" style="display:none;">
+        <div class="badge ok"><i class="fas fa-check"></i></div>
         <h1>Payment Successful!</h1>
-        <p class="subtitle">Your subscription has been activated successfully</p>
+        <p class="lead">Thank you — your Bloo CRM subscription is now active.</p>
 
-        <div class="confirmation-details">
-            <div class="detail-row">
-                <span class="detail-label">Plan:</span>
-                <span class="detail-value" id="planName">-</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Billing Cycle:</span>
-                <span class="detail-value" id="billingCycle">-</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Amount Paid:</span>
-                <span class="detail-value" id="amountPaid">$0</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Date:</span>
-                <span class="detail-value" id="paymentDate">-</span>
-            </div>
+        <div class="summary" id="summaryBox">
+            <div class="row"><span>Plan</span><span id="planName">—</span></div>
+            <div class="row"><span>Billing cycle</span><span id="billingCycle">—</span></div>
+            <div class="row"><span>Amount paid</span><span id="amountPaid">—</span></div>
+            <div class="row"><span>Order ID</span><span id="orderId">—</span></div>
+            <div class="row"><span>Date</span><span id="paymentDate">—</span></div>
         </div>
 
-        <div class="order-id">
-            <strong>Order ID:</strong> <span id="orderId">-</span>
+        <div class="email-note">
+            <i class="fas fa-envelope-open-text"></i>
+            A confirmation email with your receipt and a <strong>login link</strong> has been sent to your registered email address:
+            <div style="margin-top:8px;"><span class="addr" id="userEmail">your email</span></div>
         </div>
 
-        <div class="features-highlight" id="featuresHighlight">
-            <h4><i class="fas fa-sparkles"></i> Your Activated Features</h4>
-            <div class="feature-list" id="featuresList"></div>
+        <div class="actions">
+            <a href="/app" class="btn" id="loginBtn"><i class="fas fa-right-to-bracket"></i>&nbsp; Go to Login</a>
         </div>
-
-        <div class="invoice-section">
-            <h3>Download Receipt</h3>
-            <p class="invoice-description">Your invoice has been sent to your email. You can also download it here:</p>
-            <a href="#" class="download-btn" onclick="downloadInvoice(event)">
-                <i class="fas fa-download"></i> Download Invoice
-            </a>
-        </div>
-
-        <div class="action-buttons">
-            <button class="btn btn-primary" onclick="goToDashboard()">
-                <i class="fas fa-arrow-right"></i> Go to Dashboard
-            </button>
-            <button class="btn btn-secondary" onclick="viewPricing()">
-                <i class="fas fa-list"></i> View Plans
-            </button>
-        </div>
+        <p class="redirect">If you're not redirected automatically, use the button above. Redirecting to login in <b id="countdown">10</b> seconds…</p>
     </div>
 
-    <div id="errorContainer" class="confirmation-container error-container" style="display: none;">
-        <div class="error-icon">
-            <i class="fas fa-times-circle"></i>
-        </div>
-
-        <h1>Payment Failed</h1>
-        <p id="errorMessage">Your payment could not be processed. Please try again.</p>
-
-        <div class="action-buttons">
-            <button class="btn btn-primary" onclick="retryPayment()">
-                <i class="fas fa-redo"></i> Try Again
-            </button>
-            <button class="btn btn-secondary" onclick="goToPricing()">
-                <i class="fas fa-arrow-left"></i> Back to Pricing
-            </button>
+    <!-- Error -->
+    <div class="card" id="errorContainer" style="display:none;">
+        <div class="badge err"><i class="fas fa-xmark"></i></div>
+        <h1>Payment Not Completed</h1>
+        <p class="lead" id="errorMessage">We couldn't confirm your payment. If money was deducted, it will be auto-refunded; otherwise please try again.</p>
+        <div class="actions">
+            <a href="/pages/payment" class="btn"><i class="fas fa-rotate-right"></i>&nbsp; Try Again</a>
+            <a href="/enroll#pricing" class="btn btn-ghost">Back to Pricing</a>
         </div>
     </div>
+</div>
 
-    <script>
-        const PLAN_FEATURES = {
-            'basic': [
-                'Spreadsheet Uploads',
-                'Client Management',
-                'Basic Workflow',
-                'Financial Goals',
-                'Communications',
-                'Email Integration',
-                'Calendar Integration',
-                'Manual Compliance'
-            ],
-            'swift-ai-plus': [
-                'All BASIC features',
-                'API Integrations',
-                'Auto Email Routing',
-                'AI Messages',
-                'Task Re-routing',
-                'Payment Triggers',
-                'AI Sales Pitch',
-                'Advanced Workflows'
-            ],
-            'rocket-ai-plus': [
-                'Unlimited AI',
-                'Customized Apps',
-                'Client Retention',
-                'Cross-sell/Upsell',
-                'Life Events Track',
-                'Auto Emails',
-                'Duplicate Cleanser',
-                'Predictive Analytics'
-            ]
-        };
+<footer>© 2026 Blue Astra Technologies LLP · <a href="/features">Features</a> · <a href="/enroll">Enroll</a> · <a href="/app">Login</a></footer>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const status = params.get('status');
-            const orderId = params.get('orderId');
-            const provider = params.get('provider');
-            const sessionId = params.get('session_id');
+<script>
+    const LOGIN_URL = '/app';
+    const PLAN_NAMES = { 'basic':'BASIC Plan', 'swift-ai-plus':'SWIFT AI+ Plan', 'rocket-ai-plus':'ROCKET AI+ Plan' };
+    const PRICING = { 'basic':{monthly:10,yearly:100}, 'swift-ai-plus':{monthly:99,yearly:990}, 'rocket-ai-plus':{monthly:199,yearly:1990} };
 
-            if (provider === 'stripe' && sessionId) {
-                verifyStripeSession(sessionId);
-            } else if (status === 'success' && orderId) {
-                displaySuccessPage(orderId);
+    function show(id){ ['loadingContainer','successContainer','errorContainer'].forEach(x => { const el=document.getElementById(x); if(el) el.style.display = (x===id)?'block':'none'; }); }
+
+    // Resolve the email the payer used: URL param -> payment form (sessionStorage) -> logged-in user.
+    function resolveEmail(params){
+        let email = params.get('email');
+        if(!email){ try{ email = (JSON.parse(sessionStorage.getItem('customerDetails'))||{}).email; }catch(e){} }
+        if(!email){ try{ email = (JSON.parse(localStorage.getItem('currentUser'))||{}).email; }catch(e){} }
+        return email || '';
+    }
+
+    function startLoginRedirect(){
+        let secs = 10;
+        const el = document.getElementById('countdown');
+        (function tick(){
+            if(el) el.textContent = secs;
+            if(secs <= 0){ window.location.href = LOGIN_URL; return; }
+            secs--; setTimeout(tick, 1000);
+        })();
+    }
+
+    function displaySuccessPage(orderId){
+        const params = new URLSearchParams(window.location.search);
+
+        // Email (the headline of this page)
+        document.getElementById('userEmail').textContent = resolveEmail(params) || 'your registered email address';
+
+        // Order + date
+        document.getElementById('orderId').textContent = orderId || '—';
+        document.getElementById('paymentDate').textContent = new Date().toLocaleDateString('en-IN', { year:'numeric', month:'long', day:'numeric' });
+
+        // Plan details from the logged-in user (best-effort)
+        try{
+            const user = JSON.parse(localStorage.getItem('currentUser')) || {};
+            const planKey = user.plan || params.get('plan') || 'basic';
+            const cycle = user.billingCycle || params.get('billing') || 'monthly';
+            document.getElementById('planName').textContent = PLAN_NAMES[planKey] || planKey;
+            document.getElementById('billingCycle').textContent = cycle.charAt(0).toUpperCase() + cycle.slice(1);
+            const amt = (PRICING[planKey] && PRICING[planKey][cycle]);
+            document.getElementById('amountPaid').textContent = (amt != null) ? ('$' + amt) : '—';
+        }catch(e){ /* leave dashes */ }
+
+        show('successContainer');
+        startLoginRedirect();
+    }
+
+    function displayErrorPage(msg){
+        if(msg) document.getElementById('errorMessage').textContent = msg;
+        show('errorContainer');
+    }
+
+    // Confirm a Stripe checkout session with the backend, then show success/error.
+    async function verifyStripeSession(sessionId){
+        try{
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+            const base = (window.API_BASE_URL || '/api');
+            const resp = await fetch(`${base}/payments/stripe/verify-session?session_id=${encodeURIComponent(sessionId)}`, {
+                headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+            });
+            const d = await resp.json();
+            if(resp.ok && d.paid){
+                try{
+                    const user = JSON.parse(localStorage.getItem('currentUser')) || {};
+                    if(d.plan){ user.plan = d.plan; user.billingCycle = d.billingCycle || 'monthly'; localStorage.setItem('currentUser', JSON.stringify(user)); }
+                }catch(e){}
+                displaySuccessPage('STRIPE-' + sessionId.slice(-10).toUpperCase());
             } else {
                 displayErrorPage();
             }
-        });
+        }catch(e){ displayErrorPage(); }
+    }
 
-        // Confirm the Stripe payment with the backend and activate the plan
-        async function verifyStripeSession(sessionId) {
-            try {
-                const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-                const base = (window.API_BASE_URL || '/api');
-                const resp = await fetch(`${base}/payments/stripe/verify-session?session_id=${encodeURIComponent(sessionId)}`, {
-                    headers: token ? { 'Authorization': 'Bearer ' + token } : {}
-                });
-                const d = await resp.json();
-                if (resp.ok && d.paid) {
-                    // Reflect the activated plan locally
-                    try {
-                        const user = JSON.parse(localStorage.getItem('currentUser')) || {};
-                        if (d.plan) { user.plan = d.plan; user.billingCycle = d.billingCycle || 'monthly'; localStorage.setItem('currentUser', JSON.stringify(user)); }
-                    } catch (e) {}
-                    displaySuccessPage('STRIPE-' + sessionId.slice(-10).toUpperCase());
-                } else {
-                    displayErrorPage();
-                }
-            } catch (e) {
-                displayErrorPage();
-            }
+    document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get('status');
+        const orderId = params.get('orderId');
+        const provider = params.get('provider');
+        const sessionId = params.get('session_id');
+        const txnid = params.get('txnid');
+
+        if(provider === 'stripe' && sessionId){
+            verifyStripeSession(sessionId);
+        } else if(status === 'success' && (orderId || txnid || provider)){
+            displaySuccessPage(orderId || txnid || '');
+        } else if(status === 'success'){
+            displaySuccessPage('');
+        } else {
+            displayErrorPage();
         }
-
-        function displaySuccessPage(orderId) {
-            document.getElementById('successContainer').style.display = 'block';
-            document.getElementById('orderId').textContent = orderId;
-
-            // Get user plan from localStorage
-            try {
-                const user = JSON.parse(localStorage.getItem('currentUser'));
-                if (user) {
-                    const planKey = user.plan || 'basic';
-                    const planNames = {
-                        'basic': 'BASIC Plan',
-                        'swift-ai-plus': 'SWIFT AI+ Plan',
-                        'rocket-ai-plus': 'ROCKET AI+ Plan'
-                    };
-
-                    document.getElementById('planName').textContent = planNames[planKey];
-                    document.getElementById('billingCycle').textContent = (user.billingCycle || 'monthly').charAt(0).toUpperCase() + (user.billingCycle || 'monthly').slice(1);
-
-                    // Display features
-                    const features = PLAN_FEATURES[planKey] || [];
-                    const featuresList = document.getElementById('featuresList');
-                    featuresList.innerHTML = features.map(feature => `
-                        <div class="feature-item">
-                            <i class="fas fa-check"></i>
-                            ${feature}
-                        </div>
-                    `).join('');
-
-                    // Calculate amount based on plan
-                    const pricing = {
-                        'basic': { monthly: 10, yearly: 100 },
-                        'swift-ai-plus': { monthly: 50, yearly: 500 },
-                        'rocket-ai-plus': { monthly: 100, yearly: 1000 }
-                    };
-
-                    const amount = pricing[planKey]?.[user.billingCycle || 'monthly'] || 0;
-                    document.getElementById('amountPaid').textContent = `$${amount}`;
-                }
-            } catch (e) {
-                console.warn('Could not load user data');
-            }
-
-            // Set payment date
-            document.getElementById('paymentDate').textContent = new Date().toLocaleDateString('en-IN', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-
-        function displayErrorPage() {
-            document.getElementById('errorContainer').style.display = 'block';
-        }
-
-        function goToDashboard() {
-            window.location.href = '../index.html#dashboard';
-        }
-
-        function viewPricing() {
-            window.location.href = '../index.html#pricing';
-        }
-
-        function goToPricing() {
-            window.location.href = '../index.html#pricing';
-        }
-
-        function retryPayment() {
-            window.location.href = '../pages/payment.html';
-        }
-
-        function downloadInvoice(e) {
-            e.preventDefault();
-            alert('Invoice download feature would be implemented with backend invoice generation service');
-            // In production, this would call a backend endpoint to generate and download the invoice
-        }
-    </script>
+    });
+</script>
 </body>
 </html>
