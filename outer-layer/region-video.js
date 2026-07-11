@@ -22,6 +22,11 @@
     return MIDDLE_EAST.indexOf((countryCode || '').toUpperCase()) !== -1;
   }
 
+  var PLAY_ICON =
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+  var PAUSE_ICON =
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+
   var SPEAKER_ON =
     '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">' +
     '<path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4.03v8.06A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z"/></svg>';
@@ -44,6 +49,11 @@
         'padding:8px 13px;font-weight:600;font-size:.82rem;cursor:pointer;backdrop-filter:blur(4px);transition:.2s;}' +
       '.rv-sound:hover{background:rgba(46,134,255,.9);border-color:transparent;}' +
       '.rv-sound svg{display:block;}' +
+      '.rv-play{position:absolute;top:12px;left:12px;display:inline-flex;align-items:center;justify-content:center;' +
+        'width:42px;height:42px;background:rgba(11,18,32,.62);color:#fff;border:1px solid rgba(255,255,255,.28);' +
+        'border-radius:999px;cursor:pointer;backdrop-filter:blur(4px);transition:.2s;}' +
+      '.rv-play:hover{background:rgba(46,134,255,.9);border-color:transparent;}' +
+      '.rv-play svg{display:block;}' +
       '.rv-badge{position:absolute;left:12px;bottom:12px;background:rgba(11,18,32,.6);color:#cfe0ff;' +
         'border-radius:999px;padding:5px 12px;font-size:.72rem;font-weight:600;letter-spacing:.04em;}' +
       '@media(max-width:600px){.rv-sound span{display:none;}.rv-head h2{font-size:1.25rem;}}';
@@ -72,6 +82,7 @@
               'poster="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/woman-presents-financial-data-flowing-from-coffee-2026-03-26-01-26-39-utc.jpg">' +
           '<source src="' + src + '" type="' + type + '">' +
         '</video>' +
+        '<button type="button" class="rv-play" id="rv-play" aria-label="Pause video">' + PAUSE_ICON + '</button>' +
         '<button type="button" class="rv-sound" id="rv-sound" aria-label="Unmute video">' +
           SPEAKER_OFF + '<span>Tap for sound</span>' +
         '</button>' +
@@ -83,6 +94,24 @@
 
     var video = wrap.querySelector('#rv-video');
     var btn = wrap.querySelector('#rv-sound');
+    var playBtn = wrap.querySelector('#rv-play');
+
+    function paintPlay() {
+      if (video.paused) {
+        playBtn.innerHTML = PLAY_ICON;
+        playBtn.setAttribute('aria-label', 'Play video');
+      } else {
+        playBtn.innerHTML = PAUSE_ICON;
+        playBtn.setAttribute('aria-label', 'Pause video');
+      }
+    }
+    playBtn.addEventListener('click', function () {
+      if (video.paused) { var p = video.play(); if (p && p.catch) p.catch(function () {}); }
+      else { video.pause(); }
+    });
+    // Keep the icon in sync however playback state changes.
+    video.addEventListener('play', paintPlay);
+    video.addEventListener('pause', paintPlay);
 
     function paint() {
       if (video.muted) {
@@ -109,6 +138,7 @@
     var pp = video.play();
     if (pp && pp.catch) pp.catch(function () {});
     paint();
+    paintPlay();
   }
 
   function boot() {
