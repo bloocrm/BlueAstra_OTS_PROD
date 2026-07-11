@@ -60,32 +60,78 @@ async function sendReceiptAndLoginEmail({ to, name, plan, billingCycle, amount, 
       `<tr><td style="padding:8px 0;color:#64748b;">${k}</td><td style="padding:8px 0;text-align:right;font-weight:600;color:#16233a;">${v}</td></tr>`
     ).join('');
 
+    // Yearly-savings angle (yearly is billed as 10 months → 2 months free).
+    const p = PRICING[plan] || null;
+    const savings = p ? (p.monthly * 12 - p.yearly) : 0;
+    let yearlyBlock = '';
+    if (p && billingCycle !== 'yearly') {
+      yearlyBlock = `
+        <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:16px 18px;margin:0 0 20px;">
+          <div style="font-weight:800;color:#065f46;margin-bottom:4px;">💚 Pay for 10 months, get 12 — go yearly</div>
+          <div style="font-size:14px;color:#047857;">Switch ${planName} to annual billing and two months are on us — that's <strong>${cur} ${savings} back in your pocket every year</strong>. You can switch anytime from your account.</div>
+        </div>`;
+    } else if (p && billingCycle === 'yearly') {
+      yearlyBlock = `
+        <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:16px 18px;margin:0 0 20px;">
+          <div style="font-weight:800;color:#065f46;margin-bottom:4px;">🎉 Smart move — you're already ahead</div>
+          <div style="font-size:14px;color:#047857;">Your annual plan means two months are on us — <strong>${cur} ${savings} saved this year</strong> vs paying monthly. Nice one.</div>
+        </div>`;
+    }
+
+    // Gentle upgrade nudge for anyone not already on the top tier.
+    let upgradeBlock = '';
+    if (plan !== 'rocket-ai-plus') {
+      const nextTier = plan === 'basic' ? 'SWIFT AI+' : 'ROCKET AI+';
+      upgradeBlock = `
+        <div style="background:#eef4ff;border:1px dashed #2E86FF;border-radius:12px;padding:16px 18px;margin:0 0 22px;">
+          <div style="font-weight:800;color:#16233a;margin-bottom:4px;">⚡ Room to grow, whenever you are</div>
+          <div style="font-size:14px;color:#334155;">Unlock deeper AI messaging, auto email routing and predictive analytics by upgrading to <strong>${nextTier}</strong> in a single click — no reboarding, no fuss.</div>
+        </div>`;
+    }
+
+    const features = [
+      '📇&nbsp; Every client &amp; lead in one calm, searchable place',
+      '🤖&nbsp; AI that drafts messages, routes work and surfaces insights',
+      '📅&nbsp; Email &amp; calendar, synced and always at hand',
+      '🛡️&nbsp; Bank-grade security with MFA on every login'
+    ].map(f => `<li style="margin:0 0 9px;">${f}</li>`).join('');
+
     const html = `
       <div style="font-family:Segoe UI,Arial,sans-serif;background:#eef4ff;padding:28px;">
-        <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(22,35,58,.08);">
-          <div style="background:linear-gradient(135deg,#2E86FF,#1666d8);padding:26px 30px;color:#fff;">
+        <div style="max-width:580px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(22,35,58,.08);">
+          <div style="background:linear-gradient(135deg,#2E86FF,#1666d8);padding:30px 32px;color:#fff;">
             <div style="font-size:22px;font-weight:800;">Bloo<span style="opacity:.85;">CRM</span></div>
-            <div style="margin-top:6px;font-size:15px;opacity:.95;">Payment successful 🎉</div>
+            <div style="margin-top:8px;font-size:19px;font-weight:700;">Welcome to Bloo CRM 🎉</div>
+            <div style="margin-top:4px;font-size:14px;opacity:.95;">Your workspace is live — let's make something great.</div>
           </div>
-          <div style="padding:28px 30px;color:#334155;line-height:1.6;">
+          <div style="padding:28px 32px;color:#334155;line-height:1.65;">
             <p style="margin:0 0 14px;">Hi ${safeName},</p>
-            <p style="margin:0 0 18px;">Thank you — your payment has been received and your Bloo CRM subscription is now active.</p>
+            <p style="margin:0 0 16px;"><strong>You're in — and we couldn't be happier to have you.</strong> Your payment came through and your Bloo CRM account is active right now. This is the start of a smoother, smarter way to grow the relationships that matter.</p>
+
             <table style="width:100%;border-collapse:collapse;border-top:1px solid #e6ecf5;border-bottom:1px solid #e6ecf5;margin-bottom:22px;">${rows}</table>
-            <p style="margin:0 0 18px;">You can log in to your account any time using the button below:</p>
-            <p style="text-align:center;margin:0 0 22px;">
-              <a href="${loginUrl}" style="display:inline-block;background:#2E86FF;color:#fff;text-decoration:none;font-weight:700;padding:14px 30px;border-radius:10px;">Log in to Bloo CRM</a>
+
+            <p style="margin:0 0 8px;font-weight:800;color:#16233a;">Here's what's waiting for you inside:</p>
+            <ul style="padding-left:2px;list-style:none;margin:0 0 22px;">${features}</ul>
+
+            ${yearlyBlock}
+            ${upgradeBlock}
+
+            <p style="text-align:center;margin:6px 0 10px;">
+              <a href="${loginUrl}" style="display:inline-block;background:#2E86FF;color:#fff;text-decoration:none;font-weight:800;padding:15px 34px;border-radius:12px;font-size:16px;">Log in &amp; start your journey →</a>
             </p>
-            <p style="margin:0 0 6px;font-size:13px;color:#94a3b8;">Or paste this link into your browser:<br><a href="${loginUrl}" style="color:#2E86FF;">${loginUrl}</a></p>
-            <p style="margin:18px 0 0;font-size:13px;color:#94a3b8;">This receipt was sent to ${to}. If you didn't make this payment, please contact us immediately.</p>
+            <p style="text-align:center;margin:0 0 22px;font-size:14px;color:#64748b;">Your next big win is just one login away. Let's make today count. 🚀</p>
+
+            <p style="margin:0 0 6px;font-size:13px;color:#94a3b8;">Trouble with the button? Paste this into your browser:<br><a href="${loginUrl}" style="color:#2E86FF;">${loginUrl}</a></p>
+            <p style="margin:16px 0 0;font-size:13px;color:#94a3b8;">This confirmation was sent to ${to}. If you didn't make this payment, please contact us immediately.</p>
           </div>
-          <div style="background:#0f1b2e;color:#93a3bd;padding:16px 30px;font-size:12px;text-align:center;">© 2026 Blue Astra Technologies LLP · Bloo CRM</div>
+          <div style="background:#0f1b2e;color:#93a3bd;padding:16px 32px;font-size:12px;text-align:center;">© 2026 Blue Astra Technologies LLP · Bloo CRM</div>
         </div>
       </div>`;
 
     await emailService.sendEmail({
       to,
       fromName: 'Bloo CRM',
-      subject: 'Your Bloo CRM payment was successful — log in to get started',
+      subject: 'Welcome to Bloo CRM 🎉 — your account is ready',
       html
     });
   } catch (e) {
