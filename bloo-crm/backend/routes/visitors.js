@@ -110,6 +110,25 @@ router.post('/activity', async (req, res) => {
   } catch (e) { return res.status(204).end(); }
 });
 
+// GET /api/visitors/geo — functional geolocation for regional content (e.g. which
+// walkthrough video to show). Best-effort, stores nothing. Defined BEFORE the
+// '/:visitorId' route so 'geo' is not captured as an id.
+router.get('/geo', async (req, res) => {
+  const ip = clientIp(req);
+  if (isPrivate(ip)) return res.json({ status: 'private', continentCode: null, countryCode: null });
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 3000);
+    const r = await fetch(`http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,continentCode,countryCode,country`, { signal: ctrl.signal });
+    clearTimeout(t);
+    const d = await r.json();
+    if (d && d.status === 'success') {
+      return res.json({ status: 'success', continentCode: d.continentCode, countryCode: d.countryCode, country: d.country });
+    }
+  } catch (e) { /* best-effort */ }
+  return res.json({ status: 'unknown', continentCode: null, countryCode: null });
+});
+
 // GET /api/visitors/:visitorId — transparency: return what we hold for this visitor
 router.get('/:visitorId', async (req, res) => {
   if (!/^anon_[a-f0-9]{6,}$/.test(req.params.visitorId)) return res.status(400).json({ error: 'Invalid id' });
