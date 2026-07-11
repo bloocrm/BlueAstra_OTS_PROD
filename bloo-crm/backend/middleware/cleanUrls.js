@@ -16,19 +16,28 @@
 const fs = require('fs');
 const path = require('path');
 
-// Build a { lowercase-name -> absolute file } map for extensionless serving.
+// Build a { lowercase-relative-path -> absolute file } map for extensionless
+// serving. Walks subdirectories so nested pages (e.g. pages/payment.html) get a
+// clean-URL entry keyed by their path from the base ("pages/payment"), matching
+// what serveClean() looks up. First dir wins on key conflicts.
 function buildMap(dirs) {
   const map = {};
-  for (const base of dirs) {
-    let files = [];
-    try { files = fs.readdirSync(base); } catch (e) { continue; }
-    files
-      .filter(f => /\.html$/i.test(f) && !/-callback\.html$/i.test(f) && f.toLowerCase() !== 'index.html')
-      .forEach(f => {
-        const key = f.replace(/\.html$/i, '').toLowerCase();
-        if (!map[key]) map[key] = path.join(base, f); // first dir wins on conflict
-      });
-  }
+  const walk = (base, rel) => {
+    let entries = [];
+    try { entries = fs.readdirSync(path.join(base, rel), { withFileTypes: true }); } catch (e) { return; }
+    for (const ent of entries) {
+      const name = ent.name;
+      if (ent.isDirectory()) {
+        if (name === 'node_modules' || name.startsWith('.')) continue;
+        walk(base, rel ? rel + '/' + name : name);
+      } else if (/\.html$/i.test(name) && !/-callback\.html$/i.test(name) && name.toLowerCase() !== 'index.html') {
+        const relPath = rel ? rel + '/' + name : name;
+        const key = relPath.replace(/\.html$/i, '').toLowerCase();
+        if (!map[key]) map[key] = path.join(base, relPath); // first dir wins on conflict
+      }
+    }
+  };
+  for (const base of dirs) walk(base, '');
   return map;
 }
 
