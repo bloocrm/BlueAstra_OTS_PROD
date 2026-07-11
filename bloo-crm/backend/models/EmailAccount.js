@@ -7,6 +7,7 @@
 */
 const mongoose = require('mongoose');
 const crypto = require('crypto');
+const { encrypt, decrypt } = require('../utils/encryption');
 
 const emailAccountSchema = new mongoose.Schema(
   {
@@ -116,26 +117,16 @@ const emailAccountSchema = new mongoose.Schema(
   }
 );
 
-// Encrypt tokens before saving
+// Encrypt tokens before saving (AES-256-GCM via utils/encryption).
 emailAccountSchema.pre('save', function(next) {
-  if (this.accessToken || this.refreshToken) {
-    const encryptionKey = process.env.ENCRYPTION_KEY || 'default-key-change-in-production';
-
-    if (this.accessToken) {
-      const cipher = crypto.createCipher('aes-256-cbc', encryptionKey);
-      let encrypted = cipher.update(this.accessToken, 'utf8', 'hex');
-      encrypted += cipher.final('hex');
-      this.encryptedTokens.accessToken = encrypted;
-      this.accessToken = undefined;
-    }
-
-    if (this.refreshToken) {
-      const cipher = crypto.createCipher('aes-256-cbc', encryptionKey);
-      let encrypted = cipher.update(this.refreshToken, 'utf8', 'hex');
-      encrypted += cipher.final('hex');
-      this.encryptedTokens.refreshToken = encrypted;
-      this.refreshToken = undefined;
-    }
+  if (!this.encryptedTokens) this.encryptedTokens = {};
+  if (this.accessToken) {
+    this.encryptedTokens.accessToken = encrypt(this.accessToken);
+    this.accessToken = undefined;
+  }
+  if (this.refreshToken) {
+    this.encryptedTokens.refreshToken = encrypt(this.refreshToken);
+    this.refreshToken = undefined;
   }
   next();
 });
@@ -143,22 +134,12 @@ emailAccountSchema.pre('save', function(next) {
 // Decrypt tokens when retrieved
 emailAccountSchema.methods.getAccessToken = function() {
   if (!this.encryptedTokens?.accessToken) return null;
-
-  const encryptionKey = process.env.ENCRYPTION_KEY || 'default-key-change-in-production';
-  const decipher = crypto.createDecipher('aes-256-cbc', encryptionKey);
-  let decrypted = decipher.update(this.encryptedTokens.accessToken, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
+  try { return decrypt(this.encryptedTokens.accessToken); } catch (e) { return null; }
 };
 
 emailAccountSchema.methods.getRefreshToken = function() {
   if (!this.encryptedTokens?.refreshToken) return null;
-
-  const encryptionKey = process.env.ENCRYPTION_KEY || 'default-key-change-in-production';
-  const decipher = crypto.createDecipher('aes-256-cbc', encryptionKey);
-  let decrypted = decipher.update(this.encryptedTokens.refreshToken, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
+  try { return decrypt(this.encryptedTokens.refreshToken); } catch (e) { return null; }
 };
 
 // Indexes for efficient queries
