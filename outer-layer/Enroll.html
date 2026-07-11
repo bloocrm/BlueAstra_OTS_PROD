@@ -51,6 +51,32 @@ input,select,textarea{ width:100%; padding:13px; border:1px solid #dbe2ee; borde
 input:focus,select:focus,textarea:focus{ outline:none; border-color:var(--blue); }
 footer{ background:#0f1b2e; color:#93a3bd; text-align:center; padding:30px; font-size:14px; } footer a{ color:#cfe0ff; font-weight:600; margin:0 6px; }
 @media(max-width:900px){ nav{ display:none; } .hero{ grid-template-columns:1fr; } .hero h1{ font-size:34px; } }
+
+/* Smooth scroll to the in-page sections (offset for the sticky header) */
+html{ scroll-behavior:smooth; }
+#region-video-mount, #pricing{ scroll-margin-top:90px; }
+
+/* Cartoonistic sticker buttons overlaid on the hero image */
+.hero-media{ position:relative; }
+.toon-btn{
+  position:absolute; z-index:6;
+  display:inline-flex; align-items:center; gap:8px;
+  font-weight:800; font-size:15px; letter-spacing:.2px;
+  color:#16233a; text-decoration:none; white-space:nowrap;
+  padding:11px 18px; border-radius:999px;
+  border:3px solid #16233a; box-shadow:4px 4px 0 #16233a;
+  cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;
+}
+.toon-btn .ico{ font-size:17px; line-height:1; }
+.toon-btn:hover{ transform:rotate(0deg) scale(1.06); box-shadow:6px 7px 0 #16233a; }
+.toon-btn:active{ transform:translate(2px,2px) scale(1); box-shadow:1px 1px 0 #16233a; }
+.toon-demo{ background:#FFD23F; left:6%; top:58%; transform:rotate(-5deg); }
+.toon-pricing{ background:#39D98A; right:5%; top:8%; transform:rotate(4deg); }
+@media(max-width:900px){
+  .toon-btn{ font-size:13px; padding:9px 14px; box-shadow:3px 3px 0 #16233a; }
+  .toon-demo{ left:4%; top:62%; }
+  .toon-pricing{ right:4%; top:5%; }
+}
 </style>
 <script>
 // Continue to the application's payment page (full payment components live there)
@@ -79,13 +105,15 @@ function enrollSubmit(e){ e.preventDefault(); var plan = document.getElementById
     </div>
     <div class="hero-media">
         <img alt="Get started with Bloo CRM" src="https://zxqrgrantzbxfoqklbnf.supabase.co/storage/v1/object/public/BLOOCRM/woman-presents-financial-data-flowing-from-coffee-2026-03-26-01-26-39-utc.jpg">
+        <a href="#region-video-mount" class="toon-btn toon-demo" aria-label="Jump to the demo video"><span class="ico">▶️</span> View Demo</a>
+        <a href="#pricing" class="toon-btn toon-pricing" aria-label="Jump to plans and pricing"><span class="ico">🏷️</span> View Pricing</a>
     </div>
 </section>
 
 <!-- Region-aware feature walkthrough (UK narration for EMEA, US narration elsewhere) -->
 <div id="region-video-mount"></div>
 
-<div class="wrap">
+<div class="wrap" id="pricing">
     <div class="section-head"><h2>Plans &amp; pricing</h2><p>Start on any plan and upgrade anytime as your practice grows.</p></div>
     <div class="packages">
 
