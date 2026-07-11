@@ -370,6 +370,15 @@
 </head>
 <body>
     <div class="payment-container">
+        <div id="cancelNote" style="display:none;gap:0.9rem;align-items:flex-start;background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1px solid #fcd9a5;border-radius:0.9rem;padding:1rem 1.15rem;margin-bottom:1.5rem;">
+            <div style="font-size:1.5rem;line-height:1.1;">👋</div>
+            <div style="flex:1;">
+                <div style="font-weight:700;color:#9a3412;margin-bottom:2px;">No worries — your payment was cancelled</div>
+                <div style="color:#a16207;font-size:0.92rem;">You haven't been charged. Choose the plan that's right for you below and continue to get started with Bloo CRM.</div>
+            </div>
+            <button type="button" aria-label="Dismiss" onclick="document.getElementById('cancelNote').style.display='none'" style="background:none;border:none;color:#9a3412;font-size:1.25rem;line-height:1;cursor:pointer;padding:0 2px;">&times;</button>
+        </div>
+
         <a href="javascript:window.history.back()" class="back-link">
             <i class="fas fa-arrow-left"></i> Back to Pricing
         </a>

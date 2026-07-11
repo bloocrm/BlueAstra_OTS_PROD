@@ -273,7 +273,7 @@ router.post('/initiate', verifyToken, async (req, res) => {
         },
         redirect_urls: {
           return_url: `${process.env.FRONTEND_URL || '/api'}/payment-success?orderId=${orderId}`,
-          cancel_url: `${process.env.FRONTEND_URL || '/api'}/payment-cancelled?orderId=${orderId}`
+          cancel_url: `${process.env.APP_URL || process.env.FRONTEND_URL || 'https://bloocrm.com'}/pages/payment?status=cancelled`
         },
         transactions: [
           {
@@ -676,7 +676,7 @@ router.post('/stripe/checkout', verifyToken, async (req, res) => {
     const params = new URLSearchParams();
     params.append('mode', 'payment');
     params.append('success_url', `${appUrl}/pages/payment-confirmation.html?status=success&provider=stripe&session_id={CHECKOUT_SESSION_ID}`);
-    params.append('cancel_url', `${appUrl}/index.html#pricing`);
+    params.append('cancel_url', `${appUrl}/pages/payment?status=cancelled${b.plan ? '&plan=' + encodeURIComponent(b.plan) : ''}`);
     params.append('line_items[0][quantity]', '1');
     params.append('line_items[0][price_data][currency]', currency);
     params.append('line_items[0][price_data][unit_amount]', String(Math.round(amount * 100)));
@@ -772,7 +772,7 @@ router.post('/payu/create', verifyToken, async (req, res) => {
         key, txnid, amount: amt, productinfo, firstname, email,
         phone: b.phone || '',
         surl: `${appUrl}/pages/payment-confirmation.html?status=success&provider=payu&txnid=${txnid}`,
-        furl: `${appUrl}/index.html#pricing`,
+        furl: `${appUrl}/pages/payment?status=cancelled${b.plan ? '&plan=' + encodeURIComponent(b.plan) : ''}`,
         hash
       }
     });

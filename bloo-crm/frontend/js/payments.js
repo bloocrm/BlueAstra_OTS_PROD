@@ -38,6 +38,9 @@ function initializePaymentPage() {
   const planFromUrl = params.get('plan');
   const isVerified = params.get('verified') === 'true';
 
+  // Returning from a cancelled payment on the gateway — show a friendly note.
+  if (params.get('status') === 'cancelled') showCancelNote();
+
   // Restore the billing cycle (e.g. when returning from register-then-pay)
   const billingFromUrl = params.get('billing');
   if (billingFromUrl === 'yearly' || billingFromUrl === 'monthly') {
@@ -398,6 +401,15 @@ async function processPayment() {
 }
 
 // Initialize Razorpay checkout
+// Friendly "you cancelled the payment" note at the top of the payment page.
+function showCancelNote() {
+  const el = document.getElementById('cancelNote');
+  if (el) {
+    el.style.display = 'flex';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
 function initializeRazorpayCheckout(paymentData, token, orderId) {
   const options = {
     key: paymentData.razorpayKeyId,
@@ -413,7 +425,7 @@ function initializeRazorpayCheckout(paymentData, token, orderId) {
     modal: {
       ondismiss: function () {
         showLoading(false);
-        showError('Payment cancelled. Please try again.');
+        showCancelNote();
       }
     },
     theme: {
