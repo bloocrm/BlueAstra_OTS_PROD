@@ -208,6 +208,33 @@ function connectVideoProvider(providerId) {
         return;
     }
 
+    // Whereby: a single org API key lives on the server (no per-advisor sign-in).
+    // "Connect" just confirms the server is configured, then it's ready to use.
+    if (providerId === 'whereby') {
+        (async () => {
+            try {
+                const token = localStorage.getItem('authToken');
+                const st = await fetch(`${window.API_BASE_URL || '/api'}/meeting/whereby/status`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }).then(r => r.json());
+                if (st && st.configured) {
+                    const user = getCurrentUser();
+                    if (user) {
+                        if (!user.connectedVideoProviders) user.connectedVideoProviders = [];
+                        if (!user.connectedVideoProviders.some(p => p.id === 'whereby')) {
+                            user.connectedVideoProviders.push({ id: 'whereby', name: 'Whereby', connectedAt: new Date().toISOString() });
+                            saveCurrentUser(user);
+                        }
+                    }
+                    showNotification('Whereby is ready — start a meeting anytime.', 'success');
+                    if (typeof loadVideoProviders === 'function') loadVideoProviders();
+                    if (typeof loadMeetingRoomFeatures === 'function') loadMeetingRoomFeatures();
+                } else {
+                    showNotification('Whereby isn’t configured on the server yet.', 'error');
+                }
+            } catch (e) { showNotification('Could not check Whereby.', 'error'); }
+        })();
+        return;
+    }
+
     // Open the real provider's sign-in in a NEW TAB (tied to that service). Done
     // synchronously in the click gesture so the browser doesn't block the popup.
     // Jitsi needs no account, so there's nothing to sign into.
@@ -262,9 +289,27 @@ function disconnectVideoProvider(providerId) {
 // Start meeting with provider
 function startMeetingWithProvider(providerId) {
     if (SERVER_MEETING_PROVIDERS[providerId]) { return startServerMeeting(providerId); }
+    if (providerId === 'whereby') { return startWherebyMeeting(); }
     const provider = videoProviders[providerId];
     showModal('startMeetingModal');
     document.getElementById('meetingProvider').value = providerId;
+}
+
+// Create a Whereby room via the server's org API key and open it as host.
+async function startWherebyMeeting() {
+    const base = window.API_BASE_URL || '/api';
+    const token = localStorage.getItem('authToken');
+    try {
+        showNotification('Creating your Whereby room…', 'info');
+        const resp = await fetch(`${base}/meeting/whereby/create`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            body: JSON.stringify({ durationMinutes: 60 })
+        });
+        const d = await resp.json().catch(() => ({}));
+        if (resp.ok && d.joinUrl) { window.open(d.joinUrl, '_blank', 'noopener'); showNotification('Whereby room created — opening…', 'success'); }
+        else if (d.error === 'not_configured') showNotification('Whereby isn’t configured on the server yet.', 'error');
+        else showNotification(d.message || 'Could not create the Whereby room.', 'error');
+    } catch (e) { showNotification('Could not create the Whereby room.', 'error'); }
 }
 
 // Create a real meeting on the advisor's own connected account (Teams / Meet).

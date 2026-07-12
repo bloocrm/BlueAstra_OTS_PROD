@@ -208,4 +208,30 @@ router.delete('/meeting/providers/:provider', verifyToken, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Failed to disconnect provider', message: e.message }); }
 });
 
+// ---- Whereby (single org API key, server-side; no per-advisor OAuth) ----
+router.get('/meeting/whereby/status', verifyToken, (req, res) => {
+  res.json({ status: 'success', configured: !!process.env.WHEREBY_API_KEY });
+});
+
+router.post('/meeting/whereby/create', verifyToken, async (req, res) => {
+  try {
+    const key = process.env.WHEREBY_API_KEY;
+    if (!key) return res.status(503).json({ error: 'not_configured', message: 'Whereby API key is not set on the server.' });
+    const b = req.body || {};
+    const durationMin = Math.min(480, Math.max(15, parseInt(b.durationMinutes) || 60));
+    const endDate = new Date(Date.now() + durationMin * 60000).toISOString();
+    const r = await fetch('https://api.whereby.dev/v1/meetings', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ endDate, roomMode: 'group', fields: ['hostRoomUrl'] })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) return res.status(502).json({ error: 'create_failed', message: d.error || d.message || 'Whereby create failed' });
+    return res.json({ status: 'success', provider: 'whereby', joinUrl: d.hostRoomUrl || d.roomUrl, participantUrl: d.roomUrl, meetingId: d.meetingId, endDate: d.endDate });
+  } catch (e) {
+    console.error('whereby create error:', e.message);
+    res.status(500).json({ error: 'Failed to create meeting' });
+  }
+});
+
 module.exports = router;
