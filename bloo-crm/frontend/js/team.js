@@ -76,8 +76,9 @@ async function submitMember(event) {
     const v = id => (document.getElementById(id)?.value || '').trim();
     const permissions = Array.from(document.querySelectorAll('#memberPermsGrid .mperm:checked')).map(c => c.value);
     const plan = v('memberPlan') || 'basic';
+    const userRole = v('memberRole') || 'team-member';
     try {
-        const res = await apiRequest('/team/members', { method: 'POST', body: { name: v('memberName'), email: v('memberEmail'), password: v('memberPassword'), permissions, plan } });
+        const res = await apiRequest('/team/members', { method: 'POST', body: { name: v('memberName'), email: v('memberEmail'), password: v('memberPassword'), permissions, plan, userRole } });
         showNotification(`User created on the ${PLAN_LABEL[plan] || plan} plan.`, 'success');
         closeMemberModal();
         loadTeam();

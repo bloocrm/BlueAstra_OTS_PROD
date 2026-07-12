@@ -86,6 +86,12 @@ const userSchema = new mongoose.Schema(
       enum: ['admin', 'member'],
       default: 'admin'
     },
+    // Organizational role assigned by the admin when adding a user.
+    userRole: {
+      type: String,
+      enum: ['team-member', 'sales-representative', 'manager', 'primary-approver', 'secondary-approver', '4-eye', '6-eye', 'auditor', 'administrator'],
+      default: 'team-member'
+    },
     parentUserId: {                 // set for members: the admin who owns/manages them
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

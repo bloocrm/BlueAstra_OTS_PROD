@@ -1309,6 +1309,20 @@ Mike Johnson,mike@example.com,555-8888,Finance Inc,Qualified,Referral,Referred b
                             </div>
                             <div class="form-group"><label>Temporary Password <span style="color:var(--theme-primary);">*</span></label><input type="text" id="memberPassword" required placeholder="They can change it later"></div>
                             <div class="form-group">
+                                <label>Role of User <span style="color:var(--theme-primary);">*</span></label>
+                                <select id="memberRole" required>
+                                    <option value="team-member">Team Member</option>
+                                    <option value="sales-representative">Sales Representative</option>
+                                    <option value="manager">Manager</option>
+                                    <option value="primary-approver">Primary Approver</option>
+                                    <option value="secondary-approver">Secondary Approver</option>
+                                    <option value="4-eye">4-Eye</option>
+                                    <option value="6-eye">6-Eye</option>
+                                    <option value="auditor">Auditor</option>
+                                    <option value="administrator">Administrator</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label>Plan for this user <span style="color:var(--theme-primary);">*</span></label>
                                 <select id="memberPlan" required>
                                     <option value="basic">BASIC — $10/mo ($100/yr)</option>

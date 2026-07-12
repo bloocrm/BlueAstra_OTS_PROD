@@ -34,12 +34,13 @@ router.get('/me', (req, res) => {
 router.use(requireWorkspaceAdmin);
 
 const PLAN_KEYS = ['basic', 'swift-ai-plus', 'rocket-ai-plus'];
+const USER_ROLES = ['team-member', 'sales-representative', 'manager', 'primary-approver', 'secondary-approver', '4-eye', '6-eye', 'auditor', 'administrator'];
 
 // List members under this admin
 router.get('/members', async (req, res) => {
   try {
     const members = await User.find({ parentUserId: req.actualUserId, role: 'member' })
-      .select('name email permissions isActive lastLogin createdAt plan paymentPending').sort({ createdAt: -1 }).lean();
+      .select('name email userRole permissions isActive lastLogin createdAt plan paymentPending').sort({ createdAt: -1 }).lean();
     const base = (process.env.APP_URL || 'https://bloocrm.com').replace(/\/+$/, '');
     members.forEach(m => { m.paymentLink = `${base}/pages/payment.html?plan=${m.plan || 'basic'}`; });
     res.json({ status: 'success', sections: SECTIONS, count: members.length, members });
@@ -56,12 +57,14 @@ router.post('/members', async (req, res) => {
 
     const permissions = Array.isArray(b.permissions) ? b.permissions.filter(p => SECTIONS.includes(p)) : [];
     const plan = PLAN_KEYS.includes(b.plan) ? b.plan : 'basic';
+    const userRole = USER_ROLES.includes(b.userRole) ? b.userRole : 'team-member';
     const member = new User({
       name: b.name.trim(),
       email: b.email.toLowerCase().trim(),
       password: b.password,          // hashed by the model pre-save hook
       phone: (b.phone && b.phone.trim()) || 'N/A',
       role: 'member',
+      userRole,                      // organizational role (team member, approver, auditor, …)
       parentUserId: req.actualUserId,
       permissions,
       isActive: true,
@@ -72,7 +75,7 @@ router.post('/members', async (req, res) => {
     const base = (process.env.APP_URL || 'https://bloocrm.com').replace(/\/+$/, '');
     res.status(201).json({
       status: 'success',
-      member: { id: member._id, name: member.name, email: member.email, permissions: member.permissions, isActive: member.isActive, plan: member.plan, paymentPending: member.paymentPending },
+      member: { id: member._id, name: member.name, email: member.email, userRole: member.userRole, permissions: member.permissions, isActive: member.isActive, plan: member.plan, paymentPending: member.paymentPending },
       paymentLink: `${base}/pages/payment.html?plan=${member.plan}`
     });
   } catch (e) { res.status(500).json({ error: 'Failed to create member', message: e.message }); }
