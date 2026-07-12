@@ -55,6 +55,17 @@ const PROVIDERS = {
     refreshNeedsScope: false,
     tokenAuth: 'basic',       // Zoom exchanges tokens with HTTP Basic auth
     sendAuthScope: false      // Zoom scopes come from the app, not the authorize URL
+  },
+  webex: {
+    label: 'Cisco Webex',
+    clientId: () => process.env.WEBEX_CLIENT_ID,
+    clientSecret: () => process.env.WEBEX_CLIENT_SECRET,
+    authUrl: () => 'https://webexapis.com/v1/authorize',
+    tokenUrl: () => 'https://webexapis.com/v1/access_token',
+    // Least privilege: read identity + schedule/read meetings.
+    scopes: ['spark:people_read', 'meeting:schedules_read', 'meeting:schedules_write'],
+    authExtras: {},
+    refreshNeedsScope: false
   }
 };
 const cfg = (p) => PROVIDERS[p];
@@ -185,6 +196,10 @@ router.get('/:provider/callback', async (req, res) => {
         const me = await fetch('https://api.zoom.us/v2/users/me', { headers: { Authorization: `Bearer ${tok.access_token}` } }).then(r => r.json()).catch(() => ({}));
         email = email || me.email || '';
         providerAccountId = providerAccountId || me.id || '';
+      } else if (provider === 'webex') {
+        const me = await fetch('https://webexapis.com/v1/people/me', { headers: { Authorization: `Bearer ${tok.access_token}` } }).then(r => r.json()).catch(() => ({}));
+        email = email || (Array.isArray(me.emails) && me.emails[0]) || '';
+        providerAccountId = providerAccountId || me.id || '';
       }
     }
     if (!email) return done(false, 'Could not read the account.');
@@ -288,6 +303,18 @@ router.post('/connections/:id/create-meeting', verifyToken, async (req, res) => 
       conn.lastMeetingAt = new Date(); await conn.save();
       // The advisor hosts, so open the host start_url; join_url is for invitees.
       return res.json({ status: 'success', provider: 'zoom', joinUrl: d.start_url || d.join_url, participantUrl: d.join_url, subject, startDateTime: start.toISOString(), endDateTime: end.toISOString() });
+    }
+
+    if (conn.provider === 'webex') {
+      const r = await fetch('https://webexapis.com/v1/meetings', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: subject, start: start.toISOString(), end: end.toISOString() })
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) return res.status(502).json({ error: 'create_failed', message: d.message || (d.errors && d.errors[0] && d.errors[0].description) || 'Webex create failed' });
+      conn.lastMeetingAt = new Date(); await conn.save();
+      return res.json({ status: 'success', provider: 'webex', joinUrl: d.webLink, subject, startDateTime: start.toISOString(), endDateTime: end.toISOString() });
     }
 
     return res.status(400).json({ error: 'unsupported_provider' });
