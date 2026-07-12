@@ -229,6 +229,11 @@ app.use('/api/visitors', visitorRoutes);
 const emailOAuthRoutes = require('./routes/email-oauth');
 app.use('/api/mailbox', emailOAuthRoutes);
 
+// Secure server-side meeting OAuth (Microsoft Teams; per-advisor). Mounted at a
+// specific prefix before the bare-'/api' routers so the public callback works.
+const meetingOAuthRoutes = require('./routes/meeting-oauth');
+app.use('/api/meeting-oauth', meetingOAuthRoutes);
+
 // =====================================================
 // EMAIL SYNC ROUTES
 // =====================================================

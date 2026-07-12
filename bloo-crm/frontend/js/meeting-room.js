@@ -181,6 +181,29 @@ function connectVideoProvider(providerId) {
     const link = MEETING_PROVIDER_LINKS[providerId] || {};
     if (!provider) return;
 
+    // Microsoft Teams: SECURE server-side OAuth — the advisor signs into their OWN
+    // Microsoft account; tokens are encrypted on the server (never in the browser).
+    // Open a blank tab synchronously (avoids popup-block), then send it to the
+    // backend-generated auth URL.
+    if (providerId === 'microsoft-teams') {
+        const authTab = window.open('about:blank', '_blank');
+        showNotification('Opening Microsoft sign-in…', 'info');
+        (async () => {
+            try {
+                const token = localStorage.getItem('authToken');
+                const resp = await fetch(`${window.API_BASE_URL || '/api'}/meeting-oauth/microsoft/connect`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+                const d = await resp.json().catch(() => ({}));
+                if (resp.ok && d.authUrl) {
+                    if (authTab && !authTab.closed) authTab.location.href = d.authUrl; else window.location.href = d.authUrl;
+                } else {
+                    if (authTab && !authTab.closed) authTab.close();
+                    showNotification(d.message || 'Microsoft Teams isn’t configured on the server yet.', 'error');
+                }
+            } catch (e) { if (authTab && !authTab.closed) authTab.close(); showNotification('Could not start Microsoft sign-in.', 'error'); }
+        })();
+        return;
+    }
+
     // Open the real provider's sign-in in a NEW TAB (tied to that service). Done
     // synchronously in the click gesture so the browser doesn't block the popup.
     // Jitsi needs no account, so there's nothing to sign into.
@@ -234,10 +257,60 @@ function disconnectVideoProvider(providerId) {
 
 // Start meeting with provider
 function startMeetingWithProvider(providerId) {
+    if (providerId === 'microsoft-teams') { return startTeamsMeeting(); }
     const provider = videoProviders[providerId];
     showModal('startMeetingModal');
     document.getElementById('meetingProvider').value = providerId;
 }
+
+// Create a real Teams meeting on the advisor's connected Microsoft account.
+async function startTeamsMeeting() {
+    const base = window.API_BASE_URL || '/api';
+    const token = localStorage.getItem('authToken');
+    const auth = token ? { Authorization: `Bearer ${token}` } : {};
+    try {
+        const list = await fetch(`${base}/meeting-oauth/connections`, { headers: auth }).then(r => r.json());
+        const conn = ((list && list.connections) || []).find(c => c.provider === 'microsoft' && c.connectionStatus === 'connected');
+        if (!conn) { showNotification('Connect Microsoft Teams first.', 'error'); return; }
+        const subject = (prompt('Meeting title:', 'Bloo CRM Meeting') || '').trim() || 'Bloo CRM Meeting';
+        showNotification('Creating your Teams meeting…', 'info');
+        const resp = await fetch(`${base}/meeting-oauth/connections/${conn._id}/create-meeting`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+            body: JSON.stringify({ subject, durationMinutes: 60 })
+        });
+        const d = await resp.json().catch(() => ({}));
+        if (resp.ok && d.joinUrl) {
+            window.open(d.joinUrl, '_blank', 'noopener');
+            showNotification('Teams meeting created — opening…', 'success');
+        } else if (d.error === 'needs_reauth') {
+            showNotification('Your Teams session expired — please reconnect.', 'error');
+        } else {
+            showNotification(d.message || 'Could not create the Teams meeting.', 'error');
+        }
+    } catch (e) { showNotification('Could not create the Teams meeting.', 'error'); }
+}
+
+// Outcome of the Teams OAuth tab (posted by the callback page).
+window.addEventListener('message', (e) => {
+    if (e.origin !== window.location.origin) return;
+    const d = e.data || {};
+    if (d.type !== 'meeting-oauth-complete' || d.provider !== 'microsoft-teams') return;
+    if (d.success) {
+        const user = getCurrentUser();
+        if (user) {
+            if (!user.connectedVideoProviders) user.connectedVideoProviders = [];
+            if (!user.connectedVideoProviders.some(p => p.id === 'microsoft-teams')) {
+                user.connectedVideoProviders.push({ id: 'microsoft-teams', name: 'Microsoft Teams', connectedAt: new Date().toISOString() });
+                saveCurrentUser(user);
+            }
+        }
+        showNotification('✅ Microsoft Teams connected.', 'success');
+    } else {
+        showNotification('❌ Teams connection failed. Please try again.', 'error');
+    }
+    if (typeof loadVideoProviders === 'function') loadVideoProviders();
+    if (typeof loadMeetingRoomFeatures === 'function') loadMeetingRoomFeatures();
+});
 
 // Read a File into { name, type, data(base64) } for emailing as an attachment
 function readFileAsBase64(file) {
