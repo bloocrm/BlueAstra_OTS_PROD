@@ -29,6 +29,9 @@ const emailProviderList = {
     },
 };
 
+// Providers whose last connection attempt failed — shows "Re-attempt" + support.
+const emailConnectFailures = new Set();
+
 // Load email providers section
 function loadEmailProviders() {
     const user = getCurrentUser();
@@ -64,11 +67,19 @@ function loadEmailProviders() {
                         `<button class="btn btn-sm btn-success" type="button" title="Connected" style="cursor:default;">
                             <i class="fas fa-check-circle"></i> Connected
                         </button>` :
+                        emailConnectFailures.has(key) ?
+                        `<button class="btn btn-sm btn-warning" onclick="connectEmailProvider('${key}')">
+                            <i class="fas fa-rotate-right"></i> Re-attempt
+                        </button>` :
                         `<button class="btn btn-sm btn-secondary" onclick="connectEmailProvider('${key}')">
                             <i class="fas fa-link"></i> Connect
                         </button>`
                     }
                 </div>
+                ${emailConnectFailures.has(key) ?
+                    `<div class="connect-failed-note" style="margin-top:10px;padding:10px 12px;background:#fdecec;border:1px solid #f5b5b5;border-left:3px solid #e53935;border-radius:8px;font-size:12.5px;color:#b71c1c;line-height:1.5;text-align:left;">
+                        <strong>⚠️ Connectivity failed.</strong> Please tap <strong>Re-attempt</strong> above. If the problem persists, call <strong>1800&nbsp;BLOO&nbsp;CRM</strong> or email <a href="mailto:issues@bloocrm.com" style="color:#b71c1c;text-decoration:underline;">issues@bloocrm.com</a>.
+                    </div>` : ''}
             </div>
         `;
     });
@@ -79,41 +90,75 @@ function loadEmailProviders() {
 
 // Connect email provider
 function connectEmailProvider(providerId) {
-    const provider = emailProviderList[providerId];
-    const user = getCurrentUser();
+    const provider = emailProviderList[providerId] || { name: providerId };
 
     if (!emailManager) {
         showNotification('Email manager not initialized', 'error');
         return;
     }
 
-    showNotification(`Connecting to ${provider.name}...`, 'info');
+    // (Re)attempt — clear any prior failure, then open the provider sign-in tab.
+    emailConnectFailures.delete(providerId);
+    loadEmailProviders();
+    showNotification(`Opening sign-in for ${provider.name}…`, 'info');
 
-    emailManager.connectProvider(providerId).then(() => {
-        if (!user.connectedEmailProviders) {
-            user.connectedEmailProviders = [];
-        }
-
-        // Remove if already exists
-        user.connectedEmailProviders = user.connectedEmailProviders.filter(p => p.id !== providerId);
-
-        // Add new provider
-        user.connectedEmailProviders.push({
-            id: providerId,
-            name: provider.name,
-            connectedAt: new Date().toISOString()
-        });
-
-        saveCurrentUser(user);
-        logWorkflowActivity('email_provider_connected', `Connected to ${provider.name}`);
-
-        showNotification(`Successfully connected to ${provider.name}!`, 'success');
-        loadEmailProviders();
-        loadRecentEmails();
-    }).catch((error) => {
-        showNotification(`Connection error: ${error.message}`, 'error');
+    // The real success/failure arrives from the OAuth callback (message listener
+    // below). A rejection here means the sign-in tab couldn't even be opened.
+    Promise.resolve(emailManager.connectProvider(providerId)).catch((error) => {
+        console.error('Email connect open error:', error);
+        markEmailConnectFailed(providerId);
     });
 }
+
+// The OAuth attempt FAILED — show "Connectivity failed", flip the button to
+// Re-attempt, surface the support contact, and return the user to the
+// Communications → Email section.
+function markEmailConnectFailed(providerId) {
+    const provider = emailProviderList[providerId] || { name: providerId };
+    emailConnectFailures.add(providerId);
+
+    // Ensure it isn't shown as connected.
+    const user = getCurrentUser();
+    if (user && Array.isArray(user.connectedEmailProviders)) {
+        user.connectedEmailProviders = user.connectedEmailProviders.filter(p => p.id !== providerId);
+        saveCurrentUser(user);
+    }
+
+    showNotification(`❌ Connectivity to ${provider.name} failed. Please re-attempt.`, 'error');
+    if (typeof switchView === 'function') { try { switchView('communications'); } catch (e) {} }
+    loadEmailProviders();
+    const sec = document.getElementById('emailProvidersSection');
+    if (sec && sec.scrollIntoView) sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// The OAuth attempt SUCCEEDED — record the connection and clear any failure.
+function markEmailConnectSucceeded(providerId) {
+    const provider = emailProviderList[providerId] || { name: providerId };
+    emailConnectFailures.delete(providerId);
+    const user = getCurrentUser();
+    if (user) {
+        if (!Array.isArray(user.connectedEmailProviders)) user.connectedEmailProviders = [];
+        if (!user.connectedEmailProviders.some(p => p.id === providerId)) {
+            user.connectedEmailProviders.push({ id: providerId, name: provider.name, connectedAt: new Date().toISOString() });
+            saveCurrentUser(user);
+        }
+        if (typeof logWorkflowActivity === 'function') logWorkflowActivity('email_provider_connected', `Connected to ${provider.name}`);
+    }
+    showNotification(`Successfully connected to ${provider.name}!`, 'success');
+    loadEmailProviders();
+    if (typeof loadRecentEmails === 'function') loadRecentEmails();
+}
+
+// Outcome of the OAuth tab arrives here (posted by the provider callback page).
+window.addEventListener('message', (e) => {
+    if (e.origin !== window.location.origin) return;
+    const d = e.data || {};
+    if (d.type !== 'email-oauth-complete') return;
+    const key = d.provider;               // 'gmail' | 'outlook'
+    if (!key || !emailProviderList[key]) return;
+    if (d.success) markEmailConnectSucceeded(key);
+    else markEmailConnectFailed(key);
+});
 
 // Start email sync with provider
 function startEmailSyncWithProvider(providerId) {

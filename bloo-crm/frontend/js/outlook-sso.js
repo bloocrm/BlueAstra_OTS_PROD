@@ -137,13 +137,15 @@ if (window.location.pathname.includes('outlook-callback')) {
             window.location.href = '/email-client.html';
         } catch (error) {
             console.error('Outlook callback error:', error);
-            const el = document.getElementById('error');
-            if (el) {
-                el.textContent = 'Authentication failed: ' + error.message;
-                el.style.display = 'block';
-            } else {
-                alert('Authentication failed: ' + error.message);
+            // Tell the opener the connection FAILED, then close this tab.
+            if (window.opener && !window.opener.closed) {
+                try { window.opener.postMessage({ type: 'email-oauth-complete', provider: 'outlook', success: false }, window.location.origin); } catch (e) {}
+                window.close();
+                return;
             }
+            const el = document.getElementById('error');
+            if (el) { el.textContent = 'Authentication failed: ' + error.message; el.style.display = 'block'; }
+            else { alert('Authentication failed: ' + error.message); }
         }
     });
 }

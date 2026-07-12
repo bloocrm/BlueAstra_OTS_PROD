@@ -116,6 +116,11 @@ if (window.location.pathname.includes('gmail-callback')) {
             window.close();
         } catch (error) {
             console.error('Gmail callback error:', error);
+            if (window.opener && !window.opener.closed) {
+                try { window.opener.postMessage({ type: 'email-oauth-complete', provider: 'gmail', success: false }, window.location.origin); } catch (e) {}
+                window.close();
+                return;
+            }
             alert('Authentication failed: ' + error.message);
         }
     });
