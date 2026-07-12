@@ -166,11 +166,12 @@ router.get('/:provider/callback', async (req, res) => {
     const c = cfg(provider);
     if (!c) return done(false, 'Unknown provider.');
     const { code, state, error, error_description } = req.query;
-    if (error) return done(false, String(error_description || error).slice(0, 200));
-    if (!code || !state) return done(false, 'Missing code/state.');
+    if (error) { console.warn(`[meeting-oauth ${provider}] provider error:`, error, error_description); return done(false, String(error_description || error).slice(0, 200)); }
+    if (!code || !state) { console.warn(`[meeting-oauth ${provider}] missing code/state (code:${!!code} state:${!!state})`); return done(false, 'Missing code/state.'); }
 
     const st = await OAuthState.findOneAndDelete({ state, provider: `meeting-${provider}` });
-    if (!st) return done(false, 'State mismatch or expired — please try connecting again.');
+    if (!st) { console.warn(`[meeting-oauth ${provider}] state not found (mismatch/expired/consumed)`); return done(false, 'State mismatch or expired — please try connecting again.'); }
+    console.log(`[meeting-oauth ${provider}] state ok, exchanging code…`);
 
     const tok = await tokenRequest(provider, {
       grant_type: 'authorization_code',
