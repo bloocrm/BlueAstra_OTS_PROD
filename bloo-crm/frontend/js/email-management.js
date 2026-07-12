@@ -61,7 +61,7 @@ function loadEmailProviders() {
                 </div>
                 <div class="provider-action">
                     ${isConnected ?
-                        `<button class="btn btn-sm btn-success" onclick="startEmailSyncWithProvider('${key}')">
+                        `<button class="btn btn-sm btn-success" type="button" title="Connected" style="cursor:default;">
                             <i class="fas fa-check-circle"></i> Connected
                         </button>` :
                         `<button class="btn btn-sm btn-secondary" onclick="connectEmailProvider('${key}')">
