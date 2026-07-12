@@ -56,12 +56,12 @@
 .lp-bg-video {
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
     object-position: center center;   /* frame the markets collage */
-    z-index: 0; filter: blur(2.5px) brightness(0.98); transform: scale(1.03);
+    z-index: 0; filter: none;         /* fully sharp — no blur */
     pointer-events: none;
 }
 .lp-bg-overlay {
     position: absolute; inset: 0; z-index: 1; pointer-events: none;
-    background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(238,244,255,0.32));
+    background: transparent;          /* no dimming — image 100% visible */
 }
 
 /* Animated digital dots over the video */
