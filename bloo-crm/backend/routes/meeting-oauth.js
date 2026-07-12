@@ -205,7 +205,10 @@ router.get('/:provider/callback', async (req, res) => {
         providerAccountId = providerAccountId || me.id || '';
       }
     }
-    if (!email) return done(false, 'Could not read the account.');
+    // If the provider returns an account id but no email (e.g. Zoom without an
+    // email scope), still complete the connection using the id as the identifier.
+    if (!email && providerAccountId) email = `${provider}:${providerAccountId}`;
+    if (!email) return done(false, 'Could not read the account — add a basic profile/email scope on the provider app, then reconnect.');
 
     await MeetingConnection.findOneAndUpdate(
       { userId: st.userId, provider },
