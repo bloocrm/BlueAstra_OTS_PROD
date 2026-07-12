@@ -141,6 +141,39 @@ body.app-active .lp-footer { display: none !important; }
     display: block;
 }
 
+/* Split login into two equal side-by-side boxes (left: sign in, right: help) */
+.auth-form.login-2col {
+    background: transparent;
+    box-shadow: none;
+    border-top: none;
+    padding: 0;
+    max-width: 1000px;
+}
+.auth-form.login-2col.active {
+    display: flex;
+    gap: 1.5rem;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+.login-2col .auth-panel {
+    flex: 1 1 0;
+    min-width: 0;
+    background: var(--white);
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    box-shadow: var(--shadow-lg);
+    border-top: 6px solid var(--theme-primary);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+/* The email-verification banner (injected as first child) spans the full width */
+.login-2col > #verifyBanner { flex: 0 0 100%; }
+@media (max-width: 880px) {
+    .auth-form.login-2col { max-width: 520px; }
+    .auth-form.login-2col.active { flex-direction: column; }
+}
+
 .auth-header {
     text-align: center;
     margin-bottom: 2rem;
