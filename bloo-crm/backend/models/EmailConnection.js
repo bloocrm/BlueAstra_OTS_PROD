@@ -14,7 +14,7 @@ const mongoose = require('mongoose');
 const emailConnectionSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    provider: { type: String, enum: ['microsoft'], required: true },
+    provider: { type: String, enum: ['microsoft', 'google'], required: true },
     providerAccountId: { type: String, required: true },   // Graph user object id (oid)
     email: { type: String, required: true },
     tenantId: String,

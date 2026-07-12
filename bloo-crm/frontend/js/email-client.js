@@ -143,36 +143,19 @@ class EmailClient {
 
     async loadConnections() {
         this.connections = [];
-        const mgr = window.emailManager;
-        if (!mgr || !mgr.ssoInstances) {
-            // Manager not ready yet — retry shortly
-            setTimeout(() => this.loadConnections(), 400);
-            return;
-        }
 
-        // Outlook: SECURE server-side connection — encrypted tokens live in MongoDB
-        // (never in the browser). Source of truth = /api/mailbox/connections. This
-        // follows the account across devices and reflects revoked/expired status.
+        // Outlook & Gmail are SECURE server-side connections — encrypted tokens live
+        // in MongoDB (never in the browser). Source of truth = /api/mailbox/connections.
+        // Follows the account across devices and reflects revoked/expired status.
+        const MAP = { microsoft: 'outlook', google: 'gmail' };
         try {
             const r = await this.apiCall('/mailbox/connections');
-            const mConn = ((r && r.connections) || []).find(c => c.provider === 'microsoft');
-            if (mConn) {
-                this.connections.push({
-                    id: 'outlook', provider: 'outlook', email: mConn.email,
-                    connectionId: mConn._id, serverSide: true, status: mConn.connectionStatus
-                });
+            for (const c of ((r && r.connections) || [])) {
+                const id = MAP[c.provider];
+                if (!id) continue;
+                this.connections.push({ id, provider: id, email: c.email, connectionId: c._id, serverSide: true, status: c.connectionStatus });
             }
         } catch (e) { /* server list unavailable — falls through to stored emails */ }
-
-        // Gmail: client-side SSO (unchanged for now).
-        const g = mgr.ssoInstances['gmail'];
-        if (g) {
-            try { await g.checkExistingSession(); } catch (e) {}
-            if (g.userEmail) localStorage.setItem('gmail_email', g.userEmail);
-            if (g.isConnected && g.isConnected()) {
-                this.connections.push({ id: 'gmail', provider: 'gmail', email: g.userEmail || localStorage.getItem('gmail_email') || 'gmail', sso: g });
-            }
-        }
 
         this.populateAccountDropdown();
 
@@ -902,19 +885,16 @@ class EmailClient {
     // connected (until the user connects again). Stored emails stay in MongoDB.
     async disconnectProvider(providerId) {
         try {
-            if (providerId === 'outlook') {
-                // Server-side connection: delete the encrypted record on the server.
-                const conn = this.connections.find(c => c.provider === 'outlook');
-                if (conn && conn.connectionId) {
-                    try { await this.apiCall(`/mailbox/connections/${conn.connectionId}`, { method: 'DELETE' }); } catch (e) { /* best-effort */ }
-                }
-            } else {
-                const mgr = window.emailManager;
-                const sso = mgr && mgr.ssoInstances && mgr.ssoInstances[providerId];
-                if (sso && sso.logout) sso.logout();               // clears local tokens
-                localStorage.removeItem(`${providerId}_email`);
-                try { await this.apiCall(`/email/link/${providerId}`, { method: 'DELETE' }); } catch (e) { /* server best-effort */ }
+            // Server-side connection: delete the encrypted record on the server.
+            const conn = this.connections.find(c => c.provider === providerId);
+            if (conn && conn.connectionId) {
+                try { await this.apiCall(`/mailbox/connections/${conn.connectionId}`, { method: 'DELETE' }); } catch (e) { /* best-effort */ }
             }
+            // Clean up any legacy client-side SSO tokens for this provider too.
+            const mgr = window.emailManager;
+            const sso = mgr && mgr.ssoInstances && mgr.ssoInstances[providerId];
+            if (sso && sso.logout) sso.logout();
+            localStorage.removeItem(`${providerId}_email`);
             this.connections = this.connections.filter(c => c.provider !== providerId);
             if (this.currentAccount && this.currentAccount.provider === providerId) {
                 this.currentAccount = null;
@@ -933,14 +913,15 @@ class EmailClient {
                 throw new Error('Provider ID is required');
             }
 
-            // Outlook: SECURE server-side OAuth. Ask the backend for the auth URL
-            // (per-attempt state + PKCE, tokens stay server-side) and open it in a
-            // new tab. The new tab is opened synchronously so it isn't popup-blocked.
-            if (provider === 'outlook') {
+            // Outlook & Gmail: SECURE server-side OAuth. Ask the backend for the auth
+            // URL (per-attempt state + PKCE; tokens stay server-side) and open it in a
+            // new tab, opened synchronously so it isn't popup-blocked.
+            if (provider === 'outlook' || provider === 'gmail') {
+                const serverProvider = provider === 'outlook' ? 'microsoft' : 'google';
                 const authTab = window.open('about:blank', '_blank');
-                this.showToast('⏳ Opening Microsoft sign-in…', 'info');
+                this.showToast('⏳ Opening sign-in…', 'info');
                 try {
-                    const res = await this.apiCall('/mailbox/microsoft/connect');
+                    const res = await this.apiCall(`/mailbox/${serverProvider}/connect`);
                     if (res && res.authUrl) {
                         if (authTab && !authTab.closed) authTab.location.href = res.authUrl;
                         else window.location.href = res.authUrl;
@@ -948,7 +929,7 @@ class EmailClient {
                         return;
                     }
                     if (authTab && !authTab.closed) authTab.close();
-                    throw new Error((res && res.message) || 'Could not start Microsoft sign-in');
+                    throw new Error((res && res.message) || 'Could not start sign-in');
                 } catch (e) {
                     if (authTab && !authTab.closed) authTab.close();
                     throw e;
