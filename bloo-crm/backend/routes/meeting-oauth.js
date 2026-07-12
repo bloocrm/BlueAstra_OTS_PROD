@@ -194,7 +194,9 @@ router.get('/:provider/callback', async (req, res) => {
         email = email || me.email || '';
         providerAccountId = providerAccountId || me.sub || '';
       } else if (provider === 'zoom') {
-        const me = await fetch('https://api.zoom.us/v2/users/me', { headers: { Authorization: `Bearer ${tok.access_token}` } }).then(r => r.json()).catch(() => ({}));
+        const r = await fetch('https://api.zoom.us/v2/users/me', { headers: { Authorization: `Bearer ${tok.access_token}` } });
+        const me = await r.json().catch(() => ({}));
+        if (!r.ok) console.warn(`[meeting-oauth zoom] /users/me ${r.status}:`, me.message || me.code || '', '| granted scope:', tok.scope || '?');
         email = email || me.email || '';
         providerAccountId = providerAccountId || me.id || '';
       } else if (provider === 'webex') {
