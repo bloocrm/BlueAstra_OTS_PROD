@@ -69,6 +69,12 @@ const userSchema = new mongoose.Schema(
       country: String,
       zipCode: String
     },
+    // Meeting services the user has connected in the Meeting Room.
+    connectedVideoProviders: [{
+      provider: String,
+      name: String,
+      connectedAt: { type: Date, default: Date.now }
+    }],
     emailVerified: {
       type: Boolean,
       default: false

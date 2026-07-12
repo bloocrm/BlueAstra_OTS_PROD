@@ -66,6 +66,17 @@ const videoProviders = {
     }
 };
 
+// Real, provider-specific connectivity targets. Account providers open their own
+// sign-in in a new tab (tied to that service); Jitsi needs no account at all.
+const MEETING_PROVIDER_LINKS = {
+    'zoom':            { connect: 'https://zoom.us/signin',        start: 'https://zoom.us/start/videomeeting',            noAuth: false },
+    'google-meet':     { connect: 'https://meet.google.com/',      start: 'https://meet.google.com/new',                   noAuth: false },
+    'microsoft-teams': { connect: 'https://teams.microsoft.com/',  start: 'https://teams.microsoft.com/l/meeting/new',     noAuth: false },
+    'webex':           { connect: 'https://web.webex.com/sign-in', start: 'https://web.webex.com/',                        noAuth: false },
+    'jitsi':           { connect: null,                            start: 'https://meet.jit.si/',                          noAuth: true  },
+    'whereby':         { connect: 'https://whereby.com/',          start: 'https://whereby.com/',                          noAuth: false }
+};
+
 // ROCKET AI+ Meeting Intelligence Features
 const meetingAIFeatures = {
     title: 'ROCKET AI+ Meeting Intelligence',
@@ -167,32 +178,58 @@ function loadVideoProviders() {
 // Connect video provider
 function connectVideoProvider(providerId) {
     const provider = videoProviders[providerId];
+    const link = MEETING_PROVIDER_LINKS[providerId] || {};
+    if (!provider) return;
+
+    // Open the real provider's sign-in in a NEW TAB (tied to that service). Done
+    // synchronously in the click gesture so the browser doesn't block the popup.
+    // Jitsi needs no account, so there's nothing to sign into.
+    if (!link.noAuth && link.connect) {
+        window.open(link.connect, '_blank', 'noopener');
+    }
+
     const user = getCurrentUser();
+    if (!user.connectedVideoProviders) user.connectedVideoProviders = [];
+    user.connectedVideoProviders = user.connectedVideoProviders.filter(p => p.id !== providerId);
+    user.connectedVideoProviders.push({ id: providerId, name: provider.name, connectedAt: new Date().toISOString() });
+    saveCurrentUser(user);
+    if (typeof logWorkflowActivity === 'function') logWorkflowActivity('video_provider_connected', `Connected to ${provider.name}`);
 
-    showNotification(`Connecting to ${provider.name}...`, 'info');
-
-    setTimeout(() => {
-        if (!user.connectedVideoProviders) {
-            user.connectedVideoProviders = [];
+    // Persist the choice server-side too (best-effort), so it follows the account.
+    try {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            fetch(`${window.API_BASE_URL || '/api'}/meeting/providers/connect`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ provider: providerId, name: provider.name })
+            }).catch(() => {});
         }
+    } catch (e) { /* best-effort */ }
 
-        // Remove if already exists
+    showNotification(link.noAuth
+        ? `${provider.name} is ready — no account needed. You can start a meeting now.`
+        : `Opened ${provider.name} sign-in in a new tab. Once you're signed in, start meetings from here.`, 'success');
+    loadVideoProviders();
+    loadMeetingRoomFeatures();
+}
+
+// Disconnect a video provider.
+function disconnectVideoProvider(providerId) {
+    const user = getCurrentUser();
+    if (user && Array.isArray(user.connectedVideoProviders)) {
         user.connectedVideoProviders = user.connectedVideoProviders.filter(p => p.id !== providerId);
-
-        // Add new provider
-        user.connectedVideoProviders.push({
-            id: providerId,
-            name: provider.name,
-            connectedAt: new Date().toISOString()
-        });
-
         saveCurrentUser(user);
-        logWorkflowActivity('video_provider_connected', `Connected to ${provider.name}`);
-
-        showNotification(`Successfully connected to ${provider.name}!`, 'success');
-        loadVideoProviders();
-        loadMeetingRoomFeatures();
-    }, 1500);
+    }
+    try {
+        const token = localStorage.getItem('authToken');
+        if (token) fetch(`${window.API_BASE_URL || '/api'}/meeting/providers/${encodeURIComponent(providerId)}`, {
+            method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(() => {});
+    } catch (e) { /* best-effort */ }
+    showNotification('Provider disconnected.', 'info');
+    loadVideoProviders();
+    loadMeetingRoomFeatures();
 }
 
 // Start meeting with provider

@@ -15,6 +15,9 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const emailService = require('../utils/email-service');
 const { verifyToken } = require('../middleware/auth');
+const User = require('../models/User');
+
+const MEETING_PROVIDERS = ['zoom', 'google-meet', 'microsoft-teams', 'webex', 'jitsi', 'whereby'];
 
 // JaaS (Jitsi-as-a-Service) — authenticated meetings with host moderator + guest lobby
 function getJaasPrivateKey() {
@@ -168,6 +171,41 @@ router.get('/meeting/email-status', async (req, res) => {
             message: error.message
         });
     }
+});
+
+// ---- Connected meeting providers (per user, stored in MongoDB) ----
+// Record the meeting service the user connected under the Meeting Room.
+router.post('/meeting/providers/connect', verifyToken, async (req, res) => {
+  try {
+    const provider = String((req.body && req.body.provider) || '');
+    if (!MEETING_PROVIDERS.includes(provider)) return res.status(400).json({ error: 'unknown_provider' });
+    const name = String((req.body && req.body.name) || provider);
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'user_not_found' });
+    if (!Array.isArray(user.connectedVideoProviders)) user.connectedVideoProviders = [];
+    user.connectedVideoProviders = user.connectedVideoProviders.filter(p => p.provider !== provider);
+    user.connectedVideoProviders.push({ provider, name, connectedAt: new Date() });
+    await user.save();
+    res.json({ status: 'success', provider, connectedVideoProviders: user.connectedVideoProviders });
+  } catch (e) { res.status(500).json({ error: 'Failed to connect provider', message: e.message }); }
+});
+
+router.get('/meeting/providers', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('connectedVideoProviders').lean();
+    res.json({ status: 'success', connectedVideoProviders: (user && user.connectedVideoProviders) || [] });
+  } catch (e) { res.status(500).json({ error: 'Failed to list providers', message: e.message }); }
+});
+
+router.delete('/meeting/providers/:provider', verifyToken, async (req, res) => {
+  try {
+    const provider = req.params.provider;
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'user_not_found' });
+    user.connectedVideoProviders = (user.connectedVideoProviders || []).filter(p => p.provider !== provider);
+    await user.save();
+    res.json({ status: 'success', disconnected: provider });
+  } catch (e) { res.status(500).json({ error: 'Failed to disconnect provider', message: e.message }); }
 });
 
 module.exports = router;
