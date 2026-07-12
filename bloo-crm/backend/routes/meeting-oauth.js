@@ -43,6 +43,18 @@ const PROVIDERS = {
     scopes: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/calendar.events'],
     authExtras: { access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true' },
     refreshNeedsScope: false
+  },
+  zoom: {
+    label: 'Zoom',
+    clientId: () => process.env.ZOOM_CLIENT_ID,
+    clientSecret: () => process.env.ZOOM_CLIENT_SECRET,
+    authUrl: () => 'https://zoom.us/oauth/authorize',
+    tokenUrl: () => 'https://zoom.us/oauth/token',
+    scopes: ['meeting:write', 'user:read'],   // granted via the Zoom app config
+    authExtras: {},
+    refreshNeedsScope: false,
+    tokenAuth: 'basic',       // Zoom exchanges tokens with HTTP Basic auth
+    sendAuthScope: false      // Zoom scopes come from the app, not the authorize URL
   }
 };
 const cfg = (p) => PROVIDERS[p];
@@ -59,8 +71,15 @@ function jwtClaims(jwt) {
 }
 async function tokenRequest(provider, params) {
   const c = cfg(provider);
-  const body = new URLSearchParams({ client_id: c.clientId(), client_secret: c.clientSecret(), ...params });
-  const r = await fetch(c.tokenUrl(), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+  const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+  let bodyParams;
+  if (c.tokenAuth === 'basic') {
+    headers['Authorization'] = 'Basic ' + Buffer.from(`${c.clientId()}:${c.clientSecret()}`).toString('base64');
+    bodyParams = { ...params };
+  } else {
+    bodyParams = { client_id: c.clientId(), client_secret: c.clientSecret(), ...params };
+  }
+  const r = await fetch(c.tokenUrl(), { method: 'POST', headers, body: new URLSearchParams(bodyParams) });
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(d.error_description || d.error || 'token_request_failed');
   return d;
@@ -104,16 +123,17 @@ router.get('/:provider/connect', verifyToken, async (req, res) => {
     const { verifier, challenge } = pkcePair();
     await OAuthState.create({ state, userId: req.userId, provider: `meeting-${provider}`, codeVerifier: verifier });
 
-    const authUrl = `${c.authUrl()}?` + new URLSearchParams({
+    const params = {
       client_id: c.clientId(),
       response_type: 'code',
       redirect_uri: redirectUri(provider),
-      scope: c.scopes.join(' '),
       state,
       code_challenge: challenge,
       code_challenge_method: 'S256',
       ...c.authExtras
-    }).toString();
+    };
+    if (c.sendAuthScope !== false) params.scope = c.scopes.join(' ');
+    const authUrl = `${c.authUrl()}?` + new URLSearchParams(params).toString();
 
     res.json({ status: 'success', authUrl });
   } catch (e) {
@@ -125,7 +145,8 @@ router.get('/:provider/connect', verifyToken, async (req, res) => {
 // ---- Step 2: provider redirects here (public; user bound via state) ----
 router.get('/:provider/callback', async (req, res) => {
   const provider = req.params.provider;
-  const uiProvider = provider === 'google' ? 'google-meet' : 'microsoft-teams';
+  const UI_PROVIDER = { microsoft: 'microsoft-teams', google: 'google-meet', zoom: 'zoom', webex: 'webex' };
+  const uiProvider = UI_PROVIDER[provider] || provider;
   const done = (ok, msg) => res.set('Content-Type', 'text/html').send(`<!doctype html><meta charset="utf-8"><body style="font-family:Segoe UI,Arial,sans-serif;text-align:center;padding:48px;color:#16233a">
     <h2>${ok ? '✅ Meeting account connected' : '⚠️ Connection failed'}</h2><p>${msg || (ok ? 'You can close this tab.' : '')}</p>
     <script>try{if(window.opener&&!window.opener.closed)window.opener.postMessage({type:'meeting-oauth-complete',provider:'${uiProvider}',success:${ok ? 'true' : 'false'}},location.origin);}catch(e){}
@@ -156,10 +177,14 @@ router.get('/:provider/callback', async (req, res) => {
         const me = await fetch('https://graph.microsoft.com/v1.0/me?$select=id,mail,userPrincipalName', { headers: { Authorization: `Bearer ${tok.access_token}` } }).then(r => r.json()).catch(() => ({}));
         email = email || me.mail || me.userPrincipalName || '';
         providerAccountId = providerAccountId || me.id || '';
-      } else {
+      } else if (provider === 'google') {
         const me = await fetch('https://openidconnect.googleapis.com/v1/userinfo', { headers: { Authorization: `Bearer ${tok.access_token}` } }).then(r => r.json()).catch(() => ({}));
         email = email || me.email || '';
         providerAccountId = providerAccountId || me.sub || '';
+      } else if (provider === 'zoom') {
+        const me = await fetch('https://api.zoom.us/v2/users/me', { headers: { Authorization: `Bearer ${tok.access_token}` } }).then(r => r.json()).catch(() => ({}));
+        email = email || me.email || '';
+        providerAccountId = providerAccountId || me.id || '';
       }
     }
     if (!email) return done(false, 'Could not read the account.');
@@ -246,6 +271,23 @@ router.post('/connections/:id/create-meeting', verifyToken, async (req, res) => 
       const joinUrl = d.hangoutLink || (ep.find(e => e.entryPointType === 'video') || {}).uri;
       conn.lastMeetingAt = new Date(); await conn.save();
       return res.json({ status: 'success', provider: 'google-meet', joinUrl, subject, startDateTime: start.toISOString(), endDateTime: end.toISOString() });
+    }
+
+    if (conn.provider === 'zoom') {
+      const r = await fetch('https://api.zoom.us/v2/users/me/meetings', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: subject, type: 2, start_time: start.toISOString(),
+          duration: durationMin, timezone: 'UTC',
+          settings: { join_before_host: true, waiting_room: true }
+        })
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) return res.status(502).json({ error: 'create_failed', message: d.message || 'Zoom create failed' });
+      conn.lastMeetingAt = new Date(); await conn.save();
+      // The advisor hosts, so open the host start_url; join_url is for invitees.
+      return res.json({ status: 'success', provider: 'zoom', joinUrl: d.start_url || d.join_url, participantUrl: d.join_url, subject, startDateTime: start.toISOString(), endDateTime: end.toISOString() });
     }
 
     return res.status(400).json({ error: 'unsupported_provider' });

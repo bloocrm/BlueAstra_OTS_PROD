@@ -78,7 +78,7 @@ const MEETING_PROVIDER_LINKS = {
 };
 
 // Providers with secure server-side per-advisor OAuth (UI key -> server provider).
-const SERVER_MEETING_PROVIDERS = { 'microsoft-teams': 'microsoft', 'google-meet': 'google' };
+const SERVER_MEETING_PROVIDERS = { 'microsoft-teams': 'microsoft', 'google-meet': 'google', 'zoom': 'zoom' };
 
 // ROCKET AI+ Meeting Intelligence Features
 const meetingAIFeatures = {
@@ -301,7 +301,7 @@ window.addEventListener('message', (e) => {
     if (e.origin !== window.location.origin) return;
     const d = e.data || {};
     if (d.type !== 'meeting-oauth-complete') return;
-    const NAMES = { 'microsoft-teams': 'Microsoft Teams', 'google-meet': 'Google Meet' };
+    const NAMES = { 'microsoft-teams': 'Microsoft Teams', 'google-meet': 'Google Meet', 'zoom': 'Zoom' };
     const uiKey = d.provider;
     if (!NAMES[uiKey]) return;
     if (d.success) {
