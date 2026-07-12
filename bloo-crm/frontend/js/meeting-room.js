@@ -77,6 +77,9 @@ const MEETING_PROVIDER_LINKS = {
     'whereby':         { connect: 'https://whereby.com/',          start: 'https://whereby.com/',                          noAuth: false }
 };
 
+// Providers with secure server-side per-advisor OAuth (UI key -> server provider).
+const SERVER_MEETING_PROVIDERS = { 'microsoft-teams': 'microsoft', 'google-meet': 'google' };
+
 // ROCKET AI+ Meeting Intelligence Features
 const meetingAIFeatures = {
     title: 'ROCKET AI+ Meeting Intelligence',
@@ -181,25 +184,26 @@ function connectVideoProvider(providerId) {
     const link = MEETING_PROVIDER_LINKS[providerId] || {};
     if (!provider) return;
 
-    // Microsoft Teams: SECURE server-side OAuth — the advisor signs into their OWN
-    // Microsoft account; tokens are encrypted on the server (never in the browser).
+    // Microsoft Teams / Google Meet: SECURE server-side OAuth — the advisor signs
+    // into their OWN account; tokens are encrypted on the server (never in browser).
     // Open a blank tab synchronously (avoids popup-block), then send it to the
     // backend-generated auth URL.
-    if (providerId === 'microsoft-teams') {
+    if (SERVER_MEETING_PROVIDERS[providerId]) {
+        const sp = SERVER_MEETING_PROVIDERS[providerId];
         const authTab = window.open('about:blank', '_blank');
-        showNotification('Opening Microsoft sign-in…', 'info');
+        showNotification('Opening sign-in…', 'info');
         (async () => {
             try {
                 const token = localStorage.getItem('authToken');
-                const resp = await fetch(`${window.API_BASE_URL || '/api'}/meeting-oauth/microsoft/connect`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+                const resp = await fetch(`${window.API_BASE_URL || '/api'}/meeting-oauth/${sp}/connect`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
                 const d = await resp.json().catch(() => ({}));
                 if (resp.ok && d.authUrl) {
                     if (authTab && !authTab.closed) authTab.location.href = d.authUrl; else window.location.href = d.authUrl;
                 } else {
                     if (authTab && !authTab.closed) authTab.close();
-                    showNotification(d.message || 'Microsoft Teams isn’t configured on the server yet.', 'error');
+                    showNotification(d.message || `${provider.name} isn’t configured on the server yet.`, 'error');
                 }
-            } catch (e) { if (authTab && !authTab.closed) authTab.close(); showNotification('Could not start Microsoft sign-in.', 'error'); }
+            } catch (e) { if (authTab && !authTab.closed) authTab.close(); showNotification('Could not start sign-in.', 'error'); }
         })();
         return;
     }
@@ -257,23 +261,25 @@ function disconnectVideoProvider(providerId) {
 
 // Start meeting with provider
 function startMeetingWithProvider(providerId) {
-    if (providerId === 'microsoft-teams') { return startTeamsMeeting(); }
+    if (SERVER_MEETING_PROVIDERS[providerId]) { return startServerMeeting(providerId); }
     const provider = videoProviders[providerId];
     showModal('startMeetingModal');
     document.getElementById('meetingProvider').value = providerId;
 }
 
-// Create a real Teams meeting on the advisor's connected Microsoft account.
-async function startTeamsMeeting() {
+// Create a real meeting on the advisor's own connected account (Teams / Meet).
+async function startServerMeeting(providerId) {
+    const serverProvider = SERVER_MEETING_PROVIDERS[providerId];
+    const name = (videoProviders[providerId] || {}).name || 'meeting';
     const base = window.API_BASE_URL || '/api';
     const token = localStorage.getItem('authToken');
     const auth = token ? { Authorization: `Bearer ${token}` } : {};
     try {
         const list = await fetch(`${base}/meeting-oauth/connections`, { headers: auth }).then(r => r.json());
-        const conn = ((list && list.connections) || []).find(c => c.provider === 'microsoft' && c.connectionStatus === 'connected');
-        if (!conn) { showNotification('Connect Microsoft Teams first.', 'error'); return; }
+        const conn = ((list && list.connections) || []).find(c => c.provider === serverProvider && c.connectionStatus === 'connected');
+        if (!conn) { showNotification(`Connect ${name} first.`, 'error'); return; }
         const subject = (prompt('Meeting title:', 'Bloo CRM Meeting') || '').trim() || 'Bloo CRM Meeting';
-        showNotification('Creating your Teams meeting…', 'info');
+        showNotification(`Creating your ${name} meeting…`, 'info');
         const resp = await fetch(`${base}/meeting-oauth/connections/${conn._id}/create-meeting`, {
             method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
             body: JSON.stringify({ subject, durationMinutes: 60 })
@@ -281,32 +287,35 @@ async function startTeamsMeeting() {
         const d = await resp.json().catch(() => ({}));
         if (resp.ok && d.joinUrl) {
             window.open(d.joinUrl, '_blank', 'noopener');
-            showNotification('Teams meeting created — opening…', 'success');
+            showNotification(`${name} meeting created — opening…`, 'success');
         } else if (d.error === 'needs_reauth') {
-            showNotification('Your Teams session expired — please reconnect.', 'error');
+            showNotification(`Your ${name} session expired — please reconnect.`, 'error');
         } else {
-            showNotification(d.message || 'Could not create the Teams meeting.', 'error');
+            showNotification(d.message || `Could not create the ${name} meeting.`, 'error');
         }
-    } catch (e) { showNotification('Could not create the Teams meeting.', 'error'); }
+    } catch (e) { showNotification(`Could not create the ${name} meeting.`, 'error'); }
 }
 
-// Outcome of the Teams OAuth tab (posted by the callback page).
+// Outcome of a meeting OAuth tab (Teams / Meet), posted by the callback page.
 window.addEventListener('message', (e) => {
     if (e.origin !== window.location.origin) return;
     const d = e.data || {};
-    if (d.type !== 'meeting-oauth-complete' || d.provider !== 'microsoft-teams') return;
+    if (d.type !== 'meeting-oauth-complete') return;
+    const NAMES = { 'microsoft-teams': 'Microsoft Teams', 'google-meet': 'Google Meet' };
+    const uiKey = d.provider;
+    if (!NAMES[uiKey]) return;
     if (d.success) {
         const user = getCurrentUser();
         if (user) {
             if (!user.connectedVideoProviders) user.connectedVideoProviders = [];
-            if (!user.connectedVideoProviders.some(p => p.id === 'microsoft-teams')) {
-                user.connectedVideoProviders.push({ id: 'microsoft-teams', name: 'Microsoft Teams', connectedAt: new Date().toISOString() });
+            if (!user.connectedVideoProviders.some(p => p.id === uiKey)) {
+                user.connectedVideoProviders.push({ id: uiKey, name: NAMES[uiKey], connectedAt: new Date().toISOString() });
                 saveCurrentUser(user);
             }
         }
-        showNotification('✅ Microsoft Teams connected.', 'success');
+        showNotification(`✅ ${NAMES[uiKey]} connected.`, 'success');
     } else {
-        showNotification('❌ Teams connection failed. Please try again.', 'error');
+        showNotification(`❌ ${NAMES[uiKey]} connection failed. Please try again.`, 'error');
     }
     if (typeof loadVideoProviders === 'function') loadVideoProviders();
     if (typeof loadMeetingRoomFeatures === 'function') loadMeetingRoomFeatures();

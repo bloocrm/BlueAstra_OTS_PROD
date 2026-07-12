@@ -32,6 +32,17 @@ const PROVIDERS = {
     scopes: ['openid', 'profile', 'offline_access', 'User.Read', 'OnlineMeetings.ReadWrite'],
     authExtras: { response_mode: 'query', prompt: 'select_account' },
     refreshNeedsScope: true
+  },
+  google: {
+    label: 'Google Meet',
+    clientId: () => process.env.GOOGLE_CLIENT_ID,
+    clientSecret: () => process.env.GOOGLE_CLIENT_SECRET,
+    authUrl: () => 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: () => 'https://oauth2.googleapis.com/token',
+    // Least privilege: create calendar events (which carry the Meet link) + identity.
+    scopes: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/calendar.events'],
+    authExtras: { access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true' },
+    refreshNeedsScope: false
   }
 };
 const cfg = (p) => PROVIDERS[p];
@@ -114,9 +125,10 @@ router.get('/:provider/connect', verifyToken, async (req, res) => {
 // ---- Step 2: provider redirects here (public; user bound via state) ----
 router.get('/:provider/callback', async (req, res) => {
   const provider = req.params.provider;
+  const uiProvider = provider === 'google' ? 'google-meet' : 'microsoft-teams';
   const done = (ok, msg) => res.set('Content-Type', 'text/html').send(`<!doctype html><meta charset="utf-8"><body style="font-family:Segoe UI,Arial,sans-serif;text-align:center;padding:48px;color:#16233a">
     <h2>${ok ? '✅ Meeting account connected' : '⚠️ Connection failed'}</h2><p>${msg || (ok ? 'You can close this tab.' : '')}</p>
-    <script>try{if(window.opener&&!window.opener.closed)window.opener.postMessage({type:'meeting-oauth-complete',provider:'microsoft-teams',success:${ok ? 'true' : 'false'}},location.origin);}catch(e){}
+    <script>try{if(window.opener&&!window.opener.closed)window.opener.postMessage({type:'meeting-oauth-complete',provider:'${uiProvider}',success:${ok ? 'true' : 'false'}},location.origin);}catch(e){}
     setTimeout(function(){window.close();},600);</script></body>`);
   try {
     const c = cfg(provider);
@@ -138,11 +150,17 @@ router.get('/:provider/callback', async (req, res) => {
     const claims = jwtClaims(tok.id_token);
     let email = claims.preferred_username || claims.email || '';
     let providerAccountId = claims.oid || claims.sub || '';
-    const tenantId = claims.tid || c.tenant();
+    const tenantId = claims.tid || (provider === 'microsoft' ? c.tenant() : undefined);
     if (!email || !providerAccountId) {
-      const me = await fetch('https://graph.microsoft.com/v1.0/me?$select=id,mail,userPrincipalName', { headers: { Authorization: `Bearer ${tok.access_token}` } }).then(r => r.json()).catch(() => ({}));
-      email = email || me.mail || me.userPrincipalName || '';
-      providerAccountId = providerAccountId || me.id || '';
+      if (provider === 'microsoft') {
+        const me = await fetch('https://graph.microsoft.com/v1.0/me?$select=id,mail,userPrincipalName', { headers: { Authorization: `Bearer ${tok.access_token}` } }).then(r => r.json()).catch(() => ({}));
+        email = email || me.mail || me.userPrincipalName || '';
+        providerAccountId = providerAccountId || me.id || '';
+      } else {
+        const me = await fetch('https://openidconnect.googleapis.com/v1/userinfo', { headers: { Authorization: `Bearer ${tok.access_token}` } }).then(r => r.json()).catch(() => ({}));
+        email = email || me.email || '';
+        providerAccountId = providerAccountId || me.sub || '';
+      }
     }
     if (!email) return done(false, 'Could not read the account.');
 
@@ -207,6 +225,27 @@ router.post('/connections/:id/create-meeting', verifyToken, async (req, res) => 
       if (!r.ok) return res.status(502).json({ error: 'create_failed', message: (d.error && d.error.message) || 'Graph create failed' });
       conn.lastMeetingAt = new Date(); await conn.save();
       return res.json({ status: 'success', provider: 'microsoft-teams', joinUrl: d.joinWebUrl || d.joinUrl, subject, startDateTime: start.toISOString(), endDateTime: end.toISOString() });
+    }
+
+    if (conn.provider === 'google') {
+      // A Google Meet link is created by attaching conferenceData to a Calendar event.
+      const requestId = 'bloocrm-' + crypto.randomBytes(6).toString('hex');
+      const r = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          summary: subject,
+          start: { dateTime: start.toISOString() },
+          end: { dateTime: end.toISOString() },
+          conferenceData: { createRequest: { requestId, conferenceSolutionKey: { type: 'hangoutsMeet' } } }
+        })
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) return res.status(502).json({ error: 'create_failed', message: (d.error && d.error.message) || 'Calendar create failed' });
+      const ep = (d.conferenceData && d.conferenceData.entryPoints) || [];
+      const joinUrl = d.hangoutLink || (ep.find(e => e.entryPointType === 'video') || {}).uri;
+      conn.lastMeetingAt = new Date(); await conn.save();
+      return res.json({ status: 'success', provider: 'google-meet', joinUrl, subject, startDateTime: start.toISOString(), endDateTime: end.toISOString() });
     }
 
     return res.status(400).json({ error: 'unsupported_provider' });
